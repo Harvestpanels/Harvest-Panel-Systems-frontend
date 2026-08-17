@@ -1,0 +1,112 @@
+.hp-footer {
+  position: relative;
+  z-index: 5;
+  padding: 44px 0 28px;
+  border-top: 1px solid rgba(var(--hp-navy-rgb), 0.1);
+  margin-top: 10px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.54));
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.6) inset,
+    0 24px 60px rgba(var(--hp-navy-rgb), 0.1),
+    9999px 0 0 0 rgba(255, 255, 255, 0.54),
+    -9999px 0 0 0 rgba(255, 255, 255, 0.54);
+}
+
+.hp-footer__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.hp-footer__inner p {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: rgba(var(--hp-navy-rgb), 0.65);
+}
+
+.hp-footer__inner a {
+  transition: color 0.2s ease;
+}
+
+.hp-footer__inner a:hover { color: var(--hp-accent); }
+
+.hp-footer__social {
+  display: flex;
+  gap: 18px;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+}
+
+.hp-footer__social a {
+  display: inline-flex;
+  transition: color 0.2s ease, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+  will-change: transform;
+}
+
+.hp-footer__social a:hover {
+  color: var(--hp-accent);
+  transform: translateY(-2px);
+}
+
+/* True brand colors on hover for each platform */
+.hp-footer__social a[aria-label="Facebook"]:hover { color: #2f7de1; }
+.hp-footer__social a[aria-label="Instagram"]:hover { color: #e1306c; }
+.hp-footer__social a[aria-label="TikTok"]:hover { color: #000000; }
+.hp-footer__social a[aria-label="X (formerly Twitter)"]:hover { color: #5cc3f7; }
+
+.hp-footer__legal {
+  max-width: 1180px;
+  margin: 24px auto 0;
+  padding: 20px 32px 0;
+  border-top: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  font-size: 12px;
+  line-height: 1.7;
+  color: rgba(var(--hp-navy-rgb), 0.45);
+}
+
+.hp-footer__legal p {
+  margin: 0;
+}
+
+/* Real spacing between the description and the copyright line instead of
+   relying on a <br> plus line-height alone, which read as cramped once the
+   description wraps to several lines on mobile. */
+.hp-footer__legal p + p {
+  margin-top: 10px;
+}
+
+@media (max-width: 1024px) {
+  .hp-footer__inner { padding: 0 24px; gap: 20px; }
+  .hp-footer__legal { padding: 20px 24px 0; }
+}
+
+@media (max-width: 640px) {
+  .hp-footer__inner { padding: 0 16px; flex-direction: column; align-items: flex-start; gap: 20px; }
+  .hp-footer__legal { padding: 20px 16px 0; font-size: 11px; }
+  .hp-footer__social { flex-wrap: wrap; gap: 14px; }
+  /* Bottom padding absorbs the chat widget's clearance (used to be a bare
+     `body` padding-bottom — see App.css) directly into the footer's own
+     frosted glass card, so that space reads as part of the footer instead
+     of a dead strip of raw background with the widget floating over it. */
+  .hp-footer { padding: 48px 0 144px; }
+}
+
+/* Also matched by max-width, not just hover: none — a desktop browser
+   window resized/emulated narrow still reports (hover: hover), so a mouse
+   there would still trigger the lift this rule exists to disable. */
+@media (hover: none), (max-width: 1024px) {
+  .hp-footer__social a:hover { transform: none; }
+}
+
+@media (hover: none) {
+  .hp-footer {
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    backdrop-filter: blur(12px) saturate(130%);
+  }
+}

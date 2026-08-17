@@ -1,0 +1,161 @@
+/* .hp-bgvideo-layer / .hp-bgvideo moved to App.css — both pages render a
+   fixed background <video> with these classes, and App.css (unlike this
+   file) is imported directly by both, so it can't be route-split away by
+   App.jsx's React.lazy. See the comment there for the full explanation. */
+
+.hp-parallax-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  overflow: hidden;
+}
+
+.hp-parallax {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Explicit 100% 100% — stretched to exactly fill the layer on both
+     axes, not `cover` (crops whatever doesn't fit the viewport's aspect
+     ratio) and not `contain` (keeps the whole photo uncropped but
+     letterboxes empty bars wherever the viewport's ratio doesn't match
+     the photo's, leaving gaps instead of a full-bleed background). Both
+     "nothing cropped" and "fills the entire screen" together are only
+     possible if the image is allowed to stretch on viewports whose ratio
+     doesn't match the photo's own — a mild stretch is the trade-off for
+     satisfying both at once. */
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  will-change: transform;
+  transform: translate3d(0, 0%, 0);
+  filter: grayscale(0.25) brightness(0.7);
+}
+
+/* On a narrow/tall mobile viewport, the photo's landscape aspect ratio is
+   so far from the screen's that stretching it to 100% 100% (the desktop
+   behavior above) squashes the building noticeably and pushes the "US
+   Panels" logo signage toward the very top edge, half out of frame.
+   `cover` instead crops to fill without distorting, and the position is
+   tuned specifically to keep the logo signage in frame as the focal
+   point — trading "the whole photo visible" (the desktop goal) for "the
+   part that matters looks right," since on this aspect ratio you can't
+   have both. */
+@media (max-width: 640px) {
+  .hp-parallax {
+    /* Plain `cover` has zero effective vertical crop room on this photo/
+       viewport combination — it's a landscape photo (~16:9) inside a
+       narrow portrait container, so `cover`'s minimum scale is already
+       height-bound (the scaled image's height lands exactly at the
+       container's height), leaving background-position-Y nothing to
+       move. Zooming in enough to create real vertical room (tried up to
+       560%) reliably pushes the logo's own on-screen width past the
+       container's width, clipping one edge or the other at narrower
+       phone sizes (confirmed empirically at 320-414px) — the logo's
+       width-to-height ratio combined with this container's aspect ratio
+       makes "fully in frame" and "clear of the text below" mutually
+       exclusive at any single zoom/position. Plain `cover` at least
+       guarantees the whole logo stays in frame, un-clipped, at every
+       width, which matters more than dodging a minor overlap with the
+       small eyebrow text line above the main headline. */
+    background-size: cover;
+    background-position: 32% 28%;
+  }
+}
+
+.hp-hero {
+  position: relative;
+  z-index: 12;
+  height: 100vh;
+  /* svh, not dvh — dvh is *dynamic*, deliberately recalculating as the
+     mobile browser's toolbar collapses/expands during scroll. Since this
+     hero sits at the top of normal document flow, a height that keeps
+     changing mid-scroll shifts where every section below it starts,
+     reading as page content sliding/resizing while scrolling — the exact
+     symptom already fixed on the JS side for the scroll-driven parallax/
+     fade in useHeroParallax.js. svh (small viewport height) is the
+     stable value browsers use when the toolbar is fully expanded, so
+     this height never changes once set, regardless of toolbar state. */
+  height: 100svh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.hp-hero__content {
+  position: relative;
+  z-index: 3;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+  width: 100%;
+  will-change: opacity, transform;
+}
+
+@keyframes hp-hero-in {
+  from { opacity: 0; transform: translate3d(0, 22px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Structural rule (font/size/spacing/margin) lives in App.css and is
+   shared by every page's own eyebrow text — this scoped rule only adds
+   the home hero's specific color/shadow/entrance-animation on top of it.
+   Scoped to .hp-hero specifically (not a bare .hp-eyebrow) so this
+   cream-on-dark treatment can never bleed onto another page's eyebrow if
+   this chunk happens to already be loaded in the same SPA session (e.g.
+   a visitor who came from "/" and then hit a 404). */
+/* Two-layer text-shadow throughout the hero: the wide soft shadow is the
+   ambient depth it always had; the added tight, near-opaque second layer
+   is what actually keeps the text legible when a bright frame of the
+   background video sits directly behind it (e.g. a logo
+   painted on the building), which the soft shadow alone washed out
+   against. */
+.hp-hero .hp-eyebrow {
+  color: var(--hp-cream);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.75);
+  animation: hp-hero-in 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.hp-hero h1 {
+  font-size: clamp(48px, 8vw, 96px);
+  max-width: 820px;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.55), 0 1px 4px rgba(0, 0, 0, 0.7);
+  animation: hp-hero-in 0.8s cubic-bezier(0.16,1,0.3,1) 0.08s both;
+}
+
+.hp-hero__sub {
+  margin: 24px 0 36px;
+  max-width: 480px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(243, 241, 236, 0.9);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.7);
+  animation: hp-hero-in 0.8s cubic-bezier(0.16,1,0.3,1) 0.16s both;
+}
+
+.hp-hero__ctas {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: hp-hero-in 0.8s cubic-bezier(0.16,1,0.3,1) 0.24s both;
+}
+
+/* Hero ghost button sits over the video background, so it needs light text */
+.hp-hero__ctas .hp-btn--ghost {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--hp-cream);
+}
+
+@media (max-width: 640px) {
+  .hp-hero__content { padding: 0 20px; }
+  .hp-hero h1 { font-size: clamp(36px, 11vw, 56px); }
+  .hp-hero__sub { max-width: 100%; font-size: 15px; }
+  .hp-hero__ctas { flex-direction: column; align-items: stretch; }
+  .hp-hero__ctas .hp-btn { justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Freeze curtain and hero parallax — JS skips these too */
+  .hp-parallax { transform: none !important; }
+  .hp-hero__content { transform: none !important; opacity: 1 !important; }
+}

@@ -1,0 +1,223 @@
+.hp-contact__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+}
+
+.hp-contact__info p:not(.hp-section__eyebrow) {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+  margin: 0 0 28px;
+}
+
+/* Same specificity tier as the `p:not()` rule above (2 classes + 1
+   element each) so this wins on source order as intended, instead of
+   losing to it — a bare `.hp-panel-section__desc` class selector here
+   used to sit one specificity tier below `p:not(.hp-section__eyebrow)`
+   (that :not()'s argument counts toward specificity same as a class, and
+   its own `p` element type pushed it strictly higher), so the intended
+   12px top margin was silently overridden back to 0 by the rule above —
+   this section's desc paragraph sat flush under its heading while every
+   other section left the same 12px gap. */
+.hp-contact__info p.hp-panel-section__desc {
+  margin: 12px 0 0;
+}
+
+.hp-contact__details {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hp-contact__details li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 2px solid var(--hp-accent);
+  padding-left: 14px;
+}
+
+.hp-contact__details strong {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4a8fd6;
+}
+
+.hp-contact__details li > span {
+  color: var(--hp-navy);
+  font-weight: 700;
+}
+
+.hp-contact__details a {
+  color: var(--hp-navy);
+  font-weight: 700;
+  transition: color 0.2s ease;
+}
+
+.hp-contact__details a:hover { color: var(--hp-accent); }
+
+.hp-contact__form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hp-contact__form label {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(var(--hp-navy-rgb), 0.6);
+  font-family: "JetBrains Mono", monospace;
+  margin-top: 10px;
+}
+
+.hp-contact__form label:first-of-type { margin-top: 0; }
+
+.hp-contact__form input,
+.hp-contact__form textarea {
+  display: block;
+  width: 100%;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  color: var(--hp-navy);
+  background: rgba(var(--hp-navy-rgb), 0.04);
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.14);
+  border-radius: 6px;
+  padding: 11px 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 6px;
+}
+
+.hp-contact__form textarea {
+  resize: none;
+  height: 120px;
+  overflow-y: auto;
+  /* Scrollbar look is shared site-wide — see styles/App.css. */
+}
+
+.hp-contact__form input:focus,
+.hp-contact__form textarea:focus {
+  outline: none;
+  border-color: var(--hp-accent);
+  box-shadow: 0 0 0 3px rgba(var(--hp-accent-rgb), 0.2);
+}
+
+.hp-contact__form input[aria-invalid="true"],
+.hp-contact__form textarea[aria-invalid="true"] {
+  border-color: #e0453d;
+}
+
+.hp-file-input {
+  padding: 8px 14px;
+  cursor: pointer;
+  color: rgba(var(--hp-navy-rgb), 0.6);
+  font-size: 14px;
+}
+
+/* Style the native "choose file" button consistently across browsers/devices —
+   otherwise it renders as each OS's default button style. */
+.hp-file-input::file-selector-button,
+.hp-file-input::-webkit-file-upload-button {
+  margin-right: 12px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--hp-navy);
+  color: var(--hp-cream);
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-file-input:hover::file-selector-button,
+.hp-file-input:hover::-webkit-file-upload-button {
+  background: #1f3050;
+}
+
+.hp-file-input:active::file-selector-button,
+.hp-file-input:active::-webkit-file-upload-button {
+  transform: scale(0.97);
+}
+
+.hp-contact__form .hp-btn { margin-top: 10px; align-self: flex-start; }
+
+.hp-contact__legal {
+  font-size: 11px;
+  color: rgba(var(--hp-navy-rgb), 0.5);
+  margin: 4px 0 0;
+}
+
+/* Inline field error */
+.hp-field-error {
+  display: block;
+  font-size: 12px;
+  color: #e0453d;
+  margin-top: 4px;
+  font-family: "Inter", sans-serif;
+}
+
+/* Success state */
+.hp-form-success {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 0;
+  /* Matches the form's own natural height (measured at 593px) — without
+     this, swapping the grid's right column between the form and this much
+     shorter success message changes which side is tallest, and CSS
+     grid's default `auto` row sizing shrinks the *whole* row (both
+     columns, including .hp-contact__info on the left) down to match,
+     visibly resizing the entire card. */
+  min-height: 593px;
+}
+
+.hp-form-success__title {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-size: clamp(24px, 6vw, 32px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--hp-navy);
+  margin: 0;
+}
+
+.hp-form-success p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+}
+
+@media (max-width: 1024px) {
+  .hp-contact__grid { grid-template-columns: 1fr; gap: 36px; }
+  /* Stacked to one column here — the min-height guard above exists only
+     to stop the two-column row from resizing itself, which no longer
+     applies once there's no shared row to protect. */
+  .hp-form-success { min-height: 0; }
+}
+
+@media (max-width: 640px) {
+  .hp-contact__form .hp-btn { align-self: stretch; justify-content: center; }
+}
+
+@media (max-width: 400px) {
+  /* The "no file chosen" label is rendered natively by the browser, not
+     styleable text — narrowing the button gives it enough room that it
+     stops getting truncated to "No fil...hosen" on the smallest screens. */
+  .hp-file-input { font-size: 12px; padding: 8px 10px; }
+  .hp-file-input::file-selector-button,
+  .hp-file-input::-webkit-file-upload-button {
+    margin-right: 8px;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}

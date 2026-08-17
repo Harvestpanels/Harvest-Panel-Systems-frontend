@@ -1,0 +1,129 @@
+.hp-membership-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+  /* 24px, matching the desc-to-content gap every other section uses
+     (.hp-cards, .hp-panel-grid, etc.) — this was 32px, the only section
+     off the shared rhythm. */
+  margin-top: 24px;
+}
+
+.hp-membership-badge {
+  aspect-ratio: 1 / 1;
+  /* The 3D flip (see .hp-membership-badge__inner below) needs real depth
+     to rotate through — without a perspective here, the rotation would
+     look like a flat horizontal squash instead of a card turning in 3D
+     space. Set on the card itself (not the grid) so each card gets its
+     own consistent vanishing point regardless of where it sits in the row. */
+  perspective: 1200px;
+}
+
+.hp-membership-badge__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  transform-style: preserve-3d;
+}
+
+/* Scoped to real hover-capable pointers only — left unconditional, this
+   also matched on touch devices, since many mobile browsers simulate
+   :hover on tap (and can leave it "stuck" until something else is
+   tapped). That fought with the JS-driven .is-flipped toggle below: a tap
+   that un-flips a card via state could still visually hold it flipped via
+   this rule's lingering simulated :hover, then need an extra tap to
+   register as a real click and flip it forward again — exactly the
+   "flips back, then won't flip forward again" bug this fixes. */
+@media (hover: hover) {
+  .hp-membership-badge:hover .hp-membership-badge__inner {
+    transform: rotateY(180deg);
+  }
+}
+
+.hp-membership-badge__face {
+  position: absolute;
+  inset: 0;
+  /* Hides each face while it's turned away from the viewer — without
+     this, the back face would show through mirror-flipped behind the
+     front face (and vice versa) for the whole animation instead of only
+     appearing once it's actually facing forward. */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+}
+
+.hp-membership-badge__face--front {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.hp-membership-badge__logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.hp-membership-badge__face--back {
+  /* Pre-rotated 180° so that once the whole card flips, this face lands
+     right-side-up facing the viewer instead of mirrored. */
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  background: var(--hp-navy);
+  color: var(--hp-cream);
+}
+
+.hp-membership-badge__face--back h3 {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  margin-bottom: 10px;
+}
+
+.hp-membership-badge__face--back p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(243, 241, 236, 0.8);
+  margin: 0;
+}
+
+/* Single column below 1024px — matching the same breakpoint and layout
+   every other card grid on the page switches to (.hp-cards in
+   WhoWeAre.css/Sustainability.css, .hp-panel-grid in PanelSection.css),
+   instead of this section being the only one still running 2 columns at
+   that width. */
+@media (max-width: 1024px) {
+  .hp-membership-grid { grid-template-columns: 1fr; max-width: 480px; margin: 24px auto 0; }
+}
+
+@media (max-width: 640px) {
+  .hp-membership-badge__face--back { padding: 16px; }
+  .hp-membership-badge__face--back p { font-size: 11px; }
+}
+
+/* Touch devices have no hover to trigger the flip above, so this is the
+   tap-driven equivalent — .is-flipped is toggled by local state in
+   Memberships.jsx on click/tap (see the comment on MembershipCard there
+   for how last time this caused a real fade-out bug, and how this time
+   avoids it by keeping the flip class off the same element that also
+   carries the scroll-reveal ref). Gated to `hover: none` specifically
+   (not tied to viewport width) so a desktop browser window merely
+   resized narrow still flips on hover like normal — only genuine touch
+   devices, which have no hover at all, get the tap behavior. */
+@media (hover: none) {
+  .hp-membership-badge__inner.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+  .hp-membership-badge {
+    cursor: pointer;
+  }
+}

@@ -1,0 +1,20 @@
+/*
+  Global reset layer — App.css owns all design tokens and component styles.
+  Only put things here that must be on :root / html / body and cannot live
+  in a component stylesheet.
+*/
+
+:root {
+  /* Tell the browser this is a dark-only site so native UI elements
+     (scrollbars, date pickers, etc.) render dark by default and never
+     flash white on paint. */
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  /* Sub-pixel font rendering on macOS / iOS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

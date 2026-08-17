@@ -1,0 +1,145 @@
+.hp-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.hp-panel-card {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  cursor: pointer;
+  transition:
+    transform 0.45s cubic-bezier(0.16,1,0.3,1),
+    opacity 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* will-change scoped to only while actually transforming (hover, or a
+   sibling dimming during grid hover) rather than held permanently on
+   every card across every panel section on the page. */
+.hp-panel-grid:hover .hp-panel-card {
+  will-change: transform, opacity;
+}
+
+.hp-panel-card:nth-child(2) { transition-delay: 0.05s; }
+.hp-panel-card:nth-child(3) { transition-delay: 0.1s; }
+
+.hp-panel-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(243, 241, 236, 0.4);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hp-panel-card:hover::after { opacity: 1; }
+
+.hp-panel-card__img {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Real <img>, not a CSS background-image — enables native lazy-loading,
+   proper alt text for screen readers, and right-click-save/print. */
+.hp-panel-card__img-el {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-panel-card:hover .hp-panel-card__img-el {
+  transform: scale(1.08);
+  will-change: transform;
+}
+
+.hp-panel-card__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px;
+  background: linear-gradient(180deg, transparent, rgba(10, 10, 10, 0.88) 55%);
+  z-index: 2;
+}
+
+.hp-panel-card__use {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4a8fd6;
+  margin-bottom: 4px;
+}
+
+.hp-panel-card__label h3 {
+  font-size: 18px;
+  text-transform: none;
+  margin-bottom: 6px;
+}
+
+.hp-panel-card__label p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(243, 241, 236, 0.85);
+  margin: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.38s cubic-bezier(0.16,1,0.3,1),
+    opacity 0.28s ease;
+}
+
+.hp-panel-card__label p > span {
+  overflow: hidden;
+}
+
+.hp-panel-card:hover .hp-panel-card__label p {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.hp-panel-grid:hover .hp-panel-card:not(:hover) {
+  opacity: 0.55;
+  transform: scale(0.97);
+}
+
+.hp-panel-card:hover {
+  z-index: 2;
+  transform: scale(1.04);
+}
+
+@media (max-width: 1024px) {
+  /* 2 columns would orphan the 3rd card with a lopsided gap — go straight to
+     1 column. margin: 0 auto here was a bug: the shorthand's "0" zeroed out
+     the base rule's 24px top margin (only horizontal centering was
+     intended), leaving the image grid touching the description text right
+     above it with no gap at all. This single rule already covers every
+     narrower width too (max-width media queries are inclusive downward,
+     so 640px/400px/320px phones all match it as-is) — two more @media
+     blocks below used to just repeat the identical 1fr declaration at
+     640px and 400px with nothing new to add, dead weight removed here. */
+  .hp-panel-grid { grid-template-columns: 1fr; max-width: 480px; margin: 32px auto 0; }
+}
+
+/* Also matched by max-width, not just hover: none — a desktop browser
+   window resized/emulated narrow still reports (hover: hover), so a mouse
+   there would still trigger the effects this block exists to disable. */
+@media (hover: none), (max-width: 1024px) {
+  /* Panel cards — no scale/dim sibling effect, desc always visible */
+  .hp-panel-grid:hover .hp-panel-card:not(:hover) { opacity: 1; transform: none; }
+  .hp-panel-card:hover { transform: none; }
+  .hp-panel-card:hover .hp-panel-card__img-el { transform: none; }
+  .hp-panel-card__label p { grid-template-rows: 1fr; opacity: 1; }
+  .hp-panel-card:hover::after { opacity: 0; }
+}

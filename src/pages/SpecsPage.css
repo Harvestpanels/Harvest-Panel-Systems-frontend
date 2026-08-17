@@ -1,0 +1,963 @@
+/* Matches .hp-products-hero's own spacing exactly (ProductsPage.css) —
+   top clearance for the fixed nav pill plus centered text, and no bottom
+   padding of its own (unlike .hp-section) so the gap down to the next
+   section comes from that section's own top padding alone, same rhythm
+   Products uses between its hero and first category. Using .hp-section
+   here too would have doubled that gap (this section's own bottom
+   padding stacking with the next section's top padding). */
+.hp-specs-hero {
+  margin-top: 180px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .hp-specs-hero { margin-top: 90px; }
+}
+
+/* Matches .hp-products-hero's own eyebrow exactly (ProductsPage.css,
+   "Full product catalog") — navy, bold, no shadow — rather than the red
+   .hp-section__eyebrow color used by this page's other sections below. */
+.hp-specs-hero .hp-eyebrow {
+  color: var(--hp-navy);
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.hp-specs-hero .hp-hero-heading {
+  color: var(--hp-navy);
+}
+
+.hp-specs-hero .hp-panel-section__desc {
+  margin: 12px auto 0;
+}
+
+/* ===================== SHARED CARD GRID ===================== */
+/* .hp-cards/.hp-card only exist in WhoWeAre.css/Sustainability.css (each
+   keeps its own copy, by design — see the comment on #why .hp-card
+   further down for why) — this page never imports either of those, so
+   without its own copy here the foam trait cards would render as
+   completely unstyled plain text (confirmed: that's exactly what
+   happened before this was added). Following the same established
+   per-file-copy pattern rather than centralizing all three into App.css,
+   which would be a much bigger, riskier refactor for no functional gain.
+
+   Every rule below is scoped to #foam-core, not left as a bare .hp-cards/
+   .hp-card selector — WhoWeAre.css and Sustainability.css both define
+   their OWN bare `.hp-cards { grid-template-columns: repeat(3, 1fr) }`,
+   identical specificity to a bare rule here, so whichever of the three
+   stylesheets happens to load last in a given session wins. Confirmed:
+   with a bare rule here, navigating Home → Specs client-side (Home's
+   WhoWeAre.css chunk staying loaded) rendered these 4 foam-trait cards in
+   3 columns — a 3-then-1 layout — instead of the intended 2×2, entirely
+   depending on navigation history rather than this page's own CSS. Same
+   root cause the hover/glow rules further down already guard against
+   with this exact #foam-core scoping; the grid/base card rules just
+   hadn't been given the same treatment yet. */
+#foam-core .hp-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  /* 32px, matching the intro-paragraph-to-content spacing every other
+     section on this page uses (.hp-specs-color-layout, .hp-specs-cert-list,
+     .hp-specs-table, .hp-specs-video all use the same 32px) — this was
+     the one section still on 24px. */
+  margin-top: 32px;
+}
+
+#foam-core .hp-card {
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  padding: 32px 28px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition:
+    opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+    transform 0.4s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.4s ease,
+    border-color 0.4s ease,
+    background-size 0.45s cubic-bezier(0.16,1,0.3,1);
+  /* Resting state for the navy-fill wipe hover effect below (#foam-core
+     .hp-card:hover) — starts at 0% height so the hover can transition it
+     up to 100%. Kept in this base rule (not split into its own block)
+     alongside the other background-* properties it depends on. */
+  background-color: transparent;
+  background-image: linear-gradient(var(--hp-navy), var(--hp-navy));
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% 0%;
+}
+
+#foam-core .hp-card h3 {
+  font-size: 20px;
+  margin-bottom: 14px;
+  text-transform: none;
+  color: var(--hp-navy);
+  transition: color 0.3s ease;
+}
+
+#foam-core .hp-card p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+  margin: 0;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+@media (max-width: 1024px) {
+  #foam-core .hp-cards { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  #foam-core .hp-card { padding: 22px 18px; }
+}
+
+/* Explicitly neutralizes the red radial-glow ::before/::after that
+   WhoWeAre.css/Sustainability.css each define as a bare, unscoped
+   `.hp-card::before`/`::after` rule — this file never defines that glow
+   itself, but if a visitor navigates here from Home via a client-side
+   link (not a hard refresh), Home's CSS chunk stays loaded in the page
+   and that unscoped rule still matches any `.hp-card` on *this* page too
+   (confirmed: a faint red glow showed up on hover here that this file
+   never styled). Same defensive `content: none` override #why/
+   #sustainability each already use for exactly this reason. */
+#foam-core .hp-card::before,
+#foam-core .hp-card::after {
+  content: none;
+}
+
+/* This page's own hover effect — the same navy-fill wipe used by Who We
+   Are/Sustainability (see #why .hp-card in WhoWeAre.css for the full
+   explanation of the background-size technique), scoped to #foam-core so
+   it doesn't collide with those other two files' own bare `.hp-card`
+   rules if this page ever ends up bundled alongside them. */
+#foam-core .hp-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--hp-navy);
+  box-shadow: none;
+  background-color: transparent;
+  background-image: linear-gradient(var(--hp-navy), var(--hp-navy));
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% 100%;
+}
+
+#foam-core .hp-card:hover h3 { color: var(--hp-cream); }
+#foam-core .hp-card:hover p { color: rgba(243, 241, 236, 0.8); }
+
+@media (hover: none), (max-width: 1024px) {
+  #foam-core .hp-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(var(--hp-navy-rgb), 0.12);
+    background-size: 100% 0%;
+  }
+  #foam-core .hp-card:hover h3 { color: var(--hp-navy); }
+  #foam-core .hp-card:hover p { color: rgba(var(--hp-navy-rgb), 0.72); }
+}
+
+/* Tap-driven equivalent of the hover effect above, for touch devices
+   that have no hover at all — matches #why .hp-card:has(.is-active) in
+   WhoWeAre.css exactly, so this section's tap behavior is identical to
+   Who We Are, not just its hover behavior. "is-active" is toggled by
+   local state in FoamTraitCard above on tap, on an *inner* wrapper
+   rather than the card itself (see the comment there for why). `:has()`
+   lets this rule style the outer card based on that inner marker without
+   the card's own className ever needing to change. Gated to `hover: none`
+   specifically (not tied to viewport width) so a desktop browser window
+   merely resized narrow still uses hover like normal — only genuine
+   touch devices get the tap behavior. */
+@media (hover: none) {
+  #foam-core .hp-card:has(.is-active) {
+    transform: translateY(-8px);
+    border-color: var(--hp-navy);
+    box-shadow: none;
+    background-size: 100% 100%;
+  }
+  #foam-core .hp-card:has(.is-active) h3 { color: var(--hp-cream); }
+  #foam-core .hp-card:has(.is-active) p { color: rgba(243, 241, 236, 0.8); }
+  #foam-core .hp-card { cursor: pointer; }
+}
+
+/* ===================== COLOR PALETTE ===================== */
+/* Swatch grid on the left, live panel-photo preview on the right — picking
+   a swatch crossfades the preview to that color's real panel photo (see
+   .hp-specs-color-preview below) instead of just tinting a flat chip. */
+.hp-specs-color-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px 40px;
+  /* Was align-items: start — with auto-fill's variable column count, 10
+     swatches in 4 columns left an orphaned 2-item last row, so the swatch
+     grid ran much shorter than the preview photo beside it and the two
+     columns never lined up. Fixed at exactly 5 columns below so all 10
+     colors fill two complete rows every time, and stretch here so the
+     preview photo's own height (it has no fixed aspect-ratio anymore)
+     matches whatever height that swatch grid actually settles at, instead
+     of the two columns drifting to different heights. */
+  align-items: stretch;
+  margin-top: 32px;
+}
+
+/* Fixed at 5 columns (not auto-fill) specifically because there are
+   exactly 10 colors — always two complete, evenly filled rows with no
+   orphaned trailing row, regardless of viewport width. */
+.hp-specs-swatches {
+  display: grid;
+  /* minmax(0, 1fr), not bare 1fr (which grid tracks implicitly treat as
+     minmax(auto, 1fr)) — bare 1fr lets a nowrap child (the availability
+     badge below) force every column to grow to fit its text, which pushed
+     this whole grid wider than its allotted half of .hp-specs-color-layout
+     and spilled the last column out from under the preview panel beside
+     it. The explicit 0 minimum lets columns actually shrink to fit. */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+
+/* Was a plain <div> — now a real <button> so a swatch is keyboard-
+   operable and actually selectable, not just decorative. This button
+   itself carries registerReveal's ref and .hp-reveal for the scroll-in
+   animation, so its className must never change after mount — React
+   fully replaces an element's className on any string change, which
+   would silently wipe the "is-visible" class registerReveal's
+   IntersectionObserver had added *imperatively* (via classList.add,
+   outside React's own tracking), making the swatch snap back to
+   invisible the instant it's clicked. (Same bug, same fix, already
+   hit for WhoWeAre's own cards — see FoamTraitCard above.) The
+   selected/unselected toggle instead lives on an inner
+   .hp-specs-swatch__inner wrapper, whose className changing is
+   harmless since nothing external ever touches it. */
+.hp-specs-swatch {
+  /* Chromium/Edge vertically CENTER a <button>'s content via its internal
+     native layout, and — surprisingly — `display: block` plus
+     `appearance: none` do NOT fully override that (confirmed: measured
+     content still centering with both set). `display: flex` does,
+     because it hands the button's internal box to standard flex layout
+     that our own align-items below can actually control. Without this,
+     the centering is invisible for a single-line label (button height ==
+     content height once stretched to the grid row, so there's no slack
+     to center within) but becomes visible for any label that wraps to 2
+     lines and no longer fills that stretched height — e.g. "White
+     Aluminum" among its 1-line-label neighbors in the same row — reading
+     as if it sits higher than the rest of the row. */
+  display: flex;
+  align-items: flex-start;
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  padding: 4px;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 14px;
+}
+
+.hp-specs-swatch__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  /* The button above is now itself a flex container (row direction) so
+     it no longer stretches a block child to full width automatically —
+     this replaces that, so the chip below (width: 100%) still sizes
+     against the swatch's full column width like it did before. */
+  width: 100%;
+}
+
+.hp-specs-swatch__chip {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.15);
+  box-shadow: 0 8px 20px -12px rgba(var(--hp-navy-rgb), 0.35);
+  transition: box-shadow 0.3s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-specs-swatch:hover .hp-specs-swatch__chip {
+  transform: translateY(-3px);
+}
+
+/* Selected swatch gets a red halo ring instead of relying on color alone
+   to show state (also carries aria-pressed for screen readers). */
+.hp-specs-swatch__inner.is-selected .hp-specs-swatch__chip {
+  box-shadow:
+    0 0 0 3px var(--hp-cream),
+    0 0 0 5px var(--hp-accent),
+    0 10px 24px -10px rgba(var(--hp-navy-rgb), 0.45);
+  transform: translateY(-2px);
+}
+
+.hp-specs-swatch__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hp-navy);
+  transition: color 0.25s ease;
+}
+
+.hp-specs-swatch__inner.is-selected .hp-specs-swatch__name {
+  color: var(--hp-accent);
+}
+
+.hp-specs-swatch__badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: rgba(var(--hp-navy-rgb), 0.55);
+  background: rgba(var(--hp-navy-rgb), 0.08);
+  white-space: nowrap;
+}
+
+.hp-specs-swatch__badge.is-in-stock {
+  color: #0d7a4c;
+  background: rgba(18, 166, 110, 0.14);
+}
+
+/* Every panel photo is stacked in the same box (absolute + inset:0) and
+   crossfades via opacity/scale — simpler and more reliable than mounting/
+   unmounting a single <img> on selection, which would have no previous
+   frame to fade out from and would pop instead of transition. Only the
+   first photo loads eagerly; the rest lazy-load once, then stay decoded
+   in memory for instant crossfades on every later swatch click. */
+/* No fixed aspect-ratio here on the two-column desktop layout — this box
+   has no intrinsic height of its own (its photos are all position:
+   absolute), so with .hp-specs-color-layout's align-items: stretch above,
+   it simply takes on whatever height the swatch grid beside it settles
+   at, keeping the two columns' bottoms level. object-fit: cover on the
+   photos (1400x640 native, see the Color Palette asset folder — cropped
+   tight to the panel render with the excess blank-white footage below it
+   already removed) handles whatever resulting ratio that produces. The
+   fixed 2.1875:1 ratio comes back in the mobile media query below, where
+   the preview stacks above the swatches instead of stretching to match
+   them. */
+/* Now a <button> (opens the same photo full-screen in the Lightbox, same
+   as the Photo Gallery cards elsewhere on the site) rather than a plain
+   div — reset to look exactly like the original static preview box.
+   Every child (photos, label, zoom hint) is position: absolute, so there
+   are no in-flow children for Chromium's native button-centering
+   behavior to affect (see .hp-specs-swatch above for why that matters). */
+.hp-specs-color-preview {
+  display: block;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
+  position: relative;
+  min-height: 220px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--hp-navy);
+  box-shadow: 0 24px 48px -20px rgba(var(--hp-navy-rgb), 0.4);
+}
+
+.hp-specs-color-preview__zoom {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(var(--hp-navy-rgb), 0.55);
+  color: var(--hp-cream);
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.hp-specs-color-preview:hover .hp-specs-color-preview__zoom,
+.hp-specs-color-preview:focus-visible .hp-specs-color-preview__zoom {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.hp-specs-color-preview__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.03);
+  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-specs-color-preview__img.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.hp-specs-color-preview__label {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(var(--hp-navy-rgb), 0.72);
+  color: var(--hp-cream);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+@media (max-width: 900px) {
+  .hp-specs-color-layout { grid-template-columns: 1fr; }
+  .hp-specs-color-preview {
+    order: -1;
+    aspect-ratio: 2.1875 / 1;
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-specs-color-preview__img { transition: opacity 0.2s linear; transform: none; }
+}
+
+/* ===================== FOAM CORE ===================== */
+.hp-specs-note {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(var(--hp-navy-rgb), 0.65);
+  font-style: italic;
+  margin: 24px 0 0;
+  max-width: 640px;
+}
+
+/* Small label above a tag list (e.g. "Performance highlights", "Panel
+   features", "Trim & accessories") when a section has more than one list —
+   distinct from .hp-section__eyebrow (that one only ever appears once per
+   section, above the h2 itself). */
+.hp-specs-subheading {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--hp-navy);
+  margin: 28px 0 0;
+}
+
+.hp-specs-subheading + .hp-specs-feature-list {
+  margin-top: 12px;
+}
+
+.hp-specs-feature-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+}
+
+.hp-specs-feature-list li {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hp-navy);
+  background: rgba(var(--hp-navy-rgb), 0.08);
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.14);
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+
+/* ===================== CERTIFICATIONS ===================== */
+/* Deliberately mirrors Faq.css's own accordion structure/classes 1:1
+   (hp-faq-list/hp-faq-item/hp-faq-item__q/__icon/__a) rather than the
+   card-grid layout this section used before — same list-style, same
+   single-open-at-a-time interaction, same "+"-rotates-to-"×" affordance,
+   just under this page's own hp-specs-cert-* class names since Faq.css
+   itself isn't imported here. */
+.hp-specs-cert-list {
+  margin-top: 32px;
+  border-top: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+}
+
+.hp-specs-cert-item {
+  border-bottom: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+}
+
+.hp-specs-cert-item__q {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 16px;
+  background: none;
+  border: none;
+  color: var(--hp-navy);
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 20px 44px 20px 4px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.hp-specs-cert-item__q:hover {
+  opacity: 0.8;
+}
+
+.hp-specs-cert-item__code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--hp-accent);
+}
+
+.hp-specs-cert-item__icon {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "JetBrains Mono", monospace;
+  color: var(--hp-accent);
+  font-size: 18px;
+  flex-shrink: 0;
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-specs-cert-item__q[aria-expanded="true"] .hp-specs-cert-item__icon {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* Same grid-row trick Faq.jsx's answers use — a perfectly linear open/
+   close driven by grid-template-rows (0fr collapsed, 1fr open) instead
+   of animating height/max-height, which either can't be animated at all
+   (height: auto) or requires guessing a max-height constant. */
+.hp-specs-cert-item__a {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.38s cubic-bezier(0.16,1,0.3,1),
+    opacity 0.28s ease;
+}
+
+.hp-specs-cert-item__a.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.hp-specs-cert-item__a > div {
+  overflow: hidden;
+  padding: 0 4px 20px;
+  max-width: 640px;
+  text-align: left;
+}
+
+.hp-specs-cert-item__a p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.78);
+}
+
+.hp-specs-cert__standards {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+}
+
+.hp-specs-cert__standards li {
+  font-size: 13px;
+  color: rgba(var(--hp-navy-rgb), 0.68);
+  display: flex;
+  gap: 8px;
+}
+
+.hp-specs-cert__standard-section {
+  flex-shrink: 0;
+  min-width: 32px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hp-navy);
+}
+
+/* ===================== STRUCTURAL SPECS TABLE ===================== */
+.hp-specs-table {
+  margin: 32px 0 0;
+  border-top: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+}
+
+.hp-specs-table__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+}
+
+.hp-specs-table__row dt {
+  font-size: 14px;
+  color: rgba(var(--hp-navy-rgb), 0.65);
+  /* Lets a long label (e.g. "Misalignment of internal metal surfaces")
+     wrap to its own multiple lines within the space left over, instead of
+     both dt and dd trying to shrink and wrapping the *value* mid-string
+     too (confirmed on narrow phones: "± ⅛"" was splitting into "±" / "⅛""
+     on separate lines). */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hp-specs-table__row dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--hp-navy);
+  text-align: right;
+  /* Never wraps — a short value like "± ⅛"" splitting across two lines
+     reads as broken, not responsive. */
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ===================== FM CERTIFICATION ===================== */
+.hp-specs-fm {
+  margin-top: 32px;
+  max-width: 640px;
+}
+
+.hp-specs-fm h3 {
+  font-size: 18px;
+  text-transform: none;
+  color: var(--hp-navy);
+  margin-bottom: 8px;
+}
+
+.hp-specs-fm p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+  margin: 0;
+}
+
+/* ===================== ENGINEERING DATA ===================== */
+.hp-specs-profiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.hp-specs-profile {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: default;
+  /* Same navy-wipe-from-the-bottom hover as #why's own cards (see
+     WhoWeAre.css's #why .hp-card) — a background-size trick on a 1x1
+     solid-color gradient rather than a flat background swap. */
+  background-color: transparent;
+  background-image: linear-gradient(var(--hp-navy), var(--hp-navy));
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% 0%;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-color 0.4s ease, background-size 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-specs-profile:hover {
+  transform: translateY(-8px);
+  border-color: var(--hp-navy);
+  background-size: 100% 100%;
+}
+
+.hp-specs-profile h4 {
+  font-size: 15px;
+  text-transform: none;
+  color: var(--hp-navy);
+  margin: 0 0 6px;
+  transition: color 0.3s ease;
+}
+
+.hp-specs-profile p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(var(--hp-navy-rgb), 0.68);
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.hp-specs-profile:hover h4 { color: var(--hp-cream); }
+.hp-specs-profile:hover p { color: rgba(243, 241, 236, 0.8); }
+
+/* Also matched by max-width, not just hover: none — a desktop browser
+   window resized/emulated narrow still reports (hover: hover), so a mouse
+   there would still trigger this effect. */
+@media (hover: none), (max-width: 1024px) {
+  .hp-specs-profile:hover {
+    transform: none;
+    border-color: rgba(var(--hp-navy-rgb), 0.12);
+    background-size: 100% 0%;
+  }
+  .hp-specs-profile:hover h4 { color: var(--hp-navy); }
+  .hp-specs-profile:hover p { color: rgba(var(--hp-navy-rgb), 0.68); }
+}
+
+/* Tap-driven equivalent for touch devices, which have no hover at all —
+   "is-active" is toggled by local state in FaceProfileCard (SpecsPage.jsx)
+   on tap, on an *inner* wrapper rather than this card itself, same pattern
+   as #why .hp-card:has(.is-active) in WhoWeAre.css. */
+@media (hover: none) {
+  .hp-specs-profile:has(.is-active) {
+    transform: translateY(-8px);
+    border-color: var(--hp-navy);
+    background-size: 100% 100%;
+  }
+  .hp-specs-profile:has(.is-active) h4 { color: var(--hp-cream); }
+  .hp-specs-profile:has(.is-active) p { color: rgba(243, 241, 236, 0.8); }
+  .hp-specs-profile { cursor: pointer; }
+}
+
+@media (max-width: 900px) {
+  .hp-specs-profiles { grid-template-columns: 1fr; }
+}
+
+/* Every numeric spec table on this page (panel weight, thermal insulation,
+   overload wheelbase) shares this wrapper — a horizontally scrolling strip
+   rather than squeezing 8-9 thickness columns down to illegible widths on
+   narrower screens. 24px (not the 12px this used to be) so back-to-back
+   tables under the same subheading — e.g. the 75°F/35°F thermal tables,
+   or the Single-span/Double-span wheelbase tables — get real breathing
+   room between them instead of reading as cramped, matching the 24-28px
+   rhythm the rest of this page's blocks already use. */
+.hp-specs-datatable-wrap {
+  position: relative;
+  margin-top: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Below tablet width, .hp-specs-datatable's own 620px min-width reliably
+   exceeds the card's visible content width (its 1400-1916/8=8-9-column
+   tables were never going to fit), so the table scrolls horizontally —
+   correct for keeping the numbers legible instead of shrinking them
+   illegibly small, but with nothing on screen to signal that scrolling
+   is even possible, a visitor could easily miss everything past the
+   first few columns. This right-edge fade is a static "there's more"
+   cue (not scroll-position-aware — it doesn't disappear once you've
+   scrolled all the way right), which is a deliberate simplification:
+   the classic CSS-only "scroll shadow" trick that DOES track position
+   needs a solid, known background color to blend into, and this card
+   sits on a translucent frosted-glass surface over a video background
+   with no single solid color to match. */
+@media (max-width: 900px) {
+  .hp-specs-datatable-wrap::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    /* Softer and narrower than an earlier version (40px / flat 0.34 navy
+       end-stop) — with several of these tables stacked close together on
+       this page, that stronger flat fade read as one heavy, continuous
+       dark bar running down the whole card instead of a subtle per-table
+       "more columns" cue. A gentler mid-stop keeps the taper smooth
+       instead of ending abruptly at a visibly darker edge. */
+    width: 28px;
+    background: linear-gradient(to right, transparent, rgba(var(--hp-navy-rgb), 0.1) 60%, rgba(var(--hp-navy-rgb), 0.16));
+    pointer-events: none;
+  }
+}
+
+.hp-specs-datatable-caption {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--hp-accent);
+  margin: 0 0 8px;
+}
+
+.hp-specs-datatable {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.hp-specs-datatable th,
+.hp-specs-datatable td {
+  padding: 8px 10px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(var(--hp-navy-rgb), 0.1);
+}
+
+.hp-specs-datatable th:first-child,
+.hp-specs-datatable td:first-child {
+  text-align: left;
+  font-weight: 700;
+  color: var(--hp-navy);
+}
+
+.hp-specs-datatable thead th {
+  color: rgba(var(--hp-navy-rgb), 0.55);
+  font-weight: 600;
+  font-size: 12px;
+  border-bottom: 2px solid rgba(var(--hp-navy-rgb), 0.18);
+}
+
+.hp-specs-datatable tbody th {
+  color: var(--hp-accent);
+  font-weight: 700;
+}
+
+.hp-specs-datatable td {
+  color: rgba(var(--hp-navy-rgb), 0.75);
+}
+
+/* ===================== PRODUCTION VIDEO ===================== */
+/* No max-width here — deliberately fills the full width of the .hp-glass
+   card (same width every other section's content uses), rather than
+   sitting in a small boxed player like the old Vimeo embed did. */
+.hp-specs-video {
+  margin-top: 32px;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--hp-navy);
+}
+
+.hp-specs-video video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+@media (max-width: 640px) {
+  /* 5 fixed columns (not auto-fill) so the 10 swatches always fill two
+     complete rows with no orphaned trailing swatch — auto-fill produced a
+     width-dependent column count (3 at ~375px, 4 at ~480px), which left a
+     lone "Flame Red" stranded on its own last row. 5 divides 10 evenly and
+     keeps chips a comfortable size down to ~480px; below that they'd get
+     too small, so the ≤480 block further down drops to 2 columns (still an
+     even divisor of 10). */
+  .hp-specs-swatches { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+
+  /* Below 640px, a long label (e.g. "Misalignment of internal metal
+     surfaces") and a long value (e.g. the Length/Thickness tolerance
+     strings) no longer reliably both fit on one row — forcing dd to
+     nowrap (above) then made those long values overlap the label instead
+     of wrapping. Stacking the two avoids that entirely: each gets the
+     full row width to wrap within on its own line, so neither a long
+     label nor a long value has to fight the other for space. */
+  .hp-specs-table__row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .hp-specs-table__row dd {
+    text-align: left;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 5 columns would shrink the chips too far on a phone (and wrap the
+     longer names heavily); 2 columns keeps them large and tappable and
+     still divides the 10 swatches into even rows (5 × 2) with no orphan. */
+  .hp-specs-swatches { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===================== ENTRANCE ANIMATION (MATCHES PRODUCTS PAGE) =====================
+   Same class names, same keyframe, same "pop" easing as ProductsPage.css's
+   own .hp-anim-item/.hp-filter-anim/hp-filter-pop — per request, this
+   page's content animation should read identically to Products' rather
+   than use a distinct effect of its own. Unlike the scroll-triggered
+   IntersectionObserver reveal this replaces, every .hp-anim-item plays its
+   entrance in one staggered cascade the moment the page mounts (see the
+   effect in SpecsPage.jsx) — nothing needs to be scrolled into view.
+
+   Three selectors this page structurally depends on for other reasons —
+   .hp-section__eyebrow, .hp-section h2, .hp-card — are ALSO targeted by
+   App.css's own shared opacity:0 pre-reveal rule (the IntersectionObserver-
+   driven site-wide default every other page still uses). ProductsPage.jsx
+   sidesteps this entirely by using its own differently-named classes
+   throughout (.hp-products-category, .hp-product-card — see its own
+   comment on this exact collision); this page can't do that without losing
+   the shared structural styling those classes provide. Left unaddressed,
+   App.css's bare `.hp-section h2 { opacity: 0; transform: translateY(32px) }`
+   (specificity 0-1-1) beats the plain `.hp-anim-item.hp-anim-done { opacity: 1 }`
+   below (0-1-0) for opacity, AND — this part actually broke visible layout,
+   not just the reveal — its own `transform: translateY(32px)` was never
+   overridden at all here, only opacity was. That transform gets overridden
+   correctly *while* the entrance animation plays (a running keyframe
+   animation always wins over a plain, non-!important rule for the
+   properties it animates), but the instant clearAnimOnEnd in SpecsPage.jsx
+   swaps "hp-filter-anim" for "hp-anim-done" the animation stops applying
+   and the element's transform falls right back to App.css's bare
+   translateY(32px) — permanently, for every heading and card on this page.
+   Visually that's every `h2` sitting 32px lower than its real layout box,
+   overlapping the paragraph below it (confirmed: this is exactly the
+   overlap that showed up between each section's heading and intro text).
+   Scoping the reset to this page's own section IDs (specificity 1-1-0/
+   1-2-0, comfortably ahead of both 0-1-0 and 0-1-1) resolves both
+   properties without !important — deliberately avoided here since an
+   !important declaration on a property also wins over that same
+   property's keyframe animation, which would have blocked the entrance
+   animation from ever showing anything, not just the post-animation
+   snap-back. */
+.hp-specs-hero .hp-anim-item,
+#efficiency .hp-anim-item,
+#colors .hp-anim-item,
+#foam-core .hp-anim-item,
+#certifications .hp-anim-item,
+#structural .hp-anim-item,
+#engineering .hp-anim-item,
+#production-video .hp-anim-item {
+  opacity: 0;
+  transform: none;
+}
+
+.hp-specs-hero .hp-anim-item.hp-anim-done,
+#efficiency .hp-anim-item.hp-anim-done,
+#colors .hp-anim-item.hp-anim-done,
+#foam-core .hp-anim-item.hp-anim-done,
+#certifications .hp-anim-item.hp-anim-done,
+#structural .hp-anim-item.hp-anim-done,
+#engineering .hp-anim-item.hp-anim-done,
+#production-video .hp-anim-item.hp-anim-done {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes hp-filter-pop {
+  0%   { opacity: 0; transform: translateY(26px) scale(0.94); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.015); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* animation-delay is set inline per element in SpecsPage.jsx (section
+   cascade + per-item stagger combined into one value), so no nth-child
+   delay rules are needed here — same approach ProductsPage.css uses. */
+.hp-filter-anim {
+  animation: hp-filter-pop 0.55s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-anim-item { opacity: 1; }
+  .hp-filter-anim { animation: none; }
+}

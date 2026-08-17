@@ -1,0 +1,494 @@
+/* Shared, cross-component foundation: resets, typography, buttons, the
+   section/glass container system, and the scroll-reveal utility. Anything
+   used by more than one component lives here; component-specific styling
+   lives in that component's own .css file. */
+
+/* ===================== DESIGN TOKENS ===================== */
+/* Single source of truth for the brand palette. These five colors used to
+   be raw hex/rgb literals repeated across every component stylesheet (the
+   navy alone appeared 100+ times) — a rebrand, or even a single shade
+   tweak, meant hunting it down file by file with no guarantee every copy
+   was caught. Centralizing them here means every one of those usages now
+   updates from a single edit.
+   The `-rgb` variants sit alongside their hex counterpart so translucent
+   tints (rgba(var(--hp-navy-rgb), 0.1) etc.) can share the same source
+   color instead of needing a second hardcoded triplet. */
+:root {
+  --hp-dark: #1b1d1f;
+  --hp-cream: #f3f1ec;
+  --hp-navy: #10233f;
+  --hp-navy-rgb: 16, 35, 63;
+  --hp-accent: #105c94;
+  --hp-accent-rgb: 16, 92, 148;
+  --hp-accent-hover: #0c4670;
+  /* Kept as a distinct token from --hp-accent (the brand blue) — the chat
+     widget's "new message" alert dot is meant to read as an urgent
+     notification color, not the brand accent, so it stays red regardless
+     of what the primary accent color is. */
+  --hp-alert: #c8262e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--hp-dark);
+  color: var(--hp-cream);
+  font-family: "Inter", sans-serif;
+}
+
+/* The floating chat widget (see ChatWidget.css) is fixed to the bottom-
+   right corner on every page and, on mobile, stretches edge-to-edge with
+   its "unread"/"online" pill. Without reserving space for it, scrolling a
+   page all the way down leaves its last content permanently sitting behind
+   the widget's footprint — there's nowhere further to scroll to clear it.
+   This clearance now lives on .hp-footer itself (see its own mobile rule
+   in Footer.css) rather than here on `body`: every page ends in <Footer>,
+   and reserving the space as bare `body` padding left it sitting below the
+   footer's frosted glass card as an orphaned strip of raw page background
+   with the chat widget floating over it, disconnected from any content —
+   moving the same amount of space into the footer's own bottom padding
+   means that clearance is now part of its visible card instead of a dead
+   gap after it. */
+
+a,
+button {
+  /* Disable the default mobile tap-highlight (shows as a black flash on
+     iOS/Android since our buttons sit on translucent glass backgrounds) */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===================== SHARED SCROLLBAR ===================== */
+/* One scrollbar look, shared by every *internal* scrollable panel on the
+   site (the chat transcript, the nav's mobile dropdown, the specs data
+   tables, contact form textareas) — previously each styled its own ad hoc
+   (some thin+navy, some plain browser default), which read as inconsistent
+   polish depending on which part of the site you happened to scroll.
+   Deliberately listed by selector rather than a universal `*` — the
+   top-level page scroll (html/body) stays exactly as the browser renders
+   it by default and is NOT included here. Add any new internal scroll
+   container to this same selector list rather than styling its scrollbar
+   separately. */
+.hp-chat__messages,
+.hp-nav__mobile,
+.hp-specs-datatable-wrap,
+.hp-contact__form textarea {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--hp-navy-rgb), 0.3) transparent;
+}
+
+.hp-chat__messages::-webkit-scrollbar,
+.hp-nav__mobile::-webkit-scrollbar,
+.hp-specs-datatable-wrap::-webkit-scrollbar,
+.hp-contact__form textarea::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.hp-chat__messages::-webkit-scrollbar-track,
+.hp-nav__mobile::-webkit-scrollbar-track,
+.hp-specs-datatable-wrap::-webkit-scrollbar-track,
+.hp-contact__form textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hp-chat__messages::-webkit-scrollbar-thumb,
+.hp-nav__mobile::-webkit-scrollbar-thumb,
+.hp-specs-datatable-wrap::-webkit-scrollbar-thumb,
+.hp-contact__form textarea::-webkit-scrollbar-thumb {
+  background: rgba(var(--hp-navy-rgb), 0.25);
+  border-radius: 999px;
+}
+
+.hp-chat__messages::-webkit-scrollbar-thumb:hover,
+.hp-nav__mobile::-webkit-scrollbar-thumb:hover,
+.hp-specs-datatable-wrap::-webkit-scrollbar-thumb:hover,
+.hp-contact__form textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--hp-navy-rgb), 0.4);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Accessible, on-brand focus ring for keyboard navigation.
+   :focus-visible so mouse clicks don't show a ring. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #4a8fd6;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  margin: 0;
+  line-height: 1.05;
+}
+
+/* ===================== SHARED LOGO (Nav + Footer) ===================== */
+.hp-logo {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.hp-logo:hover .hp-logo__img {
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.4));
+}
+
+/* Press feedback on click/tap, matching the scale-down other buttons use
+   (e.g. .hp-btn--primary, .hp-gallery-nav) instead of the logo being the
+   only clickable element on the site with no active-state response. */
+.hp-logo:active .hp-logo__img {
+  transform: scale(0.95);
+}
+
+.hp-logo__img {
+  height: 44px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), filter 0.25s ease;
+  will-change: transform;
+}
+
+.hp-logo--footer .hp-logo__img {
+  height: 52px;
+}
+
+/* ===================== BUTTONS ===================== */
+.hp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: 6px;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.22s ease;
+  will-change: transform;
+}
+
+.hp-btn--primary {
+  background: var(--hp-accent);
+  color: var(--hp-cream);
+}
+
+.hp-btn--primary:hover {
+  transform: translateY(-2px);
+}
+
+.hp-btn--primary:active {
+  transform: translateY(0);
+}
+
+.hp-btn--ghost {
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.18);
+  color: var(--hp-navy);
+  background: transparent;
+}
+
+.hp-btn--ghost:hover {
+  transform: translateY(-2px);
+  opacity: 0.85;
+}
+
+.hp-btn--ghost:active {
+  transform: translateY(0);
+}
+
+/* ===================== FIXED BACKGROUND VIDEO ===================== */
+/* Shared by the home page (Hero.jsx) and the Products page (ProductsPage.jsx
+   renders its own <video> with these same classes directly, no Hero
+   involved) — lives here, not in Hero.css, specifically because App.css is
+   imported directly by both pages and can never be route-split away. Hero.css
+   only loads as part of the Hero component's own chunk (home page only), so
+   a visitor landing straight on /products with routes code-split (see
+   App.jsx's React.lazy) would never load it — leaving this fixed video
+   completely unstyled: static position, native pixel size instead of
+   filling the viewport, plain instead of `cover`. Confirmed by inspecting a
+   fresh /products load: .hp-bgvideo-layer computed to position: static and
+   .hp-bgvideo rendered at its raw 1280x720 source size in the corner of the
+   screen with a black void filling the rest of the viewport. */
+.hp-bgvideo-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hp-bgvideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===================== SECTIONS / REVEAL ===================== */
+.hp-section {
+  position: relative;
+  z-index: 5;
+  padding: 110px 0;
+  isolation: isolate;
+}
+
+.hp-section__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ===================== LIQUID GLASS CONTAINER ===================== */
+.hp-glass {
+  position: relative;
+  border-radius: 28px;
+  padding: 56px 48px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5));
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.1);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.6) inset,
+    0 -1px 1px rgba(var(--hp-navy-rgb), 0.08) inset,
+    0 24px 60px rgba(var(--hp-navy-rgb), 0.12);
+  overflow: hidden;
+}
+
+.hp-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0) 70%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  pointer-events: none;
+}
+
+.hp-section__eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hp-accent);
+  margin: 0 0 14px;
+}
+
+/* Distinct from .hp-section__eyebrow above — this is the larger hero-style
+   eyebrow used above each page's own big H1 (home, products, 404), not the
+   smaller in-page section label. Structural only (font/size/spacing/
+   margin, no color) — each page scopes its own color on top (see
+   ".hp-hero .hp-eyebrow" in Hero.css, ".hp-products-hero .hp-eyebrow" in
+   ProductsPage.css, ".hp-notfound .hp-eyebrow" in NotFoundPage.css). Lives
+   here, not in any one of those pages' own CSS, specifically because every
+   page uses it but App.css is the only stylesheet all of them import
+   directly — with routes code-split (see App.jsx's React.lazy), anything
+   page-specific would only load for that one page's own chunk. */
+.hp-eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 18px;
+}
+
+/* Same reasoning as .hp-eyebrow above — structural only, color scoped per
+   page (".hp-products-hero .hp-hero-heading" in ProductsPage.css,
+   ".hp-notfound .hp-hero-heading" in NotFoundPage.css). */
+.hp-hero-heading {
+  font-size: clamp(32px, 6vw, 56px);
+  margin: 14px 0 24px;
+}
+
+/* Every home-page section: eyebrow scaled up to read as a huge red
+   sub-headline (originally just the panel sections — Building Envelope,
+   Roof Panels, Data Center, Cold Storage, PEMB, Doors, Trim & Hardware —
+   now applied site-wide to Who We Are/Sustainability/Gallery/Memberships/
+   FAQ/Contact too, for one consistent look across the whole page instead
+   of two different heading styles). */
+#panels .hp-section__eyebrow,
+#exterior .hp-section__eyebrow,
+#data-center .hp-section__eyebrow,
+#cold-storage .hp-section__eyebrow,
+#pemb .hp-section__eyebrow,
+#doors .hp-section__eyebrow,
+#trim-hardware .hp-section__eyebrow,
+#why .hp-section__eyebrow,
+#sustainability .hp-section__eyebrow,
+#gallery .hp-section__eyebrow,
+#memberships .hp-section__eyebrow,
+#faq .hp-section__eyebrow,
+#contact .hp-section__eyebrow,
+#efficiency .hp-section__eyebrow,
+#colors .hp-section__eyebrow,
+#foam-core .hp-section__eyebrow,
+#certifications .hp-section__eyebrow,
+#structural .hp-section__eyebrow,
+#engineering .hp-section__eyebrow,
+#production-video .hp-section__eyebrow {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.05;
+  margin-bottom: 8px;
+}
+
+/* ...and the heading scales back down to read as a sub-headline under
+   that now-large eyebrow, instead of matching it in size. */
+#panels h2,
+#exterior h2,
+#data-center h2,
+#cold-storage h2,
+#pemb h2,
+#doors h2,
+#trim-hardware h2,
+#why h2,
+#sustainability h2,
+#gallery h2,
+#memberships h2,
+#faq h2,
+#contact h2,
+#efficiency h2,
+#colors h2,
+#foam-core h2,
+#certifications h2,
+#structural h2,
+#engineering h2,
+#production-video h2 {
+  font-size: clamp(20px, 2.5vw, 26px);
+}
+
+.hp-section h2 {
+  font-size: clamp(32px, 5vw, 52px);
+  margin-bottom: 56px;
+  color: var(--hp-navy);
+}
+
+/* Shared "description under heading" pattern — used by WhoWeAre,
+   PanelSection (Building Envelope / Roof Panels), Gallery, and Contact. */
+.hp-section h2:has(+ .hp-panel-section__desc),
+.hp-section h2:has(+ .hp-faq__intro) {
+  margin-bottom: 0;
+}
+
+.hp-panel-section__desc {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+  margin: 12px 0 0;
+  max-width: 640px;
+}
+
+/* Reveal animation — transform+opacity only (GPU composited).
+   will-change is deliberately NOT declared here: this class (plus
+   .hp-card/.hp-section__eyebrow/.hp-section h2) applies to essentially
+   every heading, card, and paragraph on the page — one page can easily
+   have 100+ of these. Declaring will-change permanently on all of them
+   would promote every single one to its own GPU compositing layer for
+   the entire page lifetime, not just the ~0.65s each actually spends
+   transitioning — real, ongoing GPU memory pressure for no benefit once
+   the reveal is done. useRevealOnScroll.js instead applies will-change
+   via JS right before the transition starts and removes it once the
+   transition ends, so only the handful of elements *currently* animating
+   ever carry the cost. */
+.hp-reveal,
+.hp-card,
+.hp-section__eyebrow,
+.hp-section h2 {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+    transform 0.65s cubic-bezier(0.16,1,0.3,1);
+}
+
+.is-visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+@media (max-width: 640px) {
+  .hp-section { padding: 72px 0; }
+  .hp-section__inner { padding: 0 16px; }
+  .hp-glass { padding: 28px 20px; border-radius: 18px; }
+  .hp-section h2 { margin-bottom: 32px; font-size: clamp(26px, 7vw, 40px); }
+}
+
+@media (max-width: 400px) {
+  .hp-logo__img { height: 28px; }
+}
+
+/* Also matched by max-width (not just hover: none) — a desktop browser
+   window resized/emulated narrow still reports (hover: hover), so a mouse
+   hovering a button there would otherwise still trigger the lift/"sticky"
+   tap-hover, same issue already fixed for .hp-nav__quote in Nav.css. */
+@media (hover: none), (max-width: 1024px) {
+  .hp-btn--primary:hover,
+  .hp-btn--ghost:hover { transform: none; }
+}
+
+@media (hover: none) {
+  /* Reduce backdrop-filter cost on mobile GPU */
+  .hp-glass {
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    backdrop-filter: blur(12px) saturate(130%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .hp-reveal,
+  .hp-card,
+  .hp-section__eyebrow,
+  .hp-section h2 {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -1,0 +1,235 @@
+import { useState } from "react";
+import "../styles/App.css";
+import logo from "../assets/images/General/harvest-panel-logo.webp";
+import {
+  BUILDING_ENVELOPE_PANELS,
+  COLD_STORAGE_PANELS,
+  DATA_CENTER_PANELS,
+  DOOR_PANELS,
+  GALLERY_IMAGES,
+  PEMB_PANELS,
+  PHARMACEUTICAL_PANELS,
+  ROOF_PANELS,
+  TRIM_HARDWARE_PANELS,
+} from "../data/panels";
+import { PARALLAX_BG_URL, VIDEO_URL } from "../data/site";
+import { useHeroParallax } from "../hooks/useHeroParallax";
+import { useLightbox } from "../hooks/useLightbox";
+import { usePageMeta } from "../hooks/usePageMeta";
+import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
+import { useScrollSpy } from "../hooks/useScrollSpy";
+import { useToast } from "../hooks/useToast";
+import { scrollCenter, scrollToTop } from "../utils/scroll";
+import Nav from "../components/Nav";
+import Hero from "../components/Hero";
+import WhoWeAre from "../components/WhoWeAre";
+import Sustainability from "../components/Sustainability";
+import PanelSection from "../components/PanelSection";
+import Gallery from "../components/Gallery";
+import Memberships from "../components/Memberships";
+import Faq from "../components/Faq";
+import Contact from "../components/Contact";
+import Footer from "../components/Footer";
+import Lightbox from "../components/Lightbox";
+import Toast from "../components/Toast";
+
+// Plain top-level nav links, not tucked inside a dropdown — "Home" scrolls
+// to top rather than navigating (this page already is "/").
+const HOME_TOP_LINKS = [
+  { id: "top", label: "Home", onClick: scrollToTop },
+  { to: "/products", label: "Products" },
+  { to: "/specs", label: "Specs" },
+];
+
+// Every scrollable section on the homepage, top to bottom — Who We Are
+// through Memberships (Welcome/the hero is reachable via Menu > Home).
+// `id` doubles as the section id both for scrolling to it and for
+// useScrollSpy to know which item to highlight as "current" — kept as a
+// stable module-level array (not rebuilt every render) since it's also the
+// scroll spy hook's dependency list.
+const OVERVIEW_SECTIONS = [
+  { id: "why", label: "Who We Are" },
+  { id: "panels", label: "Building Envelope" },
+  { id: "exterior", label: "Roof Panels" },
+  { id: "data-center", label: "Data Centers" },
+  { id: "cold-storage", label: "Cold Storage" },
+  { id: "pharmaceutical", label: "Pharmaceutical" },
+  { id: "pemb", label: "Pre-Engineered Metal Buildings" },
+  { id: "doors", label: "Doors" },
+  { id: "trim-hardware", label: "Trim & Hardware" },
+  { id: "gallery", label: "Photo Gallery" },
+  { id: "memberships", label: "Memberships" },
+  { id: "sustainability", label: "Sustainability" },
+];
+
+const INQUIRY_SECTIONS = [
+  { id: "faq", label: "FAQ" },
+  { id: "contact", label: "Contact Us" },
+];
+
+const SCROLL_SPY_IDS = [...OVERVIEW_SECTIONS, ...INQUIRY_SECTIONS].map((s) => s.id);
+
+function HomePage() {
+  usePageMeta({
+    title: "Harvest Panel Systems | Insulated Metal Panels & Doors",
+    description: "Global distributor of Insulated Metal Panels and Doors for Industrial, Commercial, and Residential projects. Stock inventory ships anywhere in the U.S. within 48 hours from our Oklahoma distribution center.",
+  });
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { registerReveal } = useRevealOnScroll();
+  const { navRef, parallaxLayerRef, videoRef, parallaxRef, heroContentRef } = useHeroParallax();
+  const lightbox = useLightbox(GALLERY_IMAGES.length);
+  const [toast, setToast] = useToast();
+  const activeSectionId = useScrollSpy(SCROLL_SPY_IDS);
+
+  const homeNavDropdowns = [
+    {
+      key: "overview",
+      label: "Overview",
+      items: OVERVIEW_SECTIONS.map((s) => ({
+        label: s.label,
+        onClick: () => scrollCenter(s.id),
+        active: s.id === activeSectionId,
+      })),
+    },
+    {
+      key: "inquiry",
+      label: "Inquiry",
+      items: INQUIRY_SECTIONS.map((s) => ({
+        label: s.label,
+        onClick: () => scrollCenter(s.id),
+        active: s.id === activeSectionId,
+      })),
+    },
+  ];
+
+  // Lightbox takes a ready-to-use `src` — gallery photos are now local,
+  // bundler-resolved imports (see GALLERY_IMAGES in data/panels.js), so no
+  // URL transformation is needed before handing them to it.
+  const galleryLightboxImages = GALLERY_IMAGES;
+
+  return (
+    <div>
+      <Nav
+        menuOpen={menuOpen}
+        setMenuOpen={setMenuOpen}
+        navRef={navRef}
+        logo={logo}
+        dropdowns={homeNavDropdowns}
+        desktopLinks={HOME_TOP_LINKS}
+      />
+
+      {/* ===== FIXED VIDEO BACKGROUND ===== */}
+      <div className="hp-bgvideo-layer" aria-hidden="true">
+        <video
+          className="hp-bgvideo"
+          ref={videoRef}
+          src={VIDEO_URL}
+          poster={PARALLAX_BG_URL}
+          muted
+          playsInline
+          webkit-playsinline="true"
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+        />
+      </div>
+
+      {/* ===== CURTAIN ===== */}
+      <div className="hp-parallax-layer" ref={parallaxLayerRef} aria-hidden="true">
+        <div
+          className="hp-parallax"
+          ref={parallaxRef}
+          style={{ backgroundImage: `url(${PARALLAX_BG_URL})` }}
+        />
+      </div>
+
+      <Hero heroContentRef={heroContentRef} />
+      <WhoWeAre registerReveal={registerReveal} />
+      <PanelSection
+        id="panels"
+        eyebrow="Building envelope"
+        heading="Insulated Metal Wall Panels"
+        description="Insulation + facade in one step."
+        panels={BUILDING_ENVELOPE_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="exterior"
+        eyebrow="Roof panels"
+        heading="Insulated Metal Roof Panels"
+        description="Durable insulated roofing for tangible temperature control and real cost savings."
+        panels={ROOF_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="data-center"
+        eyebrow="Data centers"
+        heading="Panel systems built for data center facilities inside and out"
+        description="Insulated wall and interior panel systems engineered for the tight tolerances and reliability data center environments demand."
+        panels={DATA_CENTER_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="cold-storage"
+        eyebrow="Cold storage"
+        heading="Insulated panels for cold storage facilities"
+        description="Exterior and interior panel systems engineered to hold a consistent thermal envelope for refrigerated and frozen storage."
+        panels={COLD_STORAGE_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="pharmaceutical"
+        eyebrow="Pharmaceutical industry"
+        heading="Insulated panels for pharmaceutical facilities"
+        description="Sanitary, temperature-controlled panel systems engineered for GMP-compliant pharmaceutical manufacturing, cleanrooms, and storage environments."
+        panels={PHARMACEUTICAL_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="pemb"
+        eyebrow="Pre-engineered metal buildings"
+        heading="Complete metal building systems, frame to finish"
+        description="Steel frame structures clad with insulated wall and roof panels, available in custom sizes, designs, and colors for any project."
+        panels={PEMB_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="doors"
+        eyebrow="Insulated Doors"
+        heading="Insulated Doors"
+        description="High-speed, sliding, and personnel doors that seal tight for reliable temperature control on cold storage and cooler rooms."
+        panels={DOOR_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="trim-hardware"
+        eyebrow="Trim & hardware"
+        heading="Trim & Hardware"
+        description="The finishing details that complete every install: trim, fasteners, and sealants engineered specifically for insulated panel systems to keep every seam clean and weather-tight."
+        panels={TRIM_HARDWARE_PANELS}
+        registerReveal={registerReveal}
+      />
+      <Gallery images={GALLERY_IMAGES} registerReveal={registerReveal} onSelect={lightbox.openLightbox} />
+      <Memberships registerReveal={registerReveal} />
+      <Sustainability registerReveal={registerReveal} />
+      <Faq registerReveal={registerReveal} />
+      <Contact registerReveal={registerReveal} onToast={setToast} />
+      <Footer logo={logo} />
+
+      {lightbox.lightboxOpen && (
+        <Lightbox
+          images={galleryLightboxImages}
+          index={lightbox.lightboxIndex}
+          onClose={lightbox.closeLightbox}
+          onNext={lightbox.lightboxNext}
+          onPrev={lightbox.lightboxPrev}
+        />
+      )}
+
+      <Toast toast={toast} onClose={() => setToast(null)} />
+    </div>
+  );
+}
+
+export default HomePage;

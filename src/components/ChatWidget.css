@@ -1,0 +1,642 @@
+/* ===================== FLOATING CHAT WIDGET ===================== */
+/* Fixed lower-right on every page (mounted once in App.jsx). z-index sits
+   above normal page content and the fixed nav pill, but below the
+   fullscreen Lightbox (z 1000+) so an open image viewer still covers it. */
+.hp-chat {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  font-family: "Inter", sans-serif;
+}
+
+/* ---------- launcher button ---------- */
+/* One-time entrance so the launcher arrives with an intentional pop
+   instead of just appearing on load (which read as a stray "movement").
+   `backwards` fill keeps it hidden through the delay, then it plays and
+   reverts to its normal resting state — deliberately NOT `forwards`, so a
+   held final frame can't outrank the :hover lift below in the cascade
+   (the same held-animation-vs-hover gotcha the product/foam cards hit).
+   The ~0.9s delay lets the hero and the nav pill's own fold-in settle
+   first, so the icon reads as the last, deliberate thing to arrive. */
+@keyframes hp-chat-launch-in {
+  0%   { opacity: 0; transform: scale(0.3) translateY(14px); }
+  55%  { opacity: 1; transform: scale(1.12) translateY(0); }
+  75%  { transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.hp-chat__launcher {
+  /* 60px on desktop; drops to 52px on mobile (see media query) to match
+     the nav hamburger's collapsed circle exactly, per spec. */
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--hp-navy);
+  color: var(--hp-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 30px -8px rgba(var(--hp-navy-rgb), 0.55);
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease;
+  animation: hp-chat-launch-in 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s backwards;
+  /* Without this, a click-drag over the button (easy to do by accident
+     right next to page text) selects it like text/an image, and the
+     browser paints its default selection highlight as a solid rectangle
+     over the mascot's full bounding box — ignoring the PNG's transparency
+     entirely, since selection highlighting has no concept of alpha. Not a
+     bug in the artwork; just default browser behavior for any element
+     with selectable content, turned off here since this is a button. */
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+}
+
+/* App.css's global `button:focus-visible { border-radius: 2px }` (higher
+   specificity than the base .hp-chat__launcher rule) would otherwise
+   square off this circle whenever it's focused — restated here at higher
+   specificity so the launcher stays perfectly round in every state,
+   including keyboard focus, while its (now circular) focus outline still
+   shows for accessibility. */
+.hp-chat__launcher:focus-visible {
+  border-radius: 50%;
+}
+
+/* Closed state shows the mascot image itself as the button — no navy
+   circle, no forced square/circle background shape behind it. The image
+   is used as-is (its own natural shape, whatever that is), and its whole
+   rectangular box is the clickable area, like a normal button. The open
+   (X) state is untouched: it still renders on the original navy circle
+   below.
+   Height is fixed to a proper icon size (the source WebPs are all the
+   same 240x180 resolution, purely a uniform scale-down, no crop/reshape)
+   — width follows automatically from the image's own aspect ratio, so
+   all 3 mascot poses read at the exact same on-screen size. */
+.hp-chat__launcher:has(.hp-chat__launcher-icon) {
+  width: auto;
+  height: 116px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.hp-chat__launcher:has(.hp-chat__launcher-icon):focus-visible {
+  border-radius: 8px;
+}
+
+.hp-chat__launcher:has(.hp-chat__launcher-icon):hover {
+  box-shadow: none;
+}
+
+/* Same guard for every other rounded control in the widget — the global
+   button/input :focus-visible rule squares them all to 2px otherwise. */
+.hp-chat__close:focus-visible,
+.hp-chat__send:focus-visible { border-radius: 50%; }
+
+.hp-chat__chip:focus-visible,
+.hp-chat__link:focus-visible,
+.hp-chat__input:focus-visible { border-radius: 999px; }
+
+/* Open (X) state: the button is the full navy circle with no transparent
+   padding to worry about, so a plain CSS :hover is correct and sufficient. */
+.hp-chat__launcher-wrap:hover .hp-chat__launcher:not(:has(.hp-chat__launcher-icon)) {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px -10px rgba(var(--hp-navy-rgb), 0.6);
+}
+
+/* Closed (mascot icon) state: CSS :hover can't tell transparent padding
+   apart from the actual artwork, so the lift is driven by JS instead (see
+   the launcher button's onMouseMove in ChatWidget.jsx, which runs the same
+   pixel-alpha test used to gate clicks) — this class is only added while
+   the cursor is genuinely over a visible pixel, so the same rule applies
+   identically no matter which of the 3 mascot images is showing. */
+.hp-chat__launcher-wrap--icon-hover .hp-chat__launcher {
+  transform: translateY(-3px);
+}
+
+.hp-chat__launcher-wrap--icon-hover .hp-chat__nudge {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px -8px rgba(var(--hp-navy-rgb), 0.45);
+}
+
+.hp-chat__launcher:active {
+  transform: translateY(0);
+}
+
+/* The photo as-is, no resizing, no cropping, no background shape behind
+   it — whatever the source file's own dimensions are is what renders. */
+.hp-chat__launcher-icon {
+  height: 100%;
+  width: auto;
+  display: block;
+  pointer-events: none;
+  /* Plays on every mount — including the deliberate remount ChatWidget.jsx
+     triggers via this element's `key` when the "You have N unread
+     messages!" nudge appears, so the mascot visibly reacts (a quick pop)
+     in sync with that notification instead of sitting static while only
+     the popup bubble animates. `backwards` fill (not `both`), matching
+     every other entrance animation in this file — `both` would keep
+     holding this animation's own resting transform indefinitely, which is
+     harmless here today (nothing else currently animates this element's
+     transform) but is the established convention for a reason: it's what
+     already broke hover on other elements in this file once, so new
+     entrance animations default to `backwards` rather than relying on
+     "nothing conflicts yet". */
+  animation: hp-chat-icon-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+@keyframes hp-chat-icon-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Positions the nudge relative to the launcher's own box, not the outer
+   .hp-chat container — on mobile that container is stretched edge-to-edge
+   (see the mobile media query below), which would otherwise push a
+   `right: 100%+`-offset nudge far past the launcher, off the left edge of
+   the screen, instead of sitting next to the icon. */
+.hp-chat__launcher-wrap {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Speech-bubble nudge announcing an unread/new message — spells out why
+   the visitor should check the chat, since the icon swapping to the
+   "new message" mascot pose alone could be missed against a busy
+   background photo/video. Sits to the launcher's left so it never
+   collides with the panel opening upward from the same corner. Pushed out
+   further (28px, not just past the launcher's edge) so it doesn't crowd
+   the icon. */
+.hp-chat__nudge {
+  position: absolute;
+  right: calc(100% + 2px);
+  bottom: 26px;
+  /* Sized to fit whichever message is passed in (they differ in length) by
+     growing horizontally only — never wraps to a second line, so the bubble
+     never shifts vertically relative to the launcher. Capped at 90vw purely
+     as a viewport-overflow guard, not a wrap trigger. */
+  width: max-content;
+  max-width: 90vw;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--hp-cream);
+  color: var(--hp-navy);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  /* Lays the alert dot (see .hp-chat__nudge-dot) and message text out in a
+     row, vertically centered against each other — the dot only renders on
+     the two alert variants (unread/new-reply), a plain-text pill like the
+     resting "Ask me anything!" status still lays out fine as a single-item
+     row. */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 10px 24px -8px rgba(var(--hp-navy-rgb), 0.35);
+  transform-origin: bottom right;
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease;
+  /* Timed to land just after the launcher's own entrance animation settles
+     (0.9s delay + 0.65s duration) — surfacing at the same instant as the
+     icon would compete for attention; waiting a beat reads as the icon
+     "introducing itself" once it's already in place. `backwards` fill
+     keeps it invisible for that whole gap instead of flashing at 0%. */
+  animation: hp-chat-nudge-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 1.7s backwards;
+}
+
+/* Reply landing mid-session already has its own reason to grab attention
+   right now — no need to hold it back for the launcher's intro timing. */
+/* `backwards`, not `both` — a `both` fill keeps holding the animation's own
+   final `transform` value after it finishes, which (being animation-driven)
+   outranks the plain :hover rule that's supposed to lift this bubble,
+   silently blocking the hover effect every other popup gets (same bug
+   already fixed on .hp-chat__nudge--online). */
+.hp-chat__nudge--instant {
+  animation: hp-chat-nudge-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+@keyframes hp-chat-nudge-in {
+  from { opacity: 0; transform: scale(0.85) translateX(8px); }
+  to { opacity: 1; transform: scale(1) translateX(0); }
+}
+
+/* Alert dot, INSIDE the message bubble itself rather than floating on the
+   launcher icon (where it previously lived) — sitting right next to the
+   words it's flagging reads more clearly as "this text is the new thing"
+   than a dot off on a separate element several pixels away, and it can't
+   drift out of sync with the bubble's own entrance animation the way the
+   icon-mounted version repeatedly did. Solid color, no glow/pulse — kept
+   deliberately plain after the mascot's own status dot turned out to
+   render as a soft, undesired "bloom" at this size once animated. */
+.hp-chat__nudge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hp-alert);
+  flex-shrink: 0;
+}
+
+/* Same dot, "available/online" color instead of "alert" red — this muted
+   green (not the brighter #34d17a used elsewhere) is deliberate: that
+   brighter shade bloomed into a soft halo at this size once it carried any
+   animation, so this flat, plain dot reuses the toned-down color that was
+   already proven clean here. */
+.hp-chat__nudge-dot--online {
+  background: #1fa860;
+}
+
+/* Permanent status pill (see ChatWidget.jsx) — same bubble shape as the
+   unread nudge above, just a resting status instead of a one-off alert. */
+.hp-chat__nudge--online {
+  /* Overrides the base .hp-chat__nudge's 1.7s-delayed intro (tuned for the
+     first-load greeting timing) — this pill can mount well after that,
+     e.g. the moment the visitor closes the panel, so it needs to appear
+     right away rather than staying invisible for another 1.7s.
+     `backwards` (not `both`) deliberately — a `both` fill would keep
+     holding the animation's own final `transform` value after it finishes,
+     which (being animation-driven) outranks the plain :hover rule below
+     that's supposed to lift this pill, silently blocking the hover effect
+     every other popup gets. */
+  animation: hp-chat-nudge-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+/* Each line of RESTING_MESSAGES (ChatWidget.jsx) is keyed so every swap is
+   a fresh DOM node — this plays a quick fade/slide-up on that node each
+   time, giving the loop a "changing" feel rather than a hard text swap.
+   `both` is fine here (not the backwards-vs-both footgun elsewhere in this
+   file) since nothing else needs to override this element's transform. */
+.hp-chat__nudge-text {
+  display: inline-block;
+  animation: hp-chat-nudge-text-in 0.35s ease both;
+}
+
+@keyframes hp-chat-nudge-text-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- panel ---------- */
+.hp-chat__panel {
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  height: 540px;
+  max-height: calc(100vh - 140px);
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px -16px rgba(var(--hp-navy-rgb), 0.5);
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.1);
+  animation: hp-chat-in 0.28s cubic-bezier(0.16,1,0.3,1) both;
+  transform-origin: bottom right;
+}
+
+@keyframes hp-chat-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- header ---------- */
+.hp-chat__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--hp-navy);
+  color: var(--hp-cream);
+}
+
+.hp-chat__header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hp-chat__status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #34d17a;
+  box-shadow: 0 0 0 0 rgba(52, 209, 122, 0.6);
+  animation: hp-chat-pulse 2s ease-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes hp-chat-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 209, 122, 0.55); }
+  70% { box-shadow: 0 0 0 7px rgba(52, 209, 122, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 209, 122, 0); }
+}
+
+.hp-chat__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hp-chat__subtitle {
+  margin: 1px 0 0;
+  font-size: 12px;
+  color: rgba(243, 241, 236, 0.7);
+}
+
+.hp-chat__close {
+  border: none;
+  background: rgba(243, 241, 236, 0.14);
+  color: var(--hp-cream);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.hp-chat__close:hover { background: rgba(243, 241, 236, 0.26); }
+
+/* ---------- messages ---------- */
+.hp-chat__messages {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f6f7f9;
+}
+
+.hp-chat__msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+}
+
+.hp-chat__msg--user { align-items: flex-end; }
+.hp-chat__msg--bot { align-items: flex-start; }
+
+.hp-chat__bubble {
+  max-width: 85%;
+  padding: 11px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  word-break: break-word;
+}
+
+.hp-chat__msg--bot .hp-chat__bubble {
+  background: #fff;
+  color: var(--hp-navy);
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.1);
+  border-bottom-left-radius: 5px;
+}
+
+.hp-chat__msg--user .hp-chat__bubble {
+  background: var(--hp-navy);
+  color: var(--hp-cream);
+  border-bottom-right-radius: 5px;
+}
+
+/* Preserves the blank line between an intent's paragraphs (answers use "\n"
+   for line breaks and "\n\n" for spacing, split into .hp-chat__line spans). */
+.hp-chat__line:empty { height: 6px; }
+
+.hp-chat__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.hp-chat__link {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--hp-accent);
+  color: var(--hp-cream);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.hp-chat__link:hover { background: var(--hp-accent-hover); }
+
+/* ---------- suggestion chips ---------- */
+.hp-chat__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.hp-chat__chip {
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.2);
+  background: #fff;
+  color: var(--hp-navy);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.hp-chat__chip:hover {
+  background: var(--hp-navy);
+  color: var(--hp-cream);
+  border-color: var(--hp-navy);
+  transform: translateY(-1px);
+}
+
+/* ---------- typing indicator ---------- */
+.hp-chat__bubble--typing {
+  flex-direction: row;
+  gap: 5px;
+  padding: 14px;
+}
+
+.hp-chat__bubble--typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(var(--hp-navy-rgb), 0.4);
+  animation: hp-chat-typing 1.2s infinite ease-in-out;
+}
+
+.hp-chat__bubble--typing span:nth-child(2) { animation-delay: 0.15s; }
+.hp-chat__bubble--typing span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes hp-chat-typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ---------- input ---------- */
+.hp-chat__input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(var(--hp-navy-rgb), 0.1);
+  background: #fff;
+}
+
+.hp-chat__input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.18);
+  border-radius: 999px;
+  padding: 11px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--hp-navy);
+  background: #f6f7f9;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.hp-chat__input:focus {
+  border-color: var(--hp-accent);
+  background: #fff;
+}
+
+.hp-chat__input::placeholder { color: rgba(var(--hp-navy-rgb), 0.45); }
+
+.hp-chat__send {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: var(--hp-accent);
+  color: var(--hp-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.hp-chat__send svg { transform: translateX(-1px); }
+.hp-chat__send:hover:not(:disabled) { background: var(--hp-accent-hover); }
+.hp-chat__send:active:not(:disabled) { transform: scale(0.94); }
+
+.hp-chat__send:disabled {
+  background: rgba(var(--hp-navy-rgb), 0.2);
+  cursor: default;
+}
+
+.hp-chat__disclaimer {
+  margin: 0;
+  padding: 0 14px 10px;
+  background: #fff;
+  font-size: 11px;
+  color: rgba(var(--hp-navy-rgb), 0.45);
+  text-align: center;
+}
+
+/* ---------- tablet & mobile ---------- */
+/* Launcher size/position switches at the exact same 1024px breakpoint the
+   nav collapses to its own circular hamburger at (see Nav.css) — the two
+   are the only fixed floating circles on the page at this width and
+   below, and need to read as one consistent design on a tablet too, not
+   just on phones specifically. The panel itself (below) keeps its own
+   narrower, phone-only breakpoint — there's plenty of room for the normal
+   fixed-width panel on a tablet, no need to force it full-width there. */
+@media (max-width: 1024px) {
+  .hp-chat {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  /* Matches the nav hamburger's collapsed 52px circle exactly. */
+  .hp-chat__launcher {
+    width: 52px;
+    height: 52px;
+  }
+
+  .hp-chat__launcher:has(.hp-chat__launcher-icon) {
+    width: auto;
+    height: 88px;
+  }
+
+  .hp-chat__nudge {
+    right: calc(100% + 9px);
+    bottom: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hp-chat {
+    left: 16px;
+    align-items: flex-end;
+  }
+
+  .hp-chat__panel {
+    width: 100%;
+    max-width: 100%;
+    height: 68vh;
+    max-height: calc(100vh - 120px);
+  }
+
+  /* Sits closer to the launcher and shrinks its font on small screens so a
+     single-line bubble is more likely to fit without hitting the 90vw cap;
+     still grows/shrinks horizontally only, never wraps. */
+  .hp-chat__nudge {
+    right: calc(100% + 2px);
+    bottom: 21px;
+    font-size: 0.78rem;
+    padding: 9px 12px;
+  }
+}
+
+/* Below ~360-400px (small phones — iPhone SE 1st-gen width, older/budget
+   Android), the icon + gap + a full-length bubble ("You have a new
+   message!" etc., even at the 640px breakpoint's already-reduced font)
+   no longer both fit — confirmed via measurement: a 117px-wide icon left
+   only ~184px of room but the bubble needed ~196px, pushing its left edge
+   off-screen. Shrinking the icon further here frees up the room the
+   bubble needs, rather than letting it wrap (wrapping would shift the
+   bubble vertically relative to the icon, which the base rule's own
+   comment explicitly avoids). */
+@media (max-width: 400px) {
+  .hp-chat__launcher:has(.hp-chat__launcher-icon) {
+    width: auto;
+    height: 72px;
+  }
+
+  .hp-chat__nudge {
+    font-size: 0.72rem;
+    padding: 8px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-chat__launcher,
+  .hp-chat__launcher-icon,
+  .hp-chat__panel,
+  .hp-chat__status-dot,
+  .hp-chat__nudge,
+  .hp-chat__nudge-text,
+  .hp-chat__bubble--typing span { animation: none; }
+}

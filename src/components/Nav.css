@@ -1,0 +1,891 @@
+.hp-nav {
+  position: fixed;
+  top: 18px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-nav--hidden {
+  transform: translateY(-140%);
+}
+
+/* Pill container — holds both the top bar and the mobile dropdown */
+.hp-nav__pill {
+  max-width: 920px;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5));
+  border: 1px solid rgba(20, 30, 50, 0.1);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  overflow: hidden;
+  transform: translateY(0) scale(1);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-radius 0.3s ease;
+  position: relative;
+}
+
+/* Plays on every mount (every page navigation), ~1.4s so it reads as a
+   deliberate transition:
+     1. Pill folds into a true circle (needs an actual `width` change —
+        a scaleX squeeze can't keep rounded corners circular at this
+        aspect ratio) and holds, logo fading in centered over it. The
+        pill is `position: fixed` with only a handful of children, so
+        this reflow stays local and cheap — it's not resizing anything
+        else on the page.
+     2. Pill widens back out while the logo — the same element, sliding
+        via `translateX` only (no `left`, so this part stays purely
+        compositor-driven) — moves from that centered spot to exactly
+        where the real logo (inside .hp-nav__inner) sits.
+     3. Once landed, it crossfades with the real logo/links/button
+        fading in underneath it at that same spot. Matched start time,
+        duration, and linear easing on both sides of the crossfade so
+        their opacities always sum to 1 — a real handoff, not two
+        independent fades that can both dip at once. */
+@keyframes hp-nav-fold-in {
+  /* 84px = the pill's own natural height (44px logo + 19px top/bottom
+     padding + 2px border — see .hp-nav__inner), so the folded circle is a
+     true circle (width === height) at exactly the expanded navbar's real
+     height throughout — it reads as the navbar itself collapsing and
+     expanding, not a differently-sized shape swapped in. */
+  0%   { width: 84px; height: 84px; border-radius: 50%; }
+  18%  { width: 84px; height: 84px; border-radius: 50%; }
+  100% { width: 100%; height: 84px; border-radius: 999px; }
+}
+
+/* No opacity ramp anywhere in here — the logo is visible at full opacity
+   from frame one, only its position (translateX) animates. It's hidden
+   at the very end via a hard, instant cut (steps(1, end) on that last
+   segment below) rather than any kind of fade. */
+@keyframes hp-nav-fold-logo {
+  0%   { opacity: 1; transform: translate(-50%, -50%) translateX(0); }
+  18%  { opacity: 1; transform: translate(-50%, -50%) translateX(0); }
+  /* --fold-slide-x is set inline per-mount (see the layout effect in
+     Nav.jsx), computed from the pill's real, current settled width and the
+     logo's real, current rendered size — not a hardcoded pixel value. That
+     means this keeps landing exactly on the logo at any desktop width, or
+     if a user resizes the window while this is still mid-flight, instead
+     of being tuned for one specific width. -402px only survives here as
+     the fallback for the very first frame, before the layout effect has
+     had a chance to run. */
+  88%  { opacity: 1; transform: translate(-50%, -50%) translateX(var(--fold-slide-x, -402px)); animation-timing-function: steps(1, end); }
+  100% { opacity: 0; transform: translate(-50%, -50%) translateX(var(--fold-slide-x, -402px)); }
+}
+
+@keyframes hp-nav-content-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* An instant snap, not a fade — held invisible at 0 until the very last
+   moment, then jumps straight to fully visible. Used for the real logo
+   specifically (see .hp-nav__logo-slot below): if it faded in like the
+   links/button do, that fade would compound with the fold-logo overlay's
+   own fade-out (nested opacity always multiplies), producing a second,
+   subtler fade stacked on top of the first — which is what read as a
+   flicker. Snapping it in avoids that entirely. */
+@keyframes hp-nav-logo-in {
+  0%, 99% { opacity: 0; }
+  100%    { opacity: 1; }
+}
+
+/* Mobile/tablet hamburger's own entrance — see the ≤1024px .hp-nav__pill
+   rule below for why this exists (matches .hp-chat's own launch-in
+   keyframe in ChatWidget.css exactly, so both floating circles share one
+   intro). Drops in from above rather than below, since this one sits at
+   the top of the screen. */
+@keyframes hp-nav-mobile-pop-in {
+  0%   { opacity: 0; transform: scale(0.3) translateY(-14px); }
+  55%  { opacity: 1; transform: scale(1.12) translateY(0); }
+  75%  { transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.hp-nav__fold-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  animation: hp-nav-fold-logo 1.6s cubic-bezier(0.45,0,0.15,1) both;
+}
+
+/* Matches .hp-logo__img exactly, so the logo doesn't change size when the
+   fold overlay hands off to the real nav logo underneath it. */
+.hp-nav__fold-logo img {
+  height: 44px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+}
+
+@media (max-width: 400px) {
+  .hp-nav__fold-logo img { height: 28px; }
+}
+
+.hp-nav__pill--fold {
+  animation: hp-nav-fold-in 1.6s cubic-bezier(0.45,0,0.15,1) both;
+}
+
+.hp-nav__pill--fold .hp-nav__inner-content {
+  /* 1.6s * 88% = 1.408s, duration 1.6s * 12% = 0.192s — matches the
+     fold-logo's fade-out window (see hp-nav-fold-logo) exactly. */
+  animation: hp-nav-content-in 0.192s linear 1.408s both;
+}
+
+.hp-nav__pill--fold .hp-nav__logo-slot {
+  /* Snaps to visible at the same 1.408s mark the crossfade above starts
+     — i.e. right as the fold-logo overlay begins its own fade-out — so
+     by the time the overlay reaches opacity 0, the real logo is already
+     solidly at opacity 1 underneath it, not still fading in. */
+  animation: hp-nav-logo-in 0.192s steps(1, end) 1.408s both;
+}
+
+/* Below this breakpoint the nav is always a small 52px hamburger-only
+   circle (see the max-width: 1024px block below) — the fold/slide
+   transition is a desktop-only flourish and has no sensible "expanded"
+   state to land in on mobile, so it's switched off entirely here. */
+@media (max-width: 1024px) {
+  .hp-nav__pill--fold { animation: none; }
+  .hp-nav__pill--fold .hp-nav__inner-content { animation: none; opacity: 1; }
+  .hp-nav__pill--fold .hp-nav__logo-slot { animation: none; opacity: 1; }
+  .hp-nav__fold-logo { animation: none; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-nav__pill--fold { animation: none; }
+  .hp-nav__pill--fold .hp-nav__inner-content { animation: none; opacity: 1; }
+  .hp-nav__pill--fold .hp-nav__logo-slot { animation: none; opacity: 1; }
+  .hp-nav__fold-logo { animation: none; opacity: 0; }
+  .hp-nav__pill { animation: none; }
+}
+
+.hp-nav__pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.18) inset,
+    0 -1px 1px rgba(0, 0, 0, 0.3) inset,
+    0 12px 30px rgba(0, 0, 0, 0.35);
+  opacity: 1;
+  transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1);
+  pointer-events: none;
+}
+
+.hp-nav__pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.25) inset,
+    0 -1px 1px rgba(0, 0, 0, 0.2) inset,
+    0 16px 36px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1);
+  pointer-events: none;
+}
+
+.hp-nav--solid .hp-nav__pill {
+  transform: translateY(2px) scale(0.99);
+}
+.hp-nav--solid .hp-nav__pill::before { opacity: 0; }
+.hp-nav--solid .hp-nav__pill::after  { opacity: 1; }
+
+/* Top bar row — logo-slot and inner-content are the two grid columns;
+   inner-content arranges links/cta/hamburger itself via flex, so the
+   overall visual layout matches the original 4-column grid exactly. */
+.hp-nav__inner {
+  /* Right padding (32px) is a bit more than the left (22px) — on desktop
+     the hamburger is hidden, so "Get a quote" is the last item, and the
+     extra room keeps it from reading as jammed into the pill's corner.
+     Top/bottom padding (19px) brings the pill's natural height up to
+     84px (44px logo + 19px top/bottom padding + 2px border), matching
+     the folded circle's size (see hp-nav-fold-in). */
+  padding: 19px 32px 19px 22px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 36px;
+  position: relative;
+}
+
+.hp-nav__logo-slot {
+  display: flex;
+  align-items: center;
+}
+
+.hp-nav__inner-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 36px;
+  min-width: 0;
+}
+
+/* Centered on the full pill (.hp-nav__inner, its nearest positioned
+   ancestor) rather than flexed alongside the CTA button inside
+   `.hp-nav__inner-content` — flexing it there only centered it within the
+   leftover space *after* the logo and *before* the CTA, which visibly
+   drifts left of the pill's true center once the logo and CTA widths
+   differ (exactly what was happening here: a wide "Get a quote"/"Request
+   pricing" CTA pulled the whole row's center of gravity rightward, leaving
+   the trigger buttons looking off-center). */
+.hp-nav__links {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(20, 30, 50, 0.7);
+}
+
+.hp-nav__links a {
+  display: inline-block;
+  transition: color 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-nav__links a:hover {
+  color: #14213a;
+  transform: translateY(-1px);
+}
+
+.hp-nav__links a:active {
+  transform: translateY(0);
+}
+
+/* ===================== MENU DROPDOWN ===================== */
+.hp-nav__menu-dropdown {
+  position: relative;
+}
+
+.hp-nav__menu-trigger {
+  display: inline-block;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(20, 30, 50, 0.7);
+  background: none;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  margin: -6px -12px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-nav__menu-trigger:hover {
+  color: #14213a;
+  transform: translateY(-1px);
+}
+
+.hp-nav__menu-trigger:active {
+  transform: translateY(0);
+}
+
+/* Highlighted while its dropdown is open, so it's obvious which trigger
+   the visible panel belongs to — same navy-on-frost tint the rest of the
+   nav uses for its own pressed/solid states, not an unrelated color. */
+.hp-nav__menu-trigger.is-active {
+  color: #14213a;
+  background: rgba(20, 30, 50, 0.1);
+}
+
+/* Same frosted-glass language as .hp-glass and the nav pill itself
+   (gradient + backdrop blur + inset highlight/shadow), just scaled down
+   for a small popover instead of a full section panel. Transition-based
+   (not a one-shot `animation`) so it can play smoothly in *both*
+   directions: NavDropdown keeps the panel mounted for a beat after it
+   closes (see PANEL_CLOSE_MS in Nav.jsx) specifically so removing
+   `.is-open` here has time to actually animate back out instead of the
+   panel just vanishing on the closing click. */
+.hp-nav__menu-panel {
+  position: fixed;
+  transform: translate(-50%, -6px) scale(0.96);
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 8px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.7));
+  border: 1px solid rgba(20, 30, 50, 0.1);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.6) inset,
+    0 -1px 1px rgba(20, 30, 50, 0.08) inset,
+    0 16px 36px rgba(20, 30, 50, 0.18);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: top center;
+  transition: opacity 0.16s ease, transform 0.16s cubic-bezier(0.16,1,0.3,1);
+  z-index: 200;
+}
+
+.hp-nav__menu-panel.is-open {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-nav__menu-panel { transition: opacity 0.12s ease; transform: translate(-50%, 0) scale(1); }
+}
+
+.hp-nav__menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(20, 30, 50, 0.75);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+  opacity: 0;
+}
+
+/* Once an item has actually played its entrance (see hasEntered in
+   Nav.jsx), its CSS fallback becomes fully visible instead of invisible.
+   This matters specifically for closing: the staggered-entrance animation
+   below only applies while the panel has .is-open, so the moment that
+   class is removed to start closing, the animation stops matching and the
+   item's opacity falls back to whatever the plain cascade says. Falling
+   back to 0 (like the pre-entrance state above) made items snap instantly
+   to invisible while the panel itself was still visibly fading out for
+   another ~140ms — a CSS transition on opacity does *not* smoothly animate
+   away from a value that was being driven by a now-inapplicable animation,
+   confirmed empirically (it's an instant jump in Chromium, not a
+   transition), so this can't be fixed by just adding `transition: opacity`
+   to the item. Falling back to 1 instead means closing simply relies on
+   the panel's own opacity fading out to visually take the items with it
+   (nested/parent opacity is multiplicative) — no separate, unreliable
+   per-item exit transition needed. */
+.hp-nav__menu-panel.has-entered .hp-nav__menu-item {
+  opacity: 1;
+}
+
+.hp-nav__menu-item:hover {
+  color: #14213a;
+  background: rgba(20, 30, 50, 0.06);
+}
+
+/* The section the visitor is currently scrolled into (see useScrollSpy) —
+   same accent red the rest of the site uses for "current"/primary state
+   (.hp-nav__quote, active filter chips), plus a small dot so it also reads
+   correctly for color-blind users, not by color alone. */
+.hp-nav__menu-item.is-current {
+  color: var(--hp-accent);
+  font-weight: 700;
+}
+
+.hp-nav__menu-item.is-current::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 8px;
+  margin-bottom: 1px;
+  border-radius: 50%;
+  background: var(--hp-accent);
+  vertical-align: middle;
+}
+
+.hp-nav__menu-item.is-current:hover {
+  color: var(--hp-accent-hover);
+  background: rgba(200, 38, 46, 0.08);
+}
+
+/* Cascading reveal — each item fades/slides in a beat after the last,
+   rather than the whole panel's content appearing as one flat block. Same
+   staggered-entrance idea already used for the Products page card grid
+   (see .hp-filter-anim), just on a much smaller/faster scale here. Panel
+   stays mounted for a fresh instant on every open (see PANEL_CLOSE_MS in
+   Nav.jsx), so this restarts cleanly each time rather than only playing
+   once. */
+/* Per-item delay comes from an inline style now (see Nav.jsx), computed
+   from each item's actual index — a fixed set of :nth-child rules only
+   covered up to a specific item count and silently stopped cascading past
+   it (exactly what happened once Overview grew past 10 items), where this
+   scales to any dropdown length automatically. */
+.hp-nav__menu-panel.is-open .hp-nav__menu-item {
+  animation: hp-nav-menu-item-in 0.22s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes hp-nav-menu-item-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-nav__menu-item { opacity: 1; }
+  .hp-nav__menu-panel.is-open .hp-nav__menu-item { animation: none; }
+}
+
+/* Plain text CTA link in the desktop nav — no border/background, just like the other nav links */
+.hp-nav__quote {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--hp-accent);
+  transition: color 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-nav__quote:hover {
+  color: var(--hp-accent-hover);
+  transform: translateY(-2px);
+}
+
+.hp-nav__quote:active {
+  transform: translateY(0);
+}
+
+/* ===================== HAMBURGER ===================== */
+.hp-nav__hamburger {
+  display: none;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), background 0.2s ease;
+}
+
+/* Closed state: the pill itself scales on hover (see :has() rule in the
+   1024px breakpoint below) so the button doesn't also scale — that would
+   compound into a double zoom. */
+.hp-nav--open .hp-nav__hamburger:hover {
+  transform: scale(1.1);
+}
+
+.hp-nav--open .hp-nav__hamburger:active {
+  transform: scale(0.94);
+}
+
+.hp-nav:not(.hp-nav--open) .hp-nav__hamburger:active {
+  transform: scale(0.94);
+}
+
+/* Classic three-bar icon, morphing into an X when the menu is open.
+   Box is 24x24 (not the glyph's own 22x16) specifically so this icon sits
+   the same 14px in from the mobile pill's edge that the chat launcher's
+   24x24 icon sits from its own circle — matching "hit box" footprints
+   even though the visible glyph inside is narrower/shorter. */
+.hp-nav__hamburger-bars {
+  position: relative;
+  display: block;
+  width: 24px;
+  height: 24px;
+  /* Cancels a consistent 1px down-right rounding drift measured between
+     this icon's centered position and the circle's true center (absent
+     on the chat launcher's icon, which has no border/pseudo-element
+     overlay competing for the same box) — without this the two read as
+     very slightly, but noticeably, off from each other at this size. */
+  left: -1px;
+  top: -1px;
+}
+
+.hp-nav__hamburger-bars span {
+  position: absolute;
+  left: 1px;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: #14213a;
+  transition:
+    top 0.28s cubic-bezier(0.16,1,0.3,1),
+    transform 0.28s cubic-bezier(0.16,1,0.3,1),
+    opacity 0.2s ease;
+}
+
+.hp-nav__hamburger-bars span:nth-child(1) { top: 4px; }
+.hp-nav__hamburger-bars span:nth-child(2) { top: 11px; }
+.hp-nav__hamburger-bars span:nth-child(3) { top: 18px; }
+
+.hp-nav__hamburger.is-open .hp-nav__hamburger-bars span:nth-child(1) {
+  top: 11px;
+  transform: rotate(45deg);
+}
+
+.hp-nav__hamburger.is-open .hp-nav__hamburger-bars span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hp-nav__hamburger.is-open .hp-nav__hamburger-bars span:nth-child(3) {
+  top: 11px;
+  transform: rotate(-45deg);
+}
+
+/* Mobile dropdown panel */
+.hp-nav__mobile {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 20px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  /* `padding` deliberately NOT in this list (it used to be) — Nav.jsx
+     reads this element's *computed* padding live (via getComputedStyle,
+     see the mobileMaxHeight calc) to size the panel correctly. Animating
+     padding meant that read kept returning a moving, mid-transition
+     value for the whole ~0.2s the padding itself was easing in, so the
+     height calculation kept re-targeting upward throughout — stretching
+     the panel's *visible* expand time well past its own declared 0.38s,
+     long after the pill's own width transition had already finished
+     (confirmed by tracing the actual computed values frame-by-frame).
+     Padding still changes instantly between closed/open, it just no
+     longer drags the height animation out doing so. */
+  transition:
+    max-height 0.38s cubic-bezier(0.16,1,0.3,1),
+    opacity 0.28s ease;
+}
+
+.hp-nav__mobile.is-open {
+  /* Actual target height comes from the inline `max-height` style (see
+     Nav.jsx — measured off real content via ResizeObserver, capped to
+     whatever's actually left in the viewport below the header row).
+     Static by default — no internal scrolling — so anything past that
+     height is simply clipped rather than reachable by scrolling to it. */
+  opacity: 1;
+  overflow: hidden;
+  padding: 11px 20px 18px;
+  border-top: 1px solid rgba(20, 30, 50, 0.1);
+}
+
+/* Expanding one of the accordion groups below (Overview/Inquiry) grows
+   the panel's real content past that fixed height — scrolling turns back
+   on for as long as at least one group is actually expanded (see
+   handleGroupExpandedChange in Nav.jsx), so whatever the expansion pushed
+   past the bottom edge stays reachable, instead of just clipped and
+   invisible with no way to get to it. */
+.hp-nav__mobile.is-open.has-expanded-group {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.hp-nav__mobile a:not(.hp-nav__mobile-cta) {
+  display: block;
+  padding: 14px 4px;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(20, 30, 50, 0.75);
+  border-bottom: 1px solid rgba(20, 30, 50, 0.08);
+  transition: color 0.2s ease;
+}
+
+.hp-nav__mobile a:not(.hp-nav__mobile-cta):last-of-type { border-bottom: none; }
+.hp-nav__mobile a:not(.hp-nav__mobile-cta):hover { color: #14213a; }
+
+/* Pinned outside the scrollable link list (see Nav.jsx and its own
+   comment on .hp-nav__mobile-cta-wrap) so it's always visible the instant
+   the menu opens, rather than needing a scroll past every link to reach
+   it on a short viewport. Same plain red-text treatment as the desktop
+   nav's own .hp-nav__quote, just centered — kept visually consistent with
+   the regular navbar rather than a separate filled-pill style. */
+.hp-nav__mobile-cta {
+  display: block;
+  text-align: center;
+  padding: 14px 4px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--hp-accent);
+  transition: color 0.2s ease;
+}
+
+/* Collapses/fades in lockstep with .hp-nav__mobile (hidden entirely on
+   desktop, revealed only within the ≤1024px mobile breakpoint below) —
+   a fixed max-height rather than a JS-measured one like the link list
+   above it, since this box's content (one button) never varies. Global
+   `* { box-sizing: border-box }` means max-height:0 clips its own padding
+   too, so it's safe to jump straight to the open-state padding below
+   without transitioning it — fully hidden either way while collapsed. */
+.hp-nav__mobile-cta-wrap {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .hp-nav__mobile-cta-wrap {
+    display: block;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 20px;
+    transition: max-height 0.32s cubic-bezier(0.16,1,0.3,1), opacity 0.24s ease;
+  }
+
+  .hp-nav__mobile-cta-wrap.is-open {
+    max-height: 90px;
+    opacity: 1;
+    /* Top matches every row's own 14px padding exactly (see
+       .hp-nav__mobile-group-toggle) — combined with "Inquiry"'s own 14px
+       bottom padding (and the container's own bottom padding now removed,
+       see .hp-nav__mobile.is-open above), the gap before the CTA divider
+       ends up the same 28px as the gap between any two other rows,
+       instead of noticeably bigger. */
+    padding: 14px 20px 18px;
+    /* Same divider line the header row uses to separate itself from the
+       link list below it (see .hp-nav__mobile.is-open's own border-top) —
+       separates the CTA from the links above it the same way. */
+    border-top: 1px solid rgba(20, 30, 50, 0.1);
+  }
+}
+
+.hp-nav__mobile-cta:hover {
+  color: var(--hp-accent-hover);
+}
+
+/* ===================== MOBILE ACCORDION GROUPS ===================== */
+/* Same visual weight as the flat mobile links above (matching padding,
+   font-size, border-bottom), just with a chevron and an expandable panel
+   of sub-items instead of navigating directly. */
+.hp-nav__mobile-group {
+  border-bottom: 1px solid rgba(20, 30, 50, 0.08);
+}
+
+.hp-nav__mobile-group:last-child { border-bottom: none; }
+
+.hp-nav__mobile-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(20, 30, 50, 0.75);
+  background: none;
+  border: none;
+  padding: 14px 4px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.hp-nav__mobile-group-toggle:hover,
+.hp-nav__mobile-group-toggle.is-expanded {
+  color: #14213a;
+}
+
+.hp-nav__mobile-group-chevron {
+  flex-shrink: 0;
+  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-nav__mobile-group-toggle.is-expanded .hp-nav__mobile-group-chevron {
+  transform: rotate(180deg);
+}
+
+/* Grid-row trick instead of animating max-height — max-height is a layout
+   property whose in-between animated values force the browser to reflow
+   this element (and anything measuring it, like the mobile menu's own
+   available-height calc above) on every frame; grid-template-rows achieves
+   the identical expand/collapse visual without ever changing the box's
+   actual layout size mid-transition (same technique already used for the
+   FAQ accordion — see .hp-faq-item__a in Faq.css). */
+.hp-nav__mobile-group-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-nav__mobile-group-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(20, 30, 50, 0.6);
+  background: none;
+  border: none;
+  padding: 12px 4px 12px 16px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.hp-nav__mobile-group-item:hover { color: #14213a; }
+
+/* Same active-section styling as the desktop panel's .hp-nav__menu-item —
+   see useScrollSpy. */
+.hp-nav__mobile-group-item.is-current {
+  color: var(--hp-accent);
+  font-weight: 700;
+}
+
+.hp-nav__mobile-group-item.is-current::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 8px;
+  margin-bottom: 1px;
+  border-radius: 50%;
+  background: var(--hp-accent);
+  vertical-align: middle;
+}
+
+.hp-nav__mobile-group-item.is-current:hover { color: var(--hp-accent-hover); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-nav__mobile-group-chevron,
+  .hp-nav__mobile-group-panel {
+    transition: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Position nav to the right. 16px matches the chat launcher's own
+     edge offset exactly (see .hp-chat in ChatWidget.css, which switches
+     to this same compact layout at this same 1024px breakpoint) — the
+     two are the only fixed floating circles on the page at this width
+     and below, and need to read as one consistent design regardless of
+     device size, not just on phones specifically. */
+  .hp-nav { top: 16px; justify-content: flex-end; padding: 0 16px; }
+
+  /* The auto-hide-on-scroll-down behavior relies on hovering near the top
+     of the screen to bring the nav back — there's no hover on touch
+     devices, so scrolling down on mobile would otherwise strand the
+     hamburger button off-screen with no way to reopen the menu. Keep it
+     pinned in place at this breakpoint instead. */
+  .hp-nav--hidden { transform: none; }
+
+  /* Same idea for the "solid" scroll state (.hp-nav--solid .hp-nav__pill,
+     desktop-only translateY(2px) scale(0.99) shift once scrolled past 40%
+     of the viewport) — at this breakpoint the pill *is* the small circular
+     hamburger button, so that shift read as the button visibly wobbling in
+     place every time it crossed the threshold while scrolling, rather than
+     the subtle "settling" effect it's meant to be on the full-width
+     desktop pill. Kept perfectly still here instead. */
+  .hp-nav--solid .hp-nav__pill { transform: none; }
+
+  /* Collapsed: circle button only. Noticeably more opaque than the
+     desktop pill's own translucent glass (0.62/0.5) — this button is
+     `position: fixed`, always floating over whatever content is
+     currently scrolled beneath it, and a page heading passing behind a
+     more see-through circle visibly reduced how clearly the ☰ icon read
+     against it. A near-solid backdrop keeps the icon legible regardless
+     of what's scrolling underneath, while the backdrop-filter blur
+     (inherited from the base .hp-nav__pill rule) still keeps it from
+     looking like a flat, out-of-place disc. */
+  .hp-nav__pill {
+    width: 52px !important;
+    height: 52px;
+    max-width: 52px;
+    margin: 0 !important;
+    border-radius: 50% !important;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.85));
+    border: 1px solid rgba(20, 30, 50, 0.1);
+    transition: width 0.35s cubic-bezier(0.16,1,0.3,1),
+                height 0.35s cubic-bezier(0.16,1,0.3,1),
+                border-radius 0.35s cubic-bezier(0.16,1,0.3,1),
+                max-width 0.35s cubic-bezier(0.16,1,0.3,1),
+                background 0.35s ease,
+                box-shadow 0.35s ease;
+    /* Desktop gets its own entrance via the fold-in sequence above (which
+       is explicitly turned off at this breakpoint — a wide pill folding
+       down to a circle makes no sense when it's already just a circle
+       here). Without it the collapsed hamburger used to just appear
+       instantly on load — this gives it the same deliberate pop-in intro
+       as the chat launcher (matching duration/easing/delay), so the two
+       floating circles arrive together instead of one animating in and
+       the other snapping into place. `backwards` fill (not `forwards`)
+       reverts to this rule's own resting styles once it plays, so it
+       can't hold a stale transform that would block the hover-scale
+       :has() rule below. */
+    animation: hp-nav-mobile-pop-in 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s backwards;
+  }
+
+  /* Plays once on load only. Without `.has-popped-in`, this rule's
+     `animation` re-applies every time `.hp-nav--open` toggles off (which
+     overrides it to `animation: none !important` while open — see below —
+     but removing that override on close falls straight back to this base
+     rule), replaying the whole bounce-in every single time the hamburger
+     is closed. */
+  .hp-nav__pill.has-popped-in {
+    animation: none;
+  }
+
+  .hp-nav:not(.hp-nav--open) .hp-nav__pill:active { transform: scale(0.96); }
+
+  /* Expanded: full-width dropdown card */
+  .hp-nav--open .hp-nav__pill {
+    width: 100% !important;
+    max-width: 920px !important;
+    height: auto;
+    border-radius: 20px !important;
+    margin: 0 !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5));
+    /* Cancels the collapsed circle's own pop-in entrance (see
+       .hp-nav__pill's `animation: hp-nav-mobile-pop-in` above) the instant
+       the menu opens. Without this, tapping the hamburger while that
+       intro is still mid-flight (its 0.9s delay + 0.65s duration overlaps
+       with realistic "tap as soon as it's visible" timing) left the
+       live scale transform (up to ~1.16x, from the bounce's overshoot)
+       applied to the now-expanded dropdown instead of the small circle it
+       was meant for — stretching/blurring the whole open panel. */
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* Hide nav logo only — footer logo keeps showing */
+  .hp-nav .hp-logo { display: none; }
+  .hp-nav__links { display: none; }
+  .hp-nav__quote:not(.hp-nav__mobile-cta) { display: none; }
+  .hp-nav__inner { display: flex; padding: 0; gap: 0; width: 52px; height: 52px; align-items: center; justify-content: center; }
+  /* When open: show logo on left, X on right */
+  .hp-nav--open .hp-nav__inner { width: 100%; height: auto; padding: 12px 16px; justify-content: space-between; }
+  .hp-nav--open .hp-nav .hp-logo { display: block; }
+  .hp-nav--open .hp-logo { display: block; }
+  .hp-nav__hamburger { display: flex; }
+  .hp-nav__mobile { display: flex; }
+}
+
+@media (hover: none) {
+  .hp-nav__pill {
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+}
+
+/* Width-based, not (hover: none) — the CTA's hover lift needs to be off
+   any time the nav is in its mobile/collapsed layout (below the same
+   1024px breakpoint the rest of this file's mobile rules use), including
+   on a desktop browser with a mouse narrowed down to that width. A
+   `(hover: none)` media query only matches devices that can't hover at
+   all (real touchscreens) — it doesn't match a desktop browser just
+   because its window happens to be narrow, so it missed exactly that
+   case. On an actual touch device this also still matters: tapping the
+   CTA can trigger a "sticky" hover state that many mobile browsers apply
+   on tap and only clear once something else is tapped, leaving the -2px
+   lift visibly stuck in place instead of a clean, momentary press. */
+@media (max-width: 1024px) {
+  .hp-nav__quote:hover {
+    transform: none;
+  }
+}

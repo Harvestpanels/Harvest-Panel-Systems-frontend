@@ -1,0 +1,257 @@
+.hp-gallery-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  /* 40px, not the 24px every other section uses between its intro text
+     and its content below — .hp-gallery-viewport right below this (see
+     its own -16px top margin/padding overflow trick further down) shifts
+     16px up into this margin to make room for card-hover scale/shadow
+     without clipping, eating exactly 16px of it. 40 - 16 = 24, landing on
+     the same visible gap as every other section instead of the 8px this
+     read as before. */
+  margin-bottom: 40px;
+}
+
+.hp-gallery-header h2 {
+  margin-bottom: 0;
+}
+
+.hp-gallery-header__desc {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+  margin: 12px 0 0;
+  max-width: 640px;
+}
+
+.hp-gallery-header__nav {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hp-gallery-nav {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.16);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--hp-navy);
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), background 0.2s ease, opacity 0.2s ease;
+}
+
+.hp-gallery-nav:hover:not(:disabled) {
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.hp-gallery-nav:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.hp-gallery-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.hp-gallery-viewport {
+  overflow: hidden;
+  padding: 16px 12px;
+  margin: -16px -12px;
+}
+
+/* Caps and centers the single (now full-width-capable) card at the same
+   1024px breakpoint .hp-panel-grid switches to one column at — without
+   this, a lone portrait-aspect (3:4) gallery card would stretch to the
+   full glass container width at this breakpoint (862px wide, ~1150px
+   tall at 1024px viewport), rather than the same 480px-wide, reasonably
+   proportioned card size .hp-panel-grid settles on (below that width,
+   the card is already narrower than 480px anyway, so the cap simply
+   doesn't bind — nothing to center). Applied to the card and track
+   rather than to .hp-gallery-viewport itself deliberately: the viewport
+   relies on its own -12px horizontal margin to exactly cancel out its
+   12px padding (so the card still lands flush with the glass container
+   at the wider, uncapped widths) — centering *it* via margin: auto would
+   have wiped out that negative margin outright, which is exactly what
+   happened the first time this was tried (confirmed empirically: the
+   card lost 24px of width — its padding's worth — at every width below
+   this cap). The track has no such trick to conflict with; it already
+   shrink-wraps to the single card's own width with no explicit width of
+   its own, so centering it here is conflict-free. */
+@media (max-width: 1024px) {
+  .hp-gallery-card {
+    max-width: 480px;
+  }
+
+  .hp-gallery-track {
+    margin: 0 auto;
+  }
+}
+
+.hp-gallery-track {
+  display: flex;
+  gap: 16px;
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  will-change: transform;
+}
+
+@keyframes hp-gallery-card-in {
+  from { opacity: 0; transform: scale(1.02); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.hp-gallery-card {
+  position: relative;
+  flex: 0 0 calc((100% - 16px * (var(--cols) - 1)) / var(--cols));
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 0;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), opacity 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-gallery-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(243, 241, 236, 0.4);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hp-gallery-card:hover::after { opacity: 1; }
+
+.hp-gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
+  animation: hp-gallery-card-in 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.hp-gallery-card:hover img {
+  transform: scale(1.08);
+  will-change: transform;
+}
+
+.hp-gallery-card__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px;
+  background: linear-gradient(180deg, transparent, rgba(10, 10, 10, 0.88) 55%);
+  z-index: 1;
+  /* Promotes this gradient to its own compositing layer. Without it, this
+     element gets rasterized as part of its ancestor .hp-gallery-track's
+     own moving layer (that track slides via `transform`, with its own
+     `will-change: transform` — see above) instead of as a stable texture
+     of its own — on mobile GPUs that shows up as the gradient visibly
+     banding/tearing while the track is mid-slide from a swipe. */
+  transform: translateZ(0);
+}
+
+.hp-gallery-card__use {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4a8fd6;
+  margin-bottom: 4px;
+}
+
+.hp-gallery-card__caption {
+  display: block;
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 16px;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  color: var(--hp-cream);
+  margin-bottom: 6px;
+}
+
+.hp-gallery-card__desc {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(243, 241, 236, 0.85);
+  transition:
+    grid-template-rows 0.38s cubic-bezier(0.16,1,0.3,1),
+    opacity 0.28s ease;
+}
+
+.hp-gallery-card__desc > span {
+  overflow: hidden;
+}
+
+.hp-gallery-card:hover .hp-gallery-card__desc {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.hp-gallery-track:hover .hp-gallery-card:not(:hover) {
+  opacity: 0.55;
+  transform: scale(0.97);
+}
+
+/* Suppressed while a wheel-driven scroll step is in flight (see Gallery.jsx
+   — the .is-scrolling class is toggled on .hp-gallery-viewport for the
+   duration of each step). Scaling a photo down by a non-integer factor
+   like 0.97 forces the browser to resample it, reading as a slight blur —
+   an intentional cue for a deliberate mouse hover, but scrolling drags the
+   cursor across cards incidentally, so it looked like a stray blur left
+   behind on whichever card the cursor happened to pass over. */
+.hp-gallery-viewport.is-scrolling .hp-gallery-track:hover .hp-gallery-card:not(:hover) {
+  opacity: 1;
+  transform: none;
+}
+
+.hp-gallery-card:hover {
+  z-index: 3;
+  transform: scale(1.04);
+}
+
+@media (max-width: 640px) {
+  .hp-gallery-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  /* The column layout above left-aligns everything by default — keep the
+     prev/next buttons on the right, matching where they sit on desktop,
+     instead of falling in line with the left-aligned text. */
+  .hp-gallery-header__nav { align-self: flex-end; }
+  .hp-gallery-card__caption { font-size: 15px; }
+}
+
+/* Also matched by max-width, not just hover: none — a desktop browser
+   window resized/emulated narrow still reports (hover: hover), so a mouse
+   there would still trigger the effects this block exists to disable. */
+@media (hover: none), (max-width: 1024px) {
+  /* Gallery cards — no scale/dim sibling effect, description always
+     visible, matching how every other section's cards (see
+     .hp-panel-card__label p in PanelSection.css) behave on touch: nothing
+     here is reachable by hover on a touch device, so gating content behind
+     :hover just hides it permanently instead of revealing it on tap. */
+  .hp-gallery-track:hover .hp-gallery-card:not(:hover) { opacity: 1; transform: none; }
+  .hp-gallery-card:hover { transform: none; }
+  .hp-gallery-card:hover img { transform: none; }
+  .hp-gallery-card:hover::after { opacity: 0; }
+  .hp-gallery-card__desc { grid-template-rows: 1fr; opacity: 1; }
+}

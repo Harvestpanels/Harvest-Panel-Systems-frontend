@@ -1,0 +1,57 @@
+.hp-notfound {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+}
+
+/* Font-size/margin (structural) come from the shared .hp-eyebrow/
+   .hp-hero-heading rules in App.css — this page's own dark background
+   (see body's --hp-dark) needs the same light cream-on-dark treatment the
+   home hero uses, scoped here rather than reusing Hero.css's version
+   directly since that's a different chunk this page never loads. */
+.hp-notfound .hp-eyebrow {
+  color: var(--hp-cream);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+}
+
+.hp-notfound .hp-hero-heading {
+  color: var(--hp-cream);
+}
+
+.hp-notfound__inner {
+  text-align: center;
+}
+
+.hp-notfound__inner h1 {
+  margin-bottom: 16px;
+}
+
+/* :not(.hp-eyebrow) — without it, this rule's class+tag specificity
+   (0,1,1) beat .hp-eyebrow's own font-size (0,1,0) regardless of source
+   order, so the "404" label was silently rendering at this paragraph's
+   16px instead of the small-caps 12px .hp-eyebrow is supposed to be. */
+.hp-notfound__inner p:not(.hp-eyebrow) {
+  font-size: 16px;
+  color: rgba(243, 241, 236, 0.75);
+  max-width: 480px;
+  margin: 0 auto 32px;
+}
+
+/* This page never needed its own mobile pass before now — the shared
+   .hp-eyebrow/.hp-hero-heading rules in App.css already scale down via
+   clamp(), and the single centered button/paragraph never had anything to
+   overflow — but every other page gets an explicit breakpoint of its own,
+   so this one shouldn't be the one exception relying purely on inherited
+   behavior. min-height is trimmed here for the same reason .hp-section's
+   own padding shrinks at this width in App.css: 70vh on a short mobile
+   viewport (address bar collapsed) pushed the footer needlessly far below
+   the fold. */
+@media (max-width: 640px) {
+  .hp-notfound {
+    min-height: 55vh;
+  }
+
+  .hp-notfound__inner p:not(.hp-eyebrow) {
+    font-size: 15px;
+  }
+}

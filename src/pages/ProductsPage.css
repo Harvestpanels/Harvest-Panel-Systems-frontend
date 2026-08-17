@@ -1,0 +1,444 @@
+.hp-products-page {
+  min-height: 100vh;
+}
+
+/* Same light frosted-glass container the home page's sections use (see
+   .hp-glass in App.css) — position/border-radius/padding/backdrop-blur
+   structure and colors both copied directly, so every panel on this page
+   reads as the exact same "section" the home page uses, just with a
+   video instead of a static image sitting behind it. Reused by the hero,
+   the search/filter bar, and each product category section below. */
+.hp-products-panel {
+  position: relative;
+  border-radius: 28px;
+  padding: 56px 48px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5));
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.1);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.6) inset,
+    0 -1px 1px rgba(var(--hp-navy-rgb), 0.08) inset,
+    0 24px 60px rgba(var(--hp-navy-rgb), 0.12);
+  overflow: hidden;
+}
+
+.hp-products-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0) 70%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .hp-products-panel { padding: 28px 20px; border-radius: 18px; }
+}
+
+@media (hover: none) {
+  .hp-products-panel {
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    backdrop-filter: blur(12px) saturate(130%);
+  }
+}
+
+/* Just top clearance/spacing now — the actual panel width and padding
+   come from the same .hp-products-category__inner > .hp-products-panel
+   nesting every other section below it uses (see JSX), so the two are
+   guaranteed to render at the exact same width instead of two separately
+   maintained max-width values silently drifting apart. */
+.hp-products-hero {
+  /* Enough top margin to clear the fixed nav pill entirely (18px top +
+     ~84px tall on desktop) with real breathing room, instead of nearly
+     touching/tucking underneath it. Both the pill and this hero card use
+     the same translucent white frosted-glass style, so a narrow gap reads
+     as the two bleeding into one shape rather than two distinct elements
+     — this needs to be noticeably wider than a plain "clears the nav" gap
+     to keep them visually separate. */
+  margin-top: 180px;
+  text-align: center;
+}
+
+/* .hp-eyebrow (Hero.css) is styled cream-on-dark for the home page's video
+   hero — this page's hero sits on a light frosted card instead, so that
+   same light color washed out to near-invisible here. Overriding just the
+   color/shadow for this page's context rather than touching the shared
+   class, which still needs its original light styling on the home page. */
+.hp-products-hero .hp-eyebrow {
+  color: var(--hp-navy);
+  font-weight: 700;
+  text-shadow: none;
+}
+
+/* Font-size/margin (structural, shared with every page's hero heading)
+   live in App.css — scoped to .hp-products-hero here so this page's navy
+   color can't bleed onto another page's heading if this chunk happens to
+   already be loaded in the same SPA session (e.g. a visitor who came from
+   /products and then hit a 404). */
+.hp-products-hero .hp-hero-heading {
+  color: var(--hp-navy);
+}
+
+/* Staggered per-word reveal on load — each word's delay is set inline
+   (see ProductsPage.jsx) so it scales with however many words are in the
+   heading instead of a fixed set of nth-child rules. */
+.hp-hero-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(26px);
+  animation: hp-word-in 0.65s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes hp-word-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-hero-word { animation: none; opacity: 1; transform: none; }
+}
+
+/* Plain, once-per-visit fade for the hero eyebrow/subtext and the filter
+   bar — deliberately simpler than .hp-filter-anim's pop, and never
+   re-triggered by searching or switching categories (see the effect in
+   ProductsPage.jsx, which is scoped to leave these alone). */
+.hp-hero-fade {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: hp-fade-in 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes hp-fade-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-hero-fade { animation: none; opacity: 1; transform: none; }
+}
+
+.hp-products-hero__sub {
+  font-size: 16px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.hp-products-hero__sub a {
+  color: #4a8fd6;
+  text-decoration: underline;
+}
+
+.hp-products-filter {
+  margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.hp-products-filter__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 280px;
+  max-width: 420px;
+  color: rgba(var(--hp-navy-rgb), 0.5);
+}
+
+.hp-products-filter__search svg {
+  position: absolute;
+  left: 14px;
+  pointer-events: none;
+}
+
+.hp-products-filter__search input {
+  /* Reset native OS search-field chrome (iOS/macOS Safari render
+     type="search" with baked-in rounding/padding/icon that fights our
+     custom icon and pill styling otherwise). */
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  font-family: "Inter", sans-serif;
+  /* 16px avoids iOS Safari's auto-zoom-on-focus for inputs under 16px */
+  font-size: 16px;
+  color: var(--hp-navy);
+  background: rgba(var(--hp-navy-rgb), 0.04);
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.14);
+  border-radius: 999px;
+  padding: 11px 16px 11px 42px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.hp-products-filter__search input::-webkit-search-cancel-button,
+.hp-products-filter__search input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.hp-products-filter__search input::placeholder {
+  color: rgba(var(--hp-navy-rgb), 0.4);
+}
+
+.hp-products-filter__search input:focus-visible {
+  outline: none;
+  border-color: var(--hp-accent);
+  background: rgba(var(--hp-navy-rgb), 0.07);
+}
+
+.hp-products-filter__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hp-products-filter__chip {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(var(--hp-navy-rgb), 0.65);
+  background: rgba(var(--hp-navy-rgb), 0.04);
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.14);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-products-filter__chip:hover {
+  color: var(--hp-navy);
+  border-color: rgba(var(--hp-navy-rgb), 0.3);
+  transform: translateY(-1px);
+}
+
+.hp-products-filter__chip.is-active {
+  color: var(--hp-cream);
+  background: var(--hp-accent);
+  border-color: var(--hp-accent);
+}
+
+.hp-products-empty {
+  max-width: 1180px;
+  margin: 32px auto 0;
+  padding: 0 32px;
+  font-size: 14px;
+  color: rgba(var(--hp-navy-rgb), 0.6);
+}
+
+.hp-products-hidden {
+  display: none;
+}
+
+/* Same padding/isolation rhythm as the home page's .hp-section (App.css)
+   — deliberately a separate, page-scoped class rather than sharing that
+   literal one: .hp-section h2/.hp-section__eyebrow also carry the home
+   page's scroll-triggered reveal CSS (opacity:0 + translateY, cleared via
+   IntersectionObserver's .is-visible class), which this page's headings
+   never receive since they use their own JS-driven .hp-anim-item/
+   .hp-filter-anim system instead — sharing the class would've left every
+   heading permanently shifted down 32px with no way to clear it. */
+.hp-products-category {
+  position: relative;
+  z-index: 5;
+  padding: 110px 0;
+  isolation: isolate;
+}
+
+.hp-products-category__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.hp-products-category h2 {
+  font-size: clamp(26px, 4vw, 38px);
+  color: var(--hp-navy);
+  margin-bottom: 12px;
+}
+
+.hp-products-category__blurb {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.65);
+  max-width: 640px;
+  margin: 0 0 32px;
+}
+
+.hp-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  perspective: 1000px;
+}
+
+/* Every piece of text and every card carries this class and starts
+   hidden — see the mount/filter-change effect in ProductsPage.jsx, which
+   triggers the entrance animation below every time. */
+.hp-anim-item {
+  opacity: 0;
+}
+
+/* Holds the entrance animation's final state after it finishes (see
+   clearAnimOnEnd in ProductsPage.jsx) — plain, non-!important, so it
+   never fights the product cards' :hover tilt transform. */
+.hp-anim-item.hp-anim-done {
+  opacity: 1;
+}
+
+@keyframes hp-filter-pop {
+  0%   { opacity: 0; transform: translateY(26px) scale(0.94); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.015); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* animation-delay is set inline per element in ProductsPage.jsx (section
+   cascade + per-item stagger combined into one value), so no nth-child
+   delay rules are needed here. */
+.hp-filter-anim {
+  animation: hp-filter-pop 0.55s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-anim-item { opacity: 1; }
+  .hp-filter-anim { animation: none; }
+}
+
+.hp-product-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  /* Opaque, not translucent — a semi-transparent card here let the parent
+     panel's own backdrop-blur bleed through its edges, which read as a
+     blurry haze around the card (especially once it scaled up on hover). */
+  background: #fdfcfb;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.25s cubic-bezier(0.16,1,0.3,1),
+    opacity 0.45s cubic-bezier(0.16,1,0.3,1),
+    border-color 0.35s ease;
+}
+
+/* will-change scoped to only while a card is actually transforming —
+   entrance animation (.hp-filter-anim) or hover/group-hover — rather than
+   held permanently on every card in the grid (dozens at once), which
+   would otherwise reserve a compositor layer for each indefinitely.
+   `:has(.hp-product-card:hover)`, not a plain `:hover` on the grid itself
+   — the grid's own hoverable area includes its gaps/padding between cards,
+   so a plain `:hover` here would also match while the cursor sits in a gap
+   and no card is actually hovered. */
+.hp-filter-anim,
+.hp-products-grid:has(.hp-product-card:hover) .hp-product-card {
+  will-change: transform, opacity;
+}
+
+.hp-product-card:hover {
+  z-index: 2;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) scale(1.03);
+  border-color: rgba(var(--hp-navy-rgb), 0.25);
+}
+
+/* Cards are role="button" (not a real <button>/<a>), so the global
+   a:focus-visible/button:focus-visible rule in App.css doesn't reach them
+   — same ring, applied explicitly here for keyboard users. */
+.hp-product-card:focus-visible {
+  outline: 2px solid #4a8fd6;
+  outline-offset: 3px;
+}
+
+/* :has(.hp-product-card:hover), not a plain :hover on the grid — see the
+   will-change comment above. Without it, moving the cursor into a gap
+   between cards (still inside the grid's own rectangular hover area) dims
+   *every* card at once, with none left highlighted, since none of them
+   individually match :hover. */
+.hp-products-grid:has(.hp-product-card:hover) .hp-product-card:not(:hover) {
+  opacity: 0.6;
+  transform: scale(0.98);
+}
+
+.hp-product-card__img {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+/* Real <img>, not a CSS background-image — enables native lazy-loading
+   (loading="lazy" on the element in ProductsPage.jsx), proper alt text for
+   screen readers, and right-click-save/print, none of which a background-
+   image div supports. */
+.hp-product-card__img-el {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hp-product-card--hidden {
+  display: none;
+}
+
+.hp-product-card__body {
+  padding: 18px 20px 22px;
+}
+
+.hp-product-card__spec {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4a8fd6;
+  margin-bottom: 8px;
+}
+
+.hp-product-card__body h3 {
+  font-size: 17px;
+  text-transform: none;
+  color: var(--hp-navy);
+  margin-bottom: 8px;
+}
+
+.hp-product-card__body p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(var(--hp-navy-rgb), 0.7);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .hp-products-hero { margin-top: 90px; }
+  .hp-products-filter { margin-top: 28px; }
+  .hp-products-empty { padding: 0 20px; }
+  .hp-products-category { padding: 72px 0; }
+  .hp-products-category__inner { padding: 0 20px; }
+  .hp-products-grid { grid-template-columns: 1fr; }
+  /* Taller tap target — at the base 8px vertical padding these sat around
+     34px tall, under the ~40-44px comfortable touch-target guideline. */
+  .hp-products-filter__chip { padding: 13px 16px; }
+}
+
+@media (hover: none) {
+  .hp-products-grid:has(.hp-product-card:hover) .hp-product-card:not(:hover) { opacity: 1; transform: none; }
+  .hp-product-card:hover { transform: none; }
+  .hp-product-card:hover .hp-product-card__glare { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-product-card:hover { transform: none; }
+}
+
+/* ===================== SHARED SECTIONS =====================
+   Contact, Footer, and Nav are shared components also used as-is on the
+   home page — no color overrides needed here at all now: this page uses
+   the exact same light theme those components already default to, so
+   they render identically to how they look on the home page. */

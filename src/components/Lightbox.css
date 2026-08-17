@@ -1,0 +1,241 @@
+@keyframes hp-lightbox-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes hp-lightbox-figure-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes hp-lightbox-img-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.hp-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(10, 12, 16, 0.92);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: hp-lightbox-in 0.25s ease both;
+}
+
+.hp-lightbox__figure {
+  /* A fixed, large frame rather than shrink-wrapping to each photo's own
+     shape — a landscape (product) photo capped only by width ended up
+     short with lots of empty space around it, while a portrait (gallery)
+     photo filled most of the screen height, so the two looked like
+     completely different sizes. Every photo now displays via
+     `object-fit: contain` within this same frame (see .hp-lightbox__img),
+     so portrait and landscape photos both occupy a similarly large area
+     — background stays transparent (no solid fill color) so any
+     letterbox space just shows the modal's own backdrop through it,
+     rather than a visibly different-colored box with a seam at the
+     rounded corner. */
+  position: relative;
+  margin: 0;
+  width: min(92vw, 1100px);
+  height: 78vh;
+  display: block;
+  animation: hp-lightbox-figure-in 0.3s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Clips to rounded corners here, on an unscaled wrapper — see the comment
+   in Lightbox.jsx for why this can't just be border-radius directly on
+   the (transformed) img. */
+.hp-lightbox__img-clip {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hp-lightbox__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* No pinch/zoom gestures anymore (removed per request) — allow native
+     vertical scrolling to pass through untouched; only horizontal is
+     handled by JS (see handleTouchMove in Lightbox.jsx), which calls
+     preventDefault itself once it detects a horizontal swipe, so it
+     doesn't need touch-action to pre-emptively block anything there. */
+  touch-action: pan-y;
+  /* ZoomableImage is remounted fresh on every next/prev (keyed by index
+     in Lightbox.jsx), so this replays as a smooth fade-in on every photo
+     switch, not just when the lightbox first opens. */
+  animation: hp-lightbox-img-in 0.35s ease both;
+}
+
+/* Positioned (via inline style, computed in Lightbox.jsx from the photo's
+   natural size + the frame's rendered size) to exactly match the visible
+   photo's bounds within the frame — since the frame is often bigger than
+   the photo itself now, the caption/count need to track the actual photo
+   edges, not the frame's, or they'd float in empty letterbox space. */
+.hp-lightbox__photo-overlay {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Caption sits directly over the photo, matching the gallery card format.
+   Extra right padding (beyond the base 22px) reserves room for the
+   prev/next buttons sitting in this same corner (see
+   .hp-lightbox__nav-group) so long descriptions wrap clear of them
+   instead of running underneath. */
+.hp-lightbox__photo-overlay figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px 132px 20px 22px;
+  /* No border-radius here — the overlay (and this caption inside it) is
+     now nested inside .hp-lightbox__img-clip, which already clips
+     everything to rounded corners in one shared pass. A second,
+     independently-drawn radius on this element (even at the same 8px
+     value) risked a sub-pixel mismatch against the parent's clip,
+     visible as a hairline gap/crescent at the corner. */
+  background: linear-gradient(180deg, transparent, rgba(10, 10, 10, 0.88) 55%);
+  color: var(--hp-cream);
+  text-align: left;
+}
+
+.hp-lightbox__use {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4a8fd6;
+  margin-bottom: 4px;
+}
+
+.hp-lightbox__title {
+  display: block;
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 20px;
+  letter-spacing: 0.01em;
+  margin-bottom: 6px;
+}
+
+.hp-lightbox__desc {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(243, 241, 236, 0.85);
+  max-width: 640px;
+}
+
+.hp-lightbox__count {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: var(--hp-cream);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+.hp-lightbox__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--hp-cream);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* (hover: hover) scopes this to devices with a real pointer — touch
+   browsers otherwise apply ":hover" on tap and can leave it visually
+   "stuck" until the next unrelated tap, since there's no cursor to move
+   away and naturally clear it. */
+@media (hover: hover) {
+  .hp-lightbox__close:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: rotate(90deg);
+  }
+}
+
+/* Grouped together at the photo's own lower-right corner instead of split
+   across the left/right viewport edges. Lives inside
+   `.hp-lightbox__photo-overlay` (positioned/sized in Lightbox.jsx to
+   exactly match the visible photo's rendered bounds, not the frame around
+   it) rather than the frame itself — the frame is often bigger than the
+   photo (letterboxed), and anchoring to the frame's corner would leave
+   the buttons floating over empty space below a short (landscape) photo
+   instead of sitting on it. The overlay's own responsive measurement
+   (see computeContainBox in Lightbox.jsx) is what keeps this correct on
+   every device, not a fixed pixel value here. */
+.hp-lightbox__nav-group {
+  position: absolute;
+  bottom: 36px;
+  right: 36px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+  /* The overlay it lives in has pointer-events: none (it's otherwise just
+     decorative caption/count text) — opt back in so the buttons stay
+     clickable. */
+  pointer-events: auto;
+}
+
+.hp-lightbox__nav {
+  position: static;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--hp-cream);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.2s ease;
+}
+
+@media (hover: hover) {
+  .hp-lightbox__nav:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.18);
+    transform: scale(1.08);
+  }
+}
+
+.hp-lightbox__nav:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.hp-lightbox__nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .hp-lightbox { padding: 16px; gap: 4px; }
+  .hp-lightbox__nav-group { bottom: 24px; right: 24px; }
+  .hp-lightbox__nav { width: 38px; height: 38px; }
+  .hp-lightbox__close { top: 10px; right: 10px; width: 38px; height: 38px; }
+  .hp-lightbox__photo-overlay figcaption { padding: 16px 112px 16px 16px; }
+  .hp-lightbox__title { font-size: 17px; }
+  .hp-lightbox__desc { font-size: 12px; }
+}

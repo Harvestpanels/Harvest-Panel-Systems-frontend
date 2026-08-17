@@ -1,0 +1,175 @@
+.hp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.hp-card {
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  padding: 32px 28px;
+  transition-delay: 0.05s;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition:
+    opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+    transform 0.4s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.4s ease,
+    border-color 0.4s ease,
+    background 0.4s ease;
+}
+
+.hp-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(220px circle at 50% 0%, rgba(214, 40, 40, 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.hp-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.3);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.hp-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(214, 40, 40, 0.35);
+  box-shadow: 0 20px 40px -20px rgba(var(--hp-navy-rgb), 0.35);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.hp-card:hover::before { opacity: 1; }
+.hp-card:hover::after { opacity: 1; }
+
+.hp-cards .hp-card:nth-child(2) { transition-delay: 0.13s; }
+.hp-cards .hp-card:nth-child(3) { transition-delay: 0.26s; }
+
+.hp-card h3 {
+  font-size: 20px;
+  margin-bottom: 14px;
+  text-transform: none;
+  color: var(--hp-navy);
+  transition: color 0.3s ease;
+}
+
+.hp-card p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+  margin: 0;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.hp-card:hover p { color: rgba(var(--hp-navy-rgb), 0.88); }
+
+@media (max-width: 1024px) {
+  .hp-cards { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .hp-card { padding: 22px 18px; }
+}
+
+/* Also matched by max-width, not just hover: none — a desktop browser
+   window resized/emulated narrow still reports (hover: hover), so a mouse
+   there would still trigger the effects this block exists to disable. */
+@media (hover: none), (max-width: 1024px) {
+  .hp-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(var(--hp-navy-rgb), 0.12);
+    background: transparent;
+  }
+  .hp-card:hover::before { opacity: 0; }
+  .hp-card:hover::after { opacity: 0; }
+  .hp-card:hover p { color: rgba(var(--hp-navy-rgb), 0.72); }
+}
+
+/* Same navy-fill wipe used by the Who We Are section (see #why .hp-card in
+   WhoWeAre.css) — a solid navy fill rises from the card's bottom edge on
+   hover instead of the flat, instant background swap above, with the text
+   crossfading to cream (the same navy/cream palette the membership cards
+   flip to — see .hp-membership-badge__face--back in Memberships.css).
+   Scoped to #sustainability throughout: .hp-card/.hp-cards are shared with
+   WhoWeAre.css, and the #sustainability prefix outranks that file's bare
+   `.hp-card:hover` regardless of which stylesheet the bundler happens to
+   load second. */
+#sustainability .hp-card::before,
+#sustainability .hp-card::after {
+  content: none;
+}
+
+#sustainability .hp-card {
+  /* background-color explicitly cleared here — the base .hp-card:hover
+     above (still in effect for WhoWeAre.css's own cards, each file uses
+     its own scoped override) sets it to a translucent white, which
+     otherwise keeps showing through the not-yet-filled portion of the
+     card during the wipe transition since it's a different property than
+     the background-image/-size this rule overrides. */
+  background-color: transparent;
+  background-image: linear-gradient(var(--hp-navy), var(--hp-navy));
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% 0%;
+  transition:
+    opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+    transform 0.4s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.4s ease,
+    border-color 0.4s ease,
+    background-size 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+
+#sustainability .hp-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--hp-navy);
+  /* Explicitly none, not just omitted — see the matching comment in
+     #why .hp-card:hover (WhoWeAre.css) for why omitting it isn't enough. */
+  box-shadow: none;
+  background-size: 100% 100%;
+}
+
+#sustainability .hp-card:hover h3 { color: var(--hp-cream); }
+#sustainability .hp-card:hover p { color: rgba(243, 241, 236, 0.8); }
+
+@media (hover: none), (max-width: 1024px) {
+  #sustainability .hp-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(var(--hp-navy-rgb), 0.12);
+    background-size: 100% 0%;
+  }
+  #sustainability .hp-card:hover h3 { color: var(--hp-navy); }
+  #sustainability .hp-card:hover p { color: rgba(var(--hp-navy-rgb), 0.72); }
+}
+
+/* Tap-driven equivalent of the hover effect above, for touch devices
+   that have no hover at all — "is-active" is toggled by local state in
+   Sustainability.jsx on tap, on an *inner* wrapper rather than this card
+   itself (see the comment on SustainabilityCard there for why). `:has()`
+   lets this rule style the outer card based on that inner marker without
+   the card's own className ever needing to change. Gated to `hover: none`
+   specifically (not tied to viewport width) so a desktop browser window
+   merely resized narrow still uses hover like normal — only genuine
+   touch devices get the tap behavior. */
+@media (hover: none) {
+  #sustainability .hp-card:has(.is-active) {
+    transform: translateY(-8px);
+    border-color: var(--hp-navy);
+    box-shadow: none;
+    background-size: 100% 100%;
+  }
+  #sustainability .hp-card:has(.is-active) h3 { color: var(--hp-cream); }
+  #sustainability .hp-card:has(.is-active) p { color: rgba(243, 241, 236, 0.8); }
+  #sustainability .hp-card { cursor: pointer; }
+}

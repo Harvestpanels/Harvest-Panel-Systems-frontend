@@ -1,0 +1,26 @@
+/*
+  # Prevent clickjacking
+  X-Frame-Options: DENY
+
+  # Prevent MIME-type sniffing
+  X-Content-Type-Options: nosniff
+
+  # Only send origin in Referer header, never the full URL
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Disable browser features this site doesn't use
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+  # Opt in to cross-origin isolation (enables SharedArrayBuffer if ever needed)
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+  # Content Security Policy
+  # - default-src 'self'              only same-origin by default
+  # - script-src 'self' 'unsafe-inline'  React needs inline scripts for hydration
+  # - style-src 'self' 'unsafe-inline' https://fonts.googleapis.com
+  # - font-src 'self' https://fonts.gstatic.com
+  # - img-src 'self' data: https:    external images (gallery, Unsplash, etc.)
+  # - connect-src 'self'             no third-party API calls from client
+  # - media-src 'self'               video served from same origin
+  # - frame-ancestors 'none'         belt-and-suspenders against clickjacking
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; media-src 'self'; frame-ancestors 'none';
