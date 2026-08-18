@@ -154,7 +154,7 @@ function HomePage() {
         id="cold-storage"
         eyebrow="Cold storage"
         heading="Insulated panels for cold storage facilities"
-        description="Exterior and interior panel systems engineered to hold a consistent thermal envelope for refrigerated and frozen storage."
+        description="Interior panel systems engineered to hold a consistent thermal envelope for refrigerated and frozen storage."
         panels={COLD_STORAGE_PANELS}
         registerReveal={registerReveal}
       />

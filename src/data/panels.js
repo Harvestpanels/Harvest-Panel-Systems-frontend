@@ -1,11 +1,11 @@
-import indoorAgExteriorImg from "../assets/images/Sections/Data Centers/Data Centers -  Exterior Panels.webp";
-import indoorAgInteriorImg from "../assets/images/Sections/Data Centers/Data Centers - Interior Panels.webp";
-import indoorAgBenefitsImg from "../assets/images/Sections/Data Centers/Data Centers - Benefits.webp";
+import indoorAgInteriorImg from "../assets/images/Sections/Indoor Agriculture/Indoor Agriculture - Interior Panels.webp";
+import indoorAgGrowRoomImg from "../assets/images/Sections/Indoor Agriculture/Indoor Agriculture - Grow Room Panels.webp";
+import indoorAgBenefitsImg from "../assets/images/Sections/Indoor Agriculture/Indoor Agriculture - Benefits.webp";
 import coldStorageExteriorImg from "../assets/images/Sections/Cold Storage/Cold Storage - Exterior Panels.webp";
 import coldStorageInteriorImg from "../assets/images/Sections/Cold Storage/Cold Storage - Interior Panels.webp";
 import coldStorageBenefitsImg from "../assets/images/Sections/Cold Storage/Cold Storage - Benefits.webp";
-import pharmaceuticalExteriorImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Exterior Panels.webp";
-import pharmaceuticalWallSystemsImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Exterior Wall Systems.webp";
+import pharmaceuticalInteriorImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Interior Panels.webp";
+import pharmaceuticalCleanroomImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Cleanroom Panels.webp";
 import pharmaceuticalBenefitsImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Benefits.webp";
 import pembFrameStructureImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Frame & Structure.webp";
 import pembWallRoofImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Wall & Roof Panels.webp";
@@ -165,58 +165,58 @@ export const GALLERY_IMAGES = [
 // environment agriculture photos one at a time.
 export const INDOOR_AGRICULTURE_PANELS = [
   {
-    name: "Exterior Panels",
-    category: "Indoor Agriculture",
-    desc: "Insulated exterior wall systems forming a secure, weather-tight envelope for indoor grow facilities, integrating cleanly with HVAC and lighting infrastructure.",
-    img: indoorAgExteriorImg,
-  },
-  {
     name: "Interior Panels",
     category: "Indoor Agriculture",
-    desc: "Sanitary interior partition panels engineered for grow rooms and vegetative spaces, holding tight humidity and temperature control.",
+    desc: "Sanitary, wipe-clean wall and ceiling panels lining every grow corridor, holding a tight seal around doorways and mechanical penetrations for consistent climate control.",
     img: indoorAgInteriorImg,
+  },
+  {
+    name: "Grow Room Panels",
+    category: "Indoor Agriculture",
+    desc: "Reflective, high-albedo panel surfaces that maximize LED light distribution across multi-tier vertical racks, while resisting the humidity of a fully active grow room.",
+    img: indoorAgGrowRoomImg,
   },
   {
     name: "Benefits",
     category: "Indoor Agriculture",
-    desc: "Consistent climate control, mold- and moisture-resistant surfaces, and fast installation keep cultivation facilities compliant and production-ready.",
+    desc: "A seamless, mold-resistant envelope around every rack row keeps temperature, humidity, and light levels consistent from the first tier to the last.",
     img: indoorAgBenefitsImg,
   },
 ];
 
 export const COLD_STORAGE_PANELS = [
   {
-    name: "Exterior Panels",
+    name: "Cold Storage Panels",
     category: "Cold Storage",
-    desc: "Heavy-duty insulated exterior panels engineered to hold a tight thermal envelope for refrigerated and frozen storage facilities.",
+    desc: "Insulated panel walls and ceilings paired with sliding cooler doors and overhead evaporator units, holding a tight seal around every mechanical penetration along the storage corridor.",
     img: coldStorageExteriorImg,
   },
   {
     name: "Interior Panels",
     category: "Cold Storage",
-    desc: "Interior partition panels built for consistent temperature zones, with finishes suited to food-safety and sanitation requirements.",
+    desc: "Sanitary, wipe-clean panel surfaces throughout prep and staging areas, with digital temperature readouts and sliding doors keeping every zone at spec.",
     img: coldStorageInteriorImg,
   },
   {
     name: "Benefits",
     category: "Cold Storage",
-    desc: "Superior insulation values, moisture resistance, and low-maintenance surfaces keep cold storage facilities efficient year-round.",
+    desc: "A seamless panel envelope along the full length of the storage aisle keeps palletized product at a consistent temperature from the door to the back wall.",
     img: coldStorageBenefitsImg,
   },
 ];
 
 export const PHARMACEUTICAL_PANELS = [
   {
-    name: "Exterior Panels",
+    name: "Interior Panels",
     category: "Pharmaceutical",
-    desc: "Heavy-duty insulated exterior panels forming a controlled, weather-tight envelope, engineered to integrate cleanly with the rooftop mechanical and HVAC systems pharmaceutical manufacturing depends on.",
-    img: pharmaceuticalExteriorImg,
+    desc: "Hygienic interior wall and ceiling panels lining the production floor, sealing cleanly around process equipment and gowning-line traffic to hold a controlled, contamination-free environment.",
+    img: pharmaceuticalInteriorImg,
   },
   {
-    name: "Exterior Wall Systems",
+    name: "Cleanroom Panels",
     category: "Pharmaceutical",
-    desc: "Continuous insulated wall systems that hold a tight, consistent thermal envelope across large pharmaceutical manufacturing and storage buildings, resisting moisture and temperature swings year-round.",
-    img: pharmaceuticalWallSystemsImg,
+    desc: "Seamless cleanroom wall systems with integrated observation windows and stainless steel doors, built to hold ISO-classified air cleanliness between process rooms.",
+    img: pharmaceuticalCleanroomImg,
   },
   {
     name: "Benefits",
