@@ -340,16 +340,15 @@ h3 {
   margin: 14px 0 24px;
 }
 
-/* Every home-page section: eyebrow scaled up to read as a huge red
-   sub-headline (originally just the panel sections — Building Envelope,
-   Roof Panels, Data Center, Cold Storage, PEMB, Doors, Trim & Hardware —
+/* Every home-page section: eyebrow scaled up to read as a huge
+   sub-headline (originally just the panel sections — Indoor Agriculture,
+   Cold Storage, Pharmaceutical, PEMB, Doors, Trim & Hardware —
    now applied site-wide to Who We Are/Sustainability/Gallery/Memberships/
    FAQ/Contact too, for one consistent look across the whole page instead
    of two different heading styles). */
-#panels .hp-section__eyebrow,
-#exterior .hp-section__eyebrow,
-#data-center .hp-section__eyebrow,
+#indoor-agriculture .hp-section__eyebrow,
 #cold-storage .hp-section__eyebrow,
+#pharmaceutical .hp-section__eyebrow,
 #pemb .hp-section__eyebrow,
 #doors .hp-section__eyebrow,
 #trim-hardware .hp-section__eyebrow,
@@ -376,10 +375,9 @@ h3 {
 
 /* ...and the heading scales back down to read as a sub-headline under
    that now-large eyebrow, instead of matching it in size. */
-#panels h2,
-#exterior h2,
-#data-center h2,
+#indoor-agriculture h2,
 #cold-storage h2,
+#pharmaceutical h2,
 #pemb h2,
 #doors h2,
 #trim-hardware h2,

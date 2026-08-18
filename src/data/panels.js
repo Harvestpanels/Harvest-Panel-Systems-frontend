@@ -1,12 +1,6 @@
-import buildingCommercialImg from "../assets/images/Sections/Building Envelope/Commercial.webp";
-import buildingIndustrialImg from "../assets/images/Sections/Building Envelope/Industrial.webp";
-import buildingResidentialImg from "../assets/images/Sections/Building Envelope/Residential.webp";
-import roofCommercialImg from "../assets/images/Sections/Roof Panels/Commercial.webp";
-import roofIndustrialImg from "../assets/images/Sections/Roof Panels/Industrial.webp";
-import roofResidentialImg from "../assets/images/Sections/Roof Panels/Residential.webp";
-import dataCenterExteriorImg from "../assets/images/Sections/Data Centers/Data Centers -  Exterior Panels.webp";
-import dataCenterInteriorImg from "../assets/images/Sections/Data Centers/Data Centers - Interior Panels.webp";
-import dataCenterBenefitsImg from "../assets/images/Sections/Data Centers/Data Centers - Benefits.webp";
+import indoorAgExteriorImg from "../assets/images/Sections/Data Centers/Data Centers -  Exterior Panels.webp";
+import indoorAgInteriorImg from "../assets/images/Sections/Data Centers/Data Centers - Interior Panels.webp";
+import indoorAgBenefitsImg from "../assets/images/Sections/Data Centers/Data Centers - Benefits.webp";
 import coldStorageExteriorImg from "../assets/images/Sections/Cold Storage/Cold Storage - Exterior Panels.webp";
 import coldStorageInteriorImg from "../assets/images/Sections/Cold Storage/Cold Storage - Interior Panels.webp";
 import coldStorageBenefitsImg from "../assets/images/Sections/Cold Storage/Cold Storage - Benefits.webp";
@@ -166,67 +160,27 @@ export const GALLERY_IMAGES = [
   },
 ];
 
-export const BUILDING_ENVELOPE_PANELS = [
-  {
-    name: "Industrial",
-    category: "Building Envelope",
-    desc: "From a 2,000 sqft shop to a 200,000 sqft factory, insulated metal panels save time and money on every build.",
-    img: buildingIndustrialImg,
-  },
-  {
-    name: "Commercial",
-    category: "Building Envelope",
-    desc: "Commercial facilities need to look good and perform well. Insulated metal panels deliver both.",
-    img: buildingCommercialImg,
-  },
-  {
-    name: "Residential",
-    category: "Building Envelope",
-    desc: "Single-family, multi-family, stand-alone, or connected, a great option for your next residential project.",
-    img: buildingResidentialImg,
-  },
-];
-
-export const ROOF_PANELS = [
-  {
-    name: "Industrial",
-    category: "Roof",
-    desc: "A ribbed metal roof profile engineered to shed water fast and hold up to decades of heavy-use weather with minimal maintenance.",
-    img: roofIndustrialImg,
-  },
-  {
-    name: "Commercial",
-    category: "Roof",
-    desc: "Standing seam roof panels with concealed fasteners for a clean, professional roofline on any commercial building.",
-    img: roofCommercialImg,
-  },
-  {
-    name: "Residential",
-    category: "Roof",
-    desc: "Durable, low-maintenance metal roofing built to outlast traditional shingles on single-family and multi-family homes.",
-    img: roofResidentialImg,
-  },
-];
-
-// TODO: every `img` below is a placeholder — swap for real photos one at a time.
-export const DATA_CENTER_PANELS = [
+// TODO: every `img` below is a placeholder (reused from the old Data Center
+// section's stock photos) — swap for real indoor cultivation / controlled
+// environment agriculture photos one at a time.
+export const INDOOR_AGRICULTURE_PANELS = [
   {
     name: "Exterior Panels",
-    category: "Data Center",
-    desc: "Insulated exterior wall systems built to protect critical equipment with a tight, secure, weather-resistant envelope.",
-    img: dataCenterExteriorImg,
+    category: "Indoor Agriculture",
+    desc: "Insulated exterior wall systems forming a secure, weather-tight envelope for indoor grow facilities, integrating cleanly with HVAC and lighting infrastructure.",
+    img: indoorAgExteriorImg,
   },
   {
     name: "Interior Panels",
-    category: "Data Center",
-    desc: "Clean, finish-grade interior panels for server halls and controlled-access spaces that need a durable, easy-to-maintain surface.",
-    img: dataCenterInteriorImg,
+    category: "Indoor Agriculture",
+    desc: "Sanitary interior partition panels engineered for grow rooms and vegetative spaces, holding tight humidity and temperature control.",
+    img: indoorAgInteriorImg,
   },
   {
     name: "Benefits",
-    category: "Data Center",
-    desc: "Consistent thermal performance, fire-rated core options, and fast installation help keep critical environments stable and on schedule.",
-    img: dataCenterBenefitsImg,
+    category: "Indoor Agriculture",
+    desc: "Consistent climate control, mold- and moisture-resistant surfaces, and fast installation keep cultivation facilities compliant and production-ready.",
+    img: indoorAgBenefitsImg,
   },
 ];
 

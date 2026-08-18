@@ -2,14 +2,12 @@ import { useState } from "react";
 import "../styles/App.css";
 import logo from "../assets/images/General/harvest-panel-logo.webp";
 import {
-  BUILDING_ENVELOPE_PANELS,
   COLD_STORAGE_PANELS,
-  DATA_CENTER_PANELS,
   DOOR_PANELS,
   GALLERY_IMAGES,
+  INDOOR_AGRICULTURE_PANELS,
   PEMB_PANELS,
   PHARMACEUTICAL_PANELS,
-  ROOF_PANELS,
   TRIM_HARDWARE_PANELS,
 } from "../data/panels";
 import { PARALLAX_BG_URL, VIDEO_URL } from "../data/site";
@@ -49,9 +47,7 @@ const HOME_TOP_LINKS = [
 // scroll spy hook's dependency list.
 const OVERVIEW_SECTIONS = [
   { id: "why", label: "Who We Are" },
-  { id: "panels", label: "Building Envelope" },
-  { id: "exterior", label: "Roof Panels" },
-  { id: "data-center", label: "Data Centers" },
+  { id: "indoor-agriculture", label: "Indoor Agriculture" },
   { id: "cold-storage", label: "Cold Storage" },
   { id: "pharmaceutical", label: "Pharmaceutical" },
   { id: "pemb", label: "Pre-Engineered Metal Buildings" },
@@ -147,27 +143,11 @@ function HomePage() {
       <Hero heroContentRef={heroContentRef} />
       <WhoWeAre registerReveal={registerReveal} />
       <PanelSection
-        id="panels"
-        eyebrow="Building envelope"
-        heading="Insulated Metal Wall Panels"
-        description="Insulation + facade in one step."
-        panels={BUILDING_ENVELOPE_PANELS}
-        registerReveal={registerReveal}
-      />
-      <PanelSection
-        id="exterior"
-        eyebrow="Roof panels"
-        heading="Insulated Metal Roof Panels"
-        description="Durable insulated roofing for tangible temperature control and real cost savings."
-        panels={ROOF_PANELS}
-        registerReveal={registerReveal}
-      />
-      <PanelSection
-        id="data-center"
-        eyebrow="Data centers"
-        heading="Panel systems built for data center facilities inside and out"
-        description="Insulated wall and interior panel systems engineered for the tight tolerances and reliability data center environments demand."
-        panels={DATA_CENTER_PANELS}
+        id="indoor-agriculture"
+        eyebrow="Indoor agriculture"
+        heading="Insulated panels for controlled environment agriculture"
+        description="Precision climate-control panel systems engineered for indoor cultivation, vertical farming, and controlled environment agriculture facilities."
+        panels={INDOOR_AGRICULTURE_PANELS}
         registerReveal={registerReveal}
       />
       <PanelSection

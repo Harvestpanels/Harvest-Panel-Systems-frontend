@@ -1,6 +1,6 @@
 import "./PanelSection.css";
 
-// Shared card-grid layout used by both the Building Envelope and Roof Panels sections.
+// Shared card-grid layout used by the Indoor Agriculture, Cold Storage, Pharmaceutical, PEMB, Doors, and Trim & Hardware sections.
 export default function PanelSection({ id, eyebrow, heading, description, panels, registerReveal }) {
   return (
     <section className="hp-section" id={id}>
