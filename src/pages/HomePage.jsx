@@ -53,7 +53,7 @@ const HOME_TOP_LINKS = [
 // scroll spy hook's dependency list.
 const OVERVIEW_SECTIONS = [
   { id: "why", label: "Who We Are" },
-  { id: "indoor-agriculture", label: "Indoor Agriculture" },
+  { id: "indoor-agriculture", label: "Controlled Environment Agriculture" },
   { id: "cold-storage", label: "Cold Storage" },
   { id: "pharmaceutical", label: "Pharmaceutical" },
   { id: "laboratories", label: "Laboratories" },
@@ -155,9 +155,9 @@ function HomePage() {
       <WhoWeAre registerReveal={registerReveal} />
       <PanelSection
         id="indoor-agriculture"
-        eyebrow="Indoor agriculture"
-        heading="Insulated panels for controlled environment agriculture"
-        description="Precision climate-control panel systems engineered for indoor cultivation, vertical farming, and controlled environment agriculture facilities."
+        eyebrow="Controlled environment agriculture"
+        heading="Insulated panels for every growing environment"
+        description="Precision climate-control panel systems engineered for indoor cultivation, greenhouse construction, and modular grow room facilities."
         panels={INDOOR_AGRICULTURE_PANELS}
         registerReveal={registerReveal}
       />

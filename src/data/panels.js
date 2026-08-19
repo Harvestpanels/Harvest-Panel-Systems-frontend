@@ -174,21 +174,21 @@ export const GALLERY_IMAGES = [
 
 export const INDOOR_AGRICULTURE_PANELS = [
   {
-    name: "Interior Panels",
-    category: "Indoor Agriculture",
-    desc: "Sanitary, wipe-clean wall and ceiling panels lining every grow corridor, holding a tight seal around doorways and mechanical penetrations for consistent climate control.",
+    name: "Indoor Agriculture",
+    category: "Controlled Environment Agriculture",
+    desc: "From lettuce to mushrooms to cannabis, insulated panel systems hold the precise temperature, humidity, and sanitation every type of indoor crop production needs.",
     img: indoorAgInteriorImg,
   },
   {
-    name: "Grow Room Panels",
-    category: "Indoor Agriculture",
-    desc: "Reflective, high-albedo panel surfaces that maximize LED light distribution across multi-tier vertical racks, while resisting the humidity of a fully active grow room.",
+    name: "Greenhouse Agriculture",
+    category: "Controlled Environment Agriculture",
+    desc: "Panel side walls give your greenhouse and head house more insulation and structural stability, holding steady climate control even in harsher climates.",
     img: indoorAgGrowRoomImg,
   },
   {
-    name: "Benefits",
-    category: "Indoor Agriculture",
-    desc: "A seamless, mold-resistant envelope around every rack row keeps temperature, humidity, and light levels consistent from the first tier to the last.",
+    name: "Modular Farming",
+    category: "Controlled Environment Agriculture",
+    desc: "Build out modular grow rooms and dry rooms with insulated metal panels for a fast, flexible facility layout that scales with your operation.",
     img: indoorAgBenefitsImg,
   },
 ];
