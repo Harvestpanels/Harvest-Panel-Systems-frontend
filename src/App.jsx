@@ -11,6 +11,7 @@ import ChatWidget from "./components/ChatWidget";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
 const SpecsPage = lazy(() => import("./pages/SpecsPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 // React Router keeps the browser's scroll position across navigations by
@@ -82,6 +83,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/specs" element={<SpecsPage />} />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

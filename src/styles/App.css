@@ -349,7 +349,11 @@ h3 {
 #indoor-agriculture .hp-section__eyebrow,
 #cold-storage .hp-section__eyebrow,
 #pharmaceutical .hp-section__eyebrow,
+#laboratories .hp-section__eyebrow,
+#insulated-booths .hp-section__eyebrow,
+#flooring .hp-section__eyebrow,
 #pemb .hp-section__eyebrow,
+#modular-housing .hp-section__eyebrow,
 #doors .hp-section__eyebrow,
 #trim-hardware .hp-section__eyebrow,
 #why .hp-section__eyebrow,
@@ -359,12 +363,16 @@ h3 {
 #faq .hp-section__eyebrow,
 #contact .hp-section__eyebrow,
 #efficiency .hp-section__eyebrow,
+#profiles .hp-section__eyebrow,
 #colors .hp-section__eyebrow,
 #foam-core .hp-section__eyebrow,
 #certifications .hp-section__eyebrow,
 #structural .hp-section__eyebrow,
 #engineering .hp-section__eyebrow,
-#production-video .hp-section__eyebrow {
+#production-video .hp-section__eyebrow,
+#posts .hp-section__eyebrow,
+#testimonials .hp-section__eyebrow,
+#social-media .hp-section__eyebrow {
   font-family: "Big Shoulders Display", sans-serif;
   font-size: clamp(32px, 5vw, 52px);
   font-weight: 800;
@@ -378,7 +386,11 @@ h3 {
 #indoor-agriculture h2,
 #cold-storage h2,
 #pharmaceutical h2,
+#laboratories h2,
+#insulated-booths h2,
+#flooring h2,
 #pemb h2,
+#modular-housing h2,
 #doors h2,
 #trim-hardware h2,
 #why h2,
@@ -388,12 +400,16 @@ h3 {
 #faq h2,
 #contact h2,
 #efficiency h2,
+#profiles h2,
 #colors h2,
 #foam-core h2,
 #certifications h2,
 #structural h2,
 #engineering h2,
-#production-video h2 {
+#production-video h2,
+#posts h2,
+#testimonials h2,
+#social-media h2 {
   font-size: clamp(20px, 2.5vw, 26px);
 }
 

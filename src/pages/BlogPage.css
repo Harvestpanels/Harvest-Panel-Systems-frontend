@@ -1,0 +1,21 @@
+/* Matches .hp-specs-hero's own spacing exactly (SpecsPage.css) — top
+   clearance for the fixed nav pill plus centered text, no bottom padding
+   of its own since the next section's top padding already provides it. */
+.hp-blog-hero {
+  margin-top: 180px;
+}
+
+@media (max-width: 640px) {
+  .hp-blog-hero { margin-top: 90px; }
+}
+
+.hp-blog-hero .hp-eyebrow {
+  color: var(--hp-navy);
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.hp-blog-hero .hp-hero-heading {
+  color: var(--hp-navy);
+}
+

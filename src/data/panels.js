@@ -7,6 +7,12 @@ import coldStorageBenefitsImg from "../assets/images/Sections/Cold Storage/Cold 
 import pharmaceuticalInteriorImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Interior Panels.webp";
 import pharmaceuticalCleanroomImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Cleanroom Panels.webp";
 import pharmaceuticalBenefitsImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Benefits.webp";
+import laboratoriesInteriorImg from "../assets/images/Sections/Laboratories/Laboratories - Interior Panels.webp";
+import laboratoriesLabPanelsImg from "../assets/images/Sections/Laboratories/Laboratories - Lab Panels.webp";
+import laboratoriesBenefitsImg from "../assets/images/Sections/Laboratories/Laboratories - Benefits.webp";
+import insulatedBoothHuntingHutsImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Hunting Huts.webp";
+import insulatedBoothGuardShacksImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Guard Shacks.webp";
+import insulatedBoothLawnShedsImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Lawn Sheds.webp";
 import pembFrameStructureImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Frame & Structure.webp";
 import pembWallRoofImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Wall & Roof Panels.webp";
 import pembCustomOptionsImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Custom Options.webp";
@@ -16,11 +22,17 @@ import slidingCoolerDoorImg from "../assets/images/Sections/Doors/Doors - Slidin
 import trimCornerAnglesImg from "../assets/images/Sections/Trim & Hardware/Trim & Hardware - Corner Angles.webp";
 import trimTBarImg from "../assets/images/Sections/Trim & Hardware/Trim & Hardware - T Bar.webp";
 import trimMiscellaneousImg from "../assets/images/Sections/Trim & Hardware/Trim & Hardware - Miscellaneous.webp";
+import flooringEpoxyImg from "../assets/images/Sections/Flooring/Flooring - Epoxy Flooring.webp";
+import flooringGrindSealImg from "../assets/images/Sections/Flooring/Flooring - Grind and Seal Flooring.webp";
+import flooringMaterialInstallImg from "../assets/images/Sections/Flooring/Flooring - Material and Install Packages.webp";
 import galleryImg1 from "../assets/images/Sections/Photo Gallery/PG1.webp";
 import galleryImg2 from "../assets/images/Sections/Photo Gallery/PG2.webp";
 import galleryImg3 from "../assets/images/Sections/Photo Gallery/PG3.webp";
 import galleryImg4 from "../assets/images/Sections/Photo Gallery/PG4.webp";
 import galleryImg5 from "../assets/images/Sections/Photo Gallery/PG5.webp";
+import modularHousingDisasterReliefImg from "../assets/images/Sections/Modular IMP Housing/Modular IMP Housing - Disaster Relief.webp";
+import modularHousingAffordableImg from "../assets/images/Sections/Modular IMP Housing/Modular IMP Housing - Affordable Housing.webp";
+import modularHousingWeatherproofImg from "../assets/images/Sections/Modular IMP Housing/Modular IMP Housing - Weatherproof Housing.webp";
 import galleryImg6 from "../assets/images/Sections/Photo Gallery/PG6.webp";
 import galleryImg7 from "../assets/images/Sections/Photo Gallery/PG7.webp";
 import galleryImg8 from "../assets/images/Sections/Photo Gallery/PG8.webp";
@@ -160,9 +172,6 @@ export const GALLERY_IMAGES = [
   },
 ];
 
-// TODO: every `img` below is a placeholder (reused from the old Data Center
-// section's stock photos) — swap for real indoor cultivation / controlled
-// environment agriculture photos one at a time.
 export const INDOOR_AGRICULTURE_PANELS = [
   {
     name: "Interior Panels",
@@ -226,6 +235,69 @@ export const PHARMACEUTICAL_PANELS = [
   },
 ];
 
+export const LABORATORY_PANELS = [
+  {
+    name: "Interior Panels",
+    category: "Laboratories",
+    desc: "Hygienic interior wall and ceiling panels lining research and testing spaces, sealing cleanly around benchtop equipment and fume hood penetrations to hold precise environmental control.",
+    img: laboratoriesInteriorImg,
+  },
+  {
+    name: "Lab Panels",
+    category: "Laboratories",
+    desc: "Seamless panel wall systems built to hold tight temperature and humidity tolerances between lab suites, with wipe-clean surfaces suited to research and testing environments.",
+    img: laboratoriesLabPanelsImg,
+  },
+  {
+    name: "Benefits",
+    category: "Laboratories",
+    desc: "Precise temperature and humidity control, seamless sanitary surfaces, and fast installation keep laboratory facilities compliant and research-ready.",
+    img: laboratoriesBenefitsImg,
+  },
+];
+
+export const INSULATED_BOOTH_PANELS = [
+  {
+    name: "Hunting Huts",
+    category: "Insulated Booths",
+    desc: "Compact, fully insulated hunting huts built to hold a stable interior temperature through cold-weather sits, with a weather-tight panel envelope that resists condensation.",
+    img: insulatedBoothHuntingHutsImg,
+  },
+  {
+    name: "Guard Shacks",
+    category: "Insulated Booths",
+    desc: "Prefabricated guard shacks and security booths with insulated walls and roof for year-round comfort at gatehouses, checkpoints, and jobsite entrances.",
+    img: insulatedBoothGuardShacksImg,
+  },
+  {
+    name: "Lawn Sheds",
+    category: "Insulated Booths",
+    desc: "Insulated lawn and equipment sheds that keep stored tools and equipment protected from temperature swings and moisture, available in custom sizes.",
+    img: insulatedBoothLawnShedsImg,
+  },
+];
+
+export const FLOORING_PANELS = [
+  {
+    name: "Epoxy Flooring",
+    category: "Flooring",
+    desc: "Seamless, chemical- and abrasion-resistant epoxy floor coatings built to hold up under heavy foot and equipment traffic in industrial and commercial spaces.",
+    img: flooringEpoxyImg,
+  },
+  {
+    name: "Grind and Seal Flooring",
+    category: "Flooring",
+    desc: "A mechanically ground and densified concrete floor sealed for dust control and durability, a cost-effective option for warehouse and production floors.",
+    img: flooringGrindSealImg,
+  },
+  {
+    name: "Material and Install Packages",
+    category: "Flooring",
+    desc: "Combined material and installation packages that pair your panel order with a complete flooring solution, coordinated on a single project timeline.",
+    img: flooringMaterialInstallImg,
+  },
+];
+
 export const PEMB_PANELS = [
   {
     name: "Frame & Structure",
@@ -244,6 +316,27 @@ export const PEMB_PANELS = [
     category: "Metal Building",
     desc: "Custom sizes, designs, and color options let every pre-engineered building match the look and footprint your project needs.",
     img: pembCustomOptionsImg,
+  },
+];
+
+export const MODULAR_HOUSING_PANELS = [
+  {
+    name: "Disaster Relief",
+    category: "Modular IMP Housing",
+    desc: "Rapidly deployable modular units built from insulated metal panels, shipped ready to assemble for emergency and disaster relief housing.",
+    img: modularHousingDisasterReliefImg,
+  },
+  {
+    name: "Affordable Housing",
+    category: "Modular IMP Housing",
+    desc: "Cost-effective modular housing units that use insulated panel construction to cut build time and materials cost without sacrificing durability.",
+    img: modularHousingAffordableImg,
+  },
+  {
+    name: "Weatherproof Housing",
+    category: "Modular IMP Housing",
+    desc: "Fully sealed insulated panel envelopes engineered to hold up against wind, rain, and extreme temperatures in any climate.",
+    img: modularHousingWeatherproofImg,
   },
 ];
 
@@ -268,7 +361,6 @@ export const DOOR_PANELS = [
   },
 ];
 
-// TODO: every `img` below is a placeholder — swap for real photos one at a time.
 export const TRIM_HARDWARE_PANELS = [
   {
     name: "Corner angles and flashing",

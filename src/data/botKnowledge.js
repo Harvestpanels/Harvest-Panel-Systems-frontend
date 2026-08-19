@@ -208,8 +208,9 @@ export const BOT_INTENTS = [
       "industrial building", "commercial building", "residential", "what industries",
       "cultivation", "cannabis", "grow room", "indoor agriculture", "walk in cooler", "walk-in cooler",
       "pharmaceutical", "pharma", "gmp", "gmp compliant", "drug manufacturing",
+      "laboratory", "laboratories", "lab", "research lab", "testing lab",
     ],
-    answer: "We work across a wide range of building types: indoor cultivation & cannabis facilities, data centers, cold storage & refrigeration, walk-in freezers and coolers, clean rooms, pharmaceutical manufacturing facilities, pre-engineered metal buildings, and industrial, commercial, and residential construction. Each has its own recommended panel specs (fire rating, insulation, and finish), our team can match one to your project.",
+    answer: "We work across a wide range of building types: indoor cultivation & cannabis facilities, data centers, cold storage & refrigeration, walk-in freezers and coolers, clean rooms, pharmaceutical manufacturing facilities, research and testing laboratories, pre-engineered metal buildings, and industrial, commercial, and residential construction. Each has its own recommended panel specs (fire rating, insulation, and finish), our team can match one to your project.",
     links: [{ label: "See building types", href: "/#indoor-agriculture" }],
   },
   {

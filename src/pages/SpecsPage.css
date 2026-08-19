@@ -179,6 +179,48 @@
   #foam-core .hp-card { cursor: pointer; }
 }
 
+/* ===================== PANEL FACE PROFILES ===================== */
+/* Simple pill-select row (unlike the Color Palette's swatch grid below —
+   there's no color chip to show per option, just a name) driving the same
+   .hp-specs-color-preview live-preview pattern that section already
+   defines, reused here as-is for the profile photo crossfade/zoom/label. */
+.hp-specs-profile-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.hp-specs-profile-pill {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.16);
+  background: rgba(var(--hp-navy-rgb), 0.05);
+  color: var(--hp-navy);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hp-specs-profile-pill[aria-pressed="true"] {
+  background: var(--hp-accent);
+  border-color: var(--hp-accent);
+  color: var(--hp-cream);
+}
+
+.hp-specs-profile-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+  margin: 14px 0 0;
+  max-width: 640px;
+  min-height: 3.2em;
+}
+
 /* ===================== COLOR PALETTE ===================== */
 /* Swatch grid on the left, live panel-photo preview on the right — picking
    a swatch crossfades the preview to that color's real panel photo (see
@@ -358,6 +400,17 @@
   box-shadow: 0 24px 48px -20px rgba(var(--hp-navy-rgb), 0.4);
 }
 
+/* Profiles' own preview uses a fixed aspect ratio (uspanels.com's own
+   .hp-specs-profile-preview) instead of Color Palette's min-height — the
+   two sections' source photos have different proportions, so sharing
+   .hp-specs-color-preview's sizing alone left this one visibly shorter and
+   wider than the reference. */
+.hp-specs-profile-preview {
+  aspect-ratio: 2.4 / 1;
+  min-height: 0;
+  margin-top: 24px;
+}
+
 .hp-specs-color-preview__zoom {
   position: absolute;
   top: 14px;
@@ -453,6 +506,12 @@
 .hp-specs-subheading + .hp-specs-feature-list {
   margin-top: 12px;
 }
+
+/* .hp-specs-profiles / .hp-specs-profile and their hover/tap states are
+   defined once, below, under "ENGINEERING DATA" — this section used to
+   duplicate them here, which left two conflicting rulesets fighting over
+   the same class names (the stale copy still had the incorrect
+   translateY(-8px) hover lift removed from the one below). */
 
 .hp-specs-feature-list {
   display: flex;
@@ -680,7 +739,6 @@
 }
 
 .hp-specs-profile:hover {
-  transform: translateY(-8px);
   border-color: var(--hp-navy);
   background-size: 100% 100%;
 }
@@ -718,7 +776,7 @@
 }
 
 /* Tap-driven equivalent for touch devices, which have no hover at all —
-   "is-active" is toggled by local state in FaceProfileCard (SpecsPage.jsx)
+   "is-active" is toggled by the `tappedFaceProfile` state in SpecsPage.jsx
    on tap, on an *inner* wrapper rather than this card itself, same pattern
    as #why .hp-card:has(.is-active) in WhoWeAre.css. */
 @media (hover: none) {
@@ -922,6 +980,7 @@
    snap-back. */
 .hp-specs-hero .hp-anim-item,
 #efficiency .hp-anim-item,
+#profiles .hp-anim-item,
 #colors .hp-anim-item,
 #foam-core .hp-anim-item,
 #certifications .hp-anim-item,
@@ -934,6 +993,7 @@
 
 .hp-specs-hero .hp-anim-item.hp-anim-done,
 #efficiency .hp-anim-item.hp-anim-done,
+#profiles .hp-anim-item.hp-anim-done,
 #colors .hp-anim-item.hp-anim-done,
 #foam-core .hp-anim-item.hp-anim-done,
 #certifications .hp-anim-item.hp-anim-done,

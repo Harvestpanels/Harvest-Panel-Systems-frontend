@@ -1,0 +1,110 @@
+.hp-blog-slideshow {
+  margin-top: 24px;
+}
+
+.hp-blog-slideshow__viewport {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.hp-blog-slideshow__track {
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.hp-blog-slide {
+  position: relative;
+  flex: 0 0 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.hp-blog-slide__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hp-blog-slide__category {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+}
+
+.hp-blog-post__category {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hp-accent);
+  background: rgba(var(--hp-accent-rgb), 0.1);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.hp-blog-slide__label {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 40px 44px;
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(10, 10, 10, 0.88) 60%);
+  color: var(--hp-cream);
+}
+
+.hp-blog-slide__label h3 {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  max-width: 640px;
+}
+
+.hp-blog-slide__label p {
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(243, 241, 236, 0.85);
+  margin: 0 0 10px;
+  max-width: 640px;
+}
+
+.hp-blog-post__date {
+  font-size: 12px;
+  color: rgba(243, 241, 236, 0.6);
+}
+
+.hp-blog-slideshow__dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.hp-blog-slideshow__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(243, 241, 236, 0.4);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.hp-blog-slideshow__dot.is-active {
+  background: var(--hp-accent);
+}
+
+@media (max-width: 640px) {
+  .hp-blog-slide__label { padding: 24px 20px; }
+  .hp-blog-slide__label h3 { font-size: 19px; }
+  .hp-blog-slide__label p { font-size: 13px; }
+}

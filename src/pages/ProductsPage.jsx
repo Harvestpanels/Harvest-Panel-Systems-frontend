@@ -18,6 +18,7 @@ import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
 import Faq from "../components/Faq";
 import Contact from "../components/Contact";
+import SocialMedia from "../components/SocialMedia";
 import Toast from "../components/Toast";
 
 // Maps a product into the { src, title, category, desc } shape Lightbox
@@ -57,7 +58,7 @@ const PRODUCTS_NAV_SECTIONS = [
   { id: "trim-hardware-panels", label: "Trim & Hardware" },
 ];
 
-const PRODUCTS_SCROLL_SPY_IDS = [...PRODUCTS_NAV_SECTIONS.map((s) => s.id), "faq", "contact"];
+const PRODUCTS_SCROLL_SPY_IDS = [...PRODUCTS_NAV_SECTIONS.map((s) => s.id), "faq", "contact", "social-media"];
 
 const CATEGORY_FILTERS = [
   { id: "all", label: "All products" },
@@ -360,12 +361,14 @@ export default function ProductsPage() {
     })),
     { id: "faq", label: "FAQ" },
     { id: "contact", label: "Contact Us" },
+    { id: "social-media", label: "Follow Us" },
   ];
 
   // Plain top-level nav links, not tucked inside a dropdown — "Products"
   // scrolls to top rather than navigating (this page already is /products).
   const productsTopLinks = [
     { to: "/", label: "Home" },
+    { to: "/blog", label: "Blog" },
     { id: "products-top", label: "Products", onClick: scrollToTop },
     { to: "/specs", label: "Specs" },
   ];
@@ -390,6 +393,7 @@ export default function ProductsPage() {
       items: [
         { label: "FAQ", onClick: () => scrollCenter("faq"), active: activeSectionId === "faq" },
         { label: "Contact Us", onClick: () => scrollCenter("contact"), active: activeSectionId === "contact" },
+        { label: "Follow Us", onClick: () => scrollCenter("social-media"), active: activeSectionId === "social-media" },
       ],
     },
   ];
@@ -622,6 +626,8 @@ export default function ProductsPage() {
       <Faq registerReveal={registerReveal} />
 
       <Contact registerReveal={registerReveal} onToast={setToast} />
+
+      <SocialMedia registerReveal={registerReveal} />
 
       <Footer logo={logo} />
 

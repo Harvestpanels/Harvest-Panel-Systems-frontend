@@ -221,6 +221,7 @@
 .hp-nav__logo-slot {
   display: flex;
   align-items: center;
+  margin-left: 13px;
 }
 
 .hp-nav__inner-content {

@@ -1,3 +1,7 @@
+import flatProfileImg from "../assets/images/Panel Profiles/Flat.webp";
+import boxProfileImg from "../assets/images/Panel Profiles/Box.webp";
+import trapezoidalProfileImg from "../assets/images/Panel Profiles/Trapezoidal.webp";
+import embossedProfileImg from "../assets/images/Panel Profiles/Embossed.webp";
 import colzaYellowImg from "../assets/images/Color Palette/Colza Yellow.webp";
 import flameRedImg from "../assets/images/Color Palette/Flame Red.webp";
 import gentianBlueImg from "../assets/images/Color Palette/Gentian Blue.webp";
@@ -151,7 +155,21 @@ export const TRIM_ACCESSORIES = [
   "Butyl",
 ];
 
-export const FACE_PROFILES = [
+// Preview image + description for each standard face profile, shown with
+// the same select-a-pill/live-preview UI the Color Palette section uses
+// (see COLOR_PALETTE above and the "profiles" section in SpecsPage.jsx).
+export const PANEL_PROFILES = [
+  { name: "Flat", desc: "A smooth, unribbed face for the most minimal, monolithic appearance.", img: flatProfileImg },
+  { name: "Box", desc: "Flat pans separated by narrow ribs, the cleanest, most contemporary look.", img: boxProfileImg },
+  { name: "Trapezoidal", desc: "Repeating angular ribs for a bold, structured profile with added rigidity, common on exterior wall and roof panels.", img: trapezoidalProfileImg },
+  { name: "Embossed", desc: "A subtle textured stucco finish that hides minor surface imperfections and reduces the appearance of oil-canning.", img: embossedProfileImg },
+];
+
+// A separate, smaller set of face profiles shown inline in the Engineering
+// Data table (Box/Wave/Flat) — distinct from PANEL_PROFILES' own live-preview
+// section above (Flat/Box/Trapezoidal/Embossed), matching the reference
+// site's own Engineering Data layout.
+export const EXTERNAL_FACE_PROFILES = [
   { name: "Box", desc: "Flat pans separated by narrow ribs, the cleanest, most contemporary look." },
   { name: "Wave", desc: "Continuous rounded corrugations for added stiffness and a classic industrial profile." },
   { name: "Flat", desc: "A smooth, unribbed face for the most minimal, monolithic appearance." },

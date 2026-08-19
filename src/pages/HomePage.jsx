@@ -4,8 +4,12 @@ import logo from "../assets/images/General/harvest-panel-logo.webp";
 import {
   COLD_STORAGE_PANELS,
   DOOR_PANELS,
+  FLOORING_PANELS,
   GALLERY_IMAGES,
   INDOOR_AGRICULTURE_PANELS,
+  INSULATED_BOOTH_PANELS,
+  LABORATORY_PANELS,
+  MODULAR_HOUSING_PANELS,
   PEMB_PANELS,
   PHARMACEUTICAL_PANELS,
   TRIM_HARDWARE_PANELS,
@@ -27,6 +31,7 @@ import Gallery from "../components/Gallery";
 import Memberships from "../components/Memberships";
 import Faq from "../components/Faq";
 import Contact from "../components/Contact";
+import SocialMedia from "../components/SocialMedia";
 import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
 import Toast from "../components/Toast";
@@ -35,6 +40,7 @@ import Toast from "../components/Toast";
 // to top rather than navigating (this page already is "/").
 const HOME_TOP_LINKS = [
   { id: "top", label: "Home", onClick: scrollToTop },
+  { to: "/blog", label: "Blog" },
   { to: "/products", label: "Products" },
   { to: "/specs", label: "Specs" },
 ];
@@ -50,7 +56,11 @@ const OVERVIEW_SECTIONS = [
   { id: "indoor-agriculture", label: "Indoor Agriculture" },
   { id: "cold-storage", label: "Cold Storage" },
   { id: "pharmaceutical", label: "Pharmaceutical" },
+  { id: "laboratories", label: "Laboratories" },
+  { id: "insulated-booths", label: "Insulated Booths" },
+  { id: "flooring", label: "Flooring" },
   { id: "pemb", label: "Pre-Engineered Metal Buildings" },
+  { id: "modular-housing", label: "Modular IMP Housing" },
   { id: "doors", label: "Doors" },
   { id: "trim-hardware", label: "Trim & Hardware" },
   { id: "gallery", label: "Photo Gallery" },
@@ -61,6 +71,7 @@ const OVERVIEW_SECTIONS = [
 const INQUIRY_SECTIONS = [
   { id: "faq", label: "FAQ" },
   { id: "contact", label: "Contact Us" },
+  { id: "social-media", label: "Follow Us" },
 ];
 
 const SCROLL_SPY_IDS = [...OVERVIEW_SECTIONS, ...INQUIRY_SECTIONS].map((s) => s.id);
@@ -167,11 +178,43 @@ function HomePage() {
         registerReveal={registerReveal}
       />
       <PanelSection
+        id="laboratories"
+        eyebrow="Laboratories"
+        heading="Insulated panels for laboratory facilities"
+        description="Precision-controlled panel systems engineered for research and testing laboratories, holding tight temperature, humidity, and contamination tolerances."
+        panels={LABORATORY_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="insulated-booths"
+        eyebrow="Insulated booths"
+        heading="Insulated panels for booths, huts, and shacks"
+        description="Compact insulated panel structures built for hunting huts, guard shacks, and lawn sheds, keeping small standalone spaces sealed and temperature-stable."
+        panels={INSULATED_BOOTH_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="flooring"
+        eyebrow="Flooring"
+        heading="Flooring systems to match your panel envelope"
+        description="Epoxy coatings, grind and seal finishes, and combined material and install packages that round out the building envelope from wall to floor."
+        panels={FLOORING_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
         id="pemb"
         eyebrow="Pre-engineered metal buildings"
         heading="Complete metal building systems, frame to finish"
         description="Steel frame structures clad with insulated wall and roof panels, available in custom sizes, designs, and colors for any project."
         panels={PEMB_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="modular-housing"
+        eyebrow="Modular IMP housing"
+        heading="Modular housing built from insulated metal panels"
+        description="Fast-assembling modular units for disaster relief, affordable housing, and weatherproof housing, all built from the same insulated panel envelope."
+        panels={MODULAR_HOUSING_PANELS}
         registerReveal={registerReveal}
       />
       <PanelSection
@@ -195,6 +238,7 @@ function HomePage() {
       <Sustainability registerReveal={registerReveal} />
       <Faq registerReveal={registerReveal} />
       <Contact registerReveal={registerReveal} onToast={setToast} />
+      <SocialMedia registerReveal={registerReveal} />
       <Footer logo={logo} />
 
       {lightbox.lightboxOpen && (
