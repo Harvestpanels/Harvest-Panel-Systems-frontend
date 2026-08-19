@@ -1,8 +1,8 @@
 import facilityImg from "../assets/images/General/Harvest Panel Systems Facility.webp";
-import flatPanelProfileImg from "../assets/images/Blog/Flat Panel Profile.webp";
 import coldStorageExteriorImg from "../assets/images/Sections/Cold Storage/Cold Storage - Exterior Panels.webp";
+import galleryImg1 from "../assets/images/Sections/Photo Gallery/PG1.webp";
 import galleryImg5 from "../assets/images/Sections/Photo Gallery/PG5.webp";
-import embossedPanelProfileImg from "../assets/images/Blog/Embossed Panel Profile.webp";
+import pembFrameStructureImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Frame & Structure.webp";
 import pembWallRoofImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Wall & Roof Panels.webp";
 
 export const BLOG_POSTS = [
@@ -20,7 +20,7 @@ export const BLOG_POSTS = [
     desc: "A breakdown of how each foam core performs on fire rating, thermal efficiency, and cost, so you can match the right one to your project's requirements.",
     date: "2026-05-18",
     dateText: "May 18, 2026",
-    img: flatPanelProfileImg,
+    img: pembFrameStructureImg,
   },
   {
     title: "48-Hour Turnaround for a Regional Cold Storage Build-Out",
@@ -44,7 +44,7 @@ export const BLOG_POSTS = [
     desc: "A textured, imperfection-hiding finish joins our standard Box and Flat face profiles, now available across the full panel lineup.",
     date: "2026-03-21",
     dateText: "March 21, 2026",
-    img: embossedPanelProfileImg,
+    img: galleryImg1,
   },
   {
     title: "Retrofitting a Pre-Engineered Metal Building with Insulated Panels",
