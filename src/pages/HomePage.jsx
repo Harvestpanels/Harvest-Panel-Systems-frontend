@@ -14,7 +14,7 @@ import {
   PHARMACEUTICAL_PANELS,
   TRIM_HARDWARE_PANELS,
 } from "../data/panels";
-import { PARALLAX_BG_URL, VIDEO_URL } from "../data/site";
+import { CURTAIN_BG_URL, PARALLAX_BG_URL, VIDEO_URL } from "../data/site";
 import { useHeroParallax } from "../hooks/useHeroParallax";
 import { useLightbox } from "../hooks/useLightbox";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -147,7 +147,7 @@ function HomePage() {
         <div
           className="hp-parallax"
           ref={parallaxRef}
-          style={{ backgroundImage: `url(${PARALLAX_BG_URL})` }}
+          style={{ backgroundImage: `url(${CURTAIN_BG_URL})` }}
         />
       </div>
 
