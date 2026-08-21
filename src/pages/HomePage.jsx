@@ -2,6 +2,7 @@ import { useState } from "react";
 import "../styles/App.css";
 import logo from "../assets/images/General/harvest-panel-logo.webp";
 import {
+  AIRPLANE_HANGAR_PANELS,
   COLD_STORAGE_PANELS,
   DOOR_PANELS,
   FLOORING_PANELS,
@@ -57,6 +58,7 @@ const OVERVIEW_SECTIONS = [
   { id: "cold-storage", label: "Cold Storage" },
   { id: "pharmaceutical", label: "Pharmaceutical" },
   { id: "laboratories", label: "Laboratories" },
+  { id: "airplane-hangars", label: "Airplane Hangars" },
   { id: "insulated-booths", label: "Insulated Booths" },
   { id: "flooring", label: "Flooring" },
   { id: "pemb", label: "Pre-Engineered Metal Buildings" },
@@ -183,6 +185,14 @@ function HomePage() {
         heading="Insulated panels for laboratory facilities"
         description="Precision-controlled panel systems engineered for research and testing laboratories, holding tight temperature, humidity, and contamination tolerances."
         panels={LABORATORY_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="airplane-hangars"
+        eyebrow="Airplane hangars"
+        heading="Insulated panels for airplane hangar facilities"
+        description="Long-span insulated panel systems built for the scale of aviation hangars, covering wide clear spans while holding a consistent, weather-tight interior envelope."
+        panels={AIRPLANE_HANGAR_PANELS}
         registerReveal={registerReveal}
       />
       <PanelSection

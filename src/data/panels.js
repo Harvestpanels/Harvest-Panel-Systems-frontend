@@ -14,6 +14,9 @@ import insulatedBoothHuntingHutsImg from "../assets/images/Sections/Insulated Bo
 import insulatedBoothGuardShacksImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Guard Shacks.webp";
 import insulatedBoothLawnShedsImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Lawn Sheds.webp";
 import pembFrameStructureImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Frame & Structure.webp";
+import airplaneHangarRoofLinerImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Roof & Ceiling Liner Panels.webp";
+import airplaneHangarWallSystemsImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Interior Wall Systems.webp";
+import airplaneHangarBenefitsImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Benefits.webp";
 import pembWallRoofImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Wall & Roof Panels.webp";
 import pembCustomOptionsImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Custom Options.webp";
 import hingeCoolerDoorImg from "../assets/images/Sections/Doors/Doors - Hinge Cooler Doors.webp";
@@ -195,64 +198,85 @@ export const INDOOR_AGRICULTURE_PANELS = [
 
 export const COLD_STORAGE_PANELS = [
   {
-    name: "Cold Storage Panels",
+    name: "Blast Freeze & Distribution Panels",
     category: "Cold Storage",
-    desc: "Insulated panel walls and ceilings paired with sliding cooler doors and overhead evaporator units, holding a tight seal around every mechanical penetration along the storage corridor.",
+    desc: "Panel systems built for high-velocity blast freeze tunnels and 3PL distribution warehouses, holding a continuous vapor barrier across long spans so frozen product moves from dock to storage without a break in the thermal envelope.",
     img: coldStorageExteriorImg,
   },
   {
-    name: "Interior Panels",
+    name: "Food & Beverage Processing Panels",
     category: "Cold Storage",
-    desc: "Sanitary, wipe-clean panel surfaces throughout prep and staging areas, with digital temperature readouts and sliding doors keeping every zone at spec.",
+    desc: "Washdown-durable panel surfaces engineered for USDA- and FDA-regulated processing floors, with smooth, non-porous joints that eliminate the harborage points sanitary design audits look for.",
     img: coldStorageInteriorImg,
   },
   {
     name: "Benefits",
     category: "Cold Storage",
-    desc: "A seamless panel envelope along the full length of the storage aisle keeps palletized product at a consistent temperature from the door to the back wall.",
+    desc: "A continuous, factory-sealed envelope cuts the condensation and ice buildup that come from thermal gaps, while panel construction installs faster than traditional built-up cooler/freezer walls — keeping product at spec from the loading dock to the back of the aisle.",
     img: coldStorageBenefitsImg,
   },
 ];
 
 export const PHARMACEUTICAL_PANELS = [
   {
-    name: "Interior Panels",
+    name: "GMP & Cleanroom Panels",
     category: "Pharmaceutical",
-    desc: "Hygienic interior wall and ceiling panels lining the production floor, sealing cleanly around process equipment and gowning-line traffic to hold a controlled, contamination-free environment.",
+    desc: "Seamless, non-shedding panel systems built to ISO 14644 cleanroom classifications and EU GMP Annex 1 grades, with coved wall-to-floor transitions and factory-notched joints that reduce on-site cutting and particulate generation during installation.",
     img: pharmaceuticalInteriorImg,
   },
   {
-    name: "Cleanroom Panels",
+    name: "USP 797/800 Compounding Panels",
     category: "Pharmaceutical",
-    desc: "Seamless cleanroom wall systems with integrated observation windows and stainless steel doors, built to hold ISO-classified air cleanliness between process rooms.",
+    desc: "Panel envelopes suited to both sterile compounding suites (positive-pressure rooms that protect the product from contamination under USP <797>) and hazardous drug compounding rooms (negative-pressure containment under USP <800>), holding the airtight seal each pressure cascade depends on.",
     img: pharmaceuticalCleanroomImg,
   },
   {
     name: "Benefits",
     category: "Pharmaceutical",
-    desc: "Consistent temperature and humidity control, seamless sanitary surfaces, and fast installation keep pharmaceutical facilities compliant and production-ready.",
+    desc: "An airtight, validated envelope supports the pressure differentials GMP and USP compounding rooms are built around, while seamless surfaces reduce microbial and particulate harborage — shortening the path from construction to validation and production.",
     img: pharmaceuticalBenefitsImg,
   },
 ];
 
 export const LABORATORY_PANELS = [
   {
-    name: "Interior Panels",
+    name: "Wet Lab & Containment Panels",
     category: "Laboratories",
-    desc: "Hygienic interior wall and ceiling panels lining research and testing spaces, sealing cleanly around benchtop equipment and fume hood penetrations to hold precise environmental control.",
+    desc: "Sealed floor, wall, and window junctions built for BSL-rated containment labs, supporting the directional (inward) airflow BSL-3 and BSL-4 spaces require, alongside chemical-resistant surface options for general wet lab use.",
     img: laboratoriesInteriorImg,
   },
   {
-    name: "Lab Panels",
+    name: "Vivarium & Research Panels",
     category: "Laboratories",
-    desc: "Seamless panel wall systems built to hold tight temperature and humidity tolerances between lab suites, with wipe-clean surfaces suited to research and testing environments.",
+    desc: "Wipe-clean, sanitary panel surfaces for vivariums and animal research spaces, built to pair with ASHRAE 170-compatible ventilation and hold the species-specific environmental control AAALAC-accredited facilities are evaluated against.",
     img: laboratoriesLabPanelsImg,
   },
   {
     name: "Benefits",
     category: "Laboratories",
-    desc: "Precise temperature and humidity control, seamless sanitary surfaces, and fast installation keep laboratory facilities compliant and research-ready.",
+    desc: "An airtight panel envelope supports the negative-pressure containment and precise environmental control that research and testing facilities are audited on, with seamless surfaces that simplify decontamination between studies.",
     img: laboratoriesBenefitsImg,
+  },
+];
+
+export const AIRPLANE_HANGAR_PANELS = [
+  {
+    name: "Roof & Ceiling Liner Panels",
+    category: "Airplane Hangars",
+    desc: "Insulated liner panels under the roof deck stop the condensation drip that bare steel purlins and skin sheet out over a parked aircraft, holding a dry, radiant-heat-friendly ceiling across the full clear span.",
+    img: airplaneHangarRoofLinerImg,
+  },
+  {
+    name: "Interior Wall Systems",
+    category: "Airplane Hangars",
+    desc: "Impact-resistant interior wall panels stand up to tow tractors, tugs, and ground equipment traffic along the hangar floor, while sealed joints keep the shop's conditioned air from leaking out around the bay door.",
+    img: airplaneHangarWallSystemsImg,
+  },
+  {
+    name: "Benefits",
+    category: "Airplane Hangars",
+    desc: "A consistent shop temperature keeps maintenance crews productive and protects avionics and composite work from condensation, while a dry, wipe-clean interior cuts the corrosion risk bare metal framing carries.",
+    img: airplaneHangarBenefitsImg,
   },
 ];
 
