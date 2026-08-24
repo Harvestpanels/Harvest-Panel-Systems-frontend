@@ -41,137 +41,67 @@ import galleryImg7 from "../assets/images/Sections/Photo Gallery/PG7.webp";
 import galleryImg8 from "../assets/images/Sections/Photo Gallery/PG8.webp";
 import galleryImg9 from "../assets/images/Sections/Photo Gallery/PG9.webp";
 import galleryImg10 from "../assets/images/Sections/Photo Gallery/PG10.webp";
-import galleryImg11 from "../assets/images/Sections/Photo Gallery/PG11.webp";
-import galleryImg12 from "../assets/images/Sections/Photo Gallery/PG12.webp";
-import galleryImg13 from "../assets/images/Sections/Photo Gallery/PG13.webp";
-import galleryImg14 from "../assets/images/Sections/Photo Gallery/PG14.webp";
-import galleryImg15 from "../assets/images/Sections/Photo Gallery/PG15.webp";
-import galleryImg16 from "../assets/images/Sections/Photo Gallery/PG16.webp";
-import galleryImg17 from "../assets/images/Sections/Photo Gallery/PG17.webp";
-import galleryImg18 from "../assets/images/Sections/Photo Gallery/PG18.webp";
-import galleryImg19 from "../assets/images/Sections/Photo Gallery/PG19.webp";
-import galleryImg20 from "../assets/images/Sections/Photo Gallery/PG20.webp";
 
 export const GALLERY_IMAGES = [
   {
     src: galleryImg1,
-    category: "Exterior",
-    title: "Panel Corner Elevation",
-    desc: "A sharp corner elevation showing insulated wall panels finished with a bold red accent trim.",
+    category: "Interior",
+    title: "Insulated PVC Wall Corridor",
+    desc: "A hygienic PVC-faced interior wall corridor, finished with a tight, wipe-clean panel seam running the full ceiling-to-floor height.",
   },
   {
     src: galleryImg2,
-    category: "Exterior",
-    title: "Roofline & Soffit Detail",
-    desc: "A close-up of the roofline and perforated soffit panels, finished with a red accent trim along the eave.",
+    category: "Interior",
+    title: "Panel-Clad Facility Hallway",
+    desc: "An interior hallway framed by insulated wall panels and exposed structural steel, with sprinkler mains routed cleanly overhead.",
   },
   {
     src: galleryImg3,
-    category: "Exterior",
-    title: "Building Entrance Facade",
-    desc: "A finished building entrance framed by insulated wall panels, glazing, and a covered upper balcony.",
+    category: "Interior",
+    title: "Insulated Storage Room",
+    desc: "A finished interior storage room with insulated wall panels and overhead ventilation fans wired in along the ceiling.",
   },
   {
     src: galleryImg4,
-    category: "Exterior",
-    title: "Cantilevered Panel Overhangs",
-    desc: "Projecting panel-clad overhangs add depth and shadow lines to this building's exterior facade.",
+    category: "Interior",
+    title: "High-Speed Interior Door",
+    desc: "A high-speed roll door provides quick, sealed access between interior panel-clad production areas.",
   },
   {
     src: galleryImg5,
-    category: "Exterior",
-    title: "Vertical Ribbed Wall Panels",
-    desc: "A tall building corner finished in dark ribbed wall panels for a clean, modern industrial look.",
+    category: "Interior",
+    title: "Controlled Environment Grow Room",
+    desc: "Multi-tier grow racks and lighting inside an insulated panel enclosure built for controlled environment agriculture.",
   },
   {
     src: galleryImg6,
     category: "Installation",
-    title: "Panel Installation in Progress",
-    desc: "A crew member on an aerial lift installs insulated wall panels along a building's exterior face.",
+    title: "Standalone Insulated Booth",
+    desc: "A fully enclosed insulated panel booth, built out inside a larger metal building for a self-contained cold or secure space.",
   },
   {
     src: galleryImg7,
-    category: "Installation",
-    title: "Exterior Panel Close-Out",
-    desc: "Crews finish grading and site work around a newly panel-clad building exterior.",
+    category: "Manufacturing",
+    title: "Panel Production Line",
+    desc: "Finished insulated panels move down the production line, ready for packaging and shipment to a project site.",
   },
   {
     src: galleryImg8,
-    category: "Installation",
-    title: "Loading Dock Panel Work",
-    desc: "Finishing work underway around a loading dock built into an insulated panel exterior.",
+    category: "Manufacturing",
+    title: "Panels Staged for Shipment",
+    desc: "A stack of finished insulated panels staged on the production floor, wrapped and labeled ahead of delivery.",
   },
   {
     src: galleryImg9,
-    category: "Installation",
-    title: "Multi-Tone Panel Facade",
-    desc: "A striking checkerboard pattern of insulated wall panels going up with lift equipment staged on site.",
+    category: "Interior",
+    title: "Insulated Corridor with Cooler Door",
+    desc: "An interior panel corridor fitted with a color-coded cooler door, connecting adjoining temperature-controlled rooms.",
   },
   {
     src: galleryImg10,
     category: "Installation",
-    title: "Panel Facade Under Construction",
-    desc: "A long building elevation mid-installation, with panel stock staged and equipment on site.",
-  },
-  {
-    src: galleryImg11,
-    category: "Exterior",
-    title: "Aerial View of Panel-Clad Facility",
-    desc: "A bird's-eye view of a multi-building industrial complex finished in insulated metal panels.",
-  },
-  {
-    src: galleryImg12,
-    category: "Exterior",
-    title: "Standing Seam Wall Detail",
-    desc: "A closer look at standing-seam wall panels and window integration on a finished facade.",
-  },
-  {
-    src: galleryImg13,
-    category: "Exterior",
-    title: "Panel-Clad Facility Corridor",
-    desc: "Twin panel-clad buildings frame a central access road connecting to the facility's main entrance.",
-  },
-  {
-    src: galleryImg14,
-    category: "Exterior",
-    title: "Modern Facility Streetscape",
-    desc: "An aerial street-level view of panel-finished buildings along a landscaped facility corridor.",
-  },
-  {
-    src: galleryImg15,
-    category: "Exterior",
-    title: "Large-Scale Panel Facility",
-    desc: "A sprawling panel-clad facility complex set against a mountain backdrop.",
-  },
-  {
-    src: galleryImg16,
-    category: "Roof",
-    title: "Standing Seam Roof Panels",
-    desc: "An aerial view of standing-seam metal roof panels spanning a large industrial rooftop.",
-  },
-  {
-    src: galleryImg17,
-    category: "Exterior",
-    title: "Two-Tone Panel Facade",
-    desc: "A blue-and-white insulated panel facade with clean color-blocked banding.",
-  },
-  {
-    src: galleryImg18,
-    category: "Exterior",
-    title: "Panel Facade with Access Catwalks",
-    desc: "A panel-clad building corner fitted with exterior maintenance catwalks and stairs.",
-  },
-  {
-    src: galleryImg19,
-    category: "Exterior",
-    title: "Cross-Braced Panel Warehouse",
-    desc: "A large panel-clad warehouse with a distinctive cross-braced facade pattern and dock doors.",
-  },
-  {
-    src: galleryImg20,
-    category: "Roof",
-    title: "Aerial Warehouse Overview",
-    desc: "A wide aerial view of a panel-clad warehouse roof and cross-braced exterior walls.",
+    title: "Interior Wall Panel Install in Progress",
+    desc: "Crews install insulated wall panels along the interior of a pre-engineered metal building, with panel stock staged on site.",
   },
 ];
 
