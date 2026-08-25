@@ -14,7 +14,7 @@ import insulatedBoothHuntingHutsImg from "../assets/images/Sections/Insulated Bo
 import insulatedBoothGuardShacksImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Guard Shacks.webp";
 import insulatedBoothLawnShedsImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Lawn Sheds.webp";
 import pembFrameStructureImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Frame & Structure.webp";
-import airplaneHangarRoofLinerImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Roof & Ceiling Liner Panels.webp";
+import airplaneHangarExteriorImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Exterior Wall & Roof Panels.webp";
 import airplaneHangarWallSystemsImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Interior Wall Systems.webp";
 import airplaneHangarBenefitsImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Benefits.webp";
 import pembWallRoofImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Wall & Roof Panels.webp";
@@ -191,10 +191,10 @@ export const LABORATORY_PANELS = [
 
 export const AIRPLANE_HANGAR_PANELS = [
   {
-    name: "Roof & Ceiling Liner Panels",
+    name: "Exterior Wall & Roof Panels",
     category: "Airplane Hangars",
-    desc: "Insulated liner panels under the roof deck stop the condensation drip that bare steel purlins and skin sheet out over a parked aircraft, holding a dry, radiant-heat-friendly ceiling across the full clear span.",
-    img: airplaneHangarRoofLinerImg,
+    desc: "Insulated metal wall and roof panels form the hangar's weather-tight shell, standing up to wind, hail, and UV exposure across wide clear-span steel frames, while continuous, factory-sealed seams hold the building envelope airtight from ridge to eave.",
+    img: airplaneHangarExteriorImg,
   },
   {
     name: "Interior Wall Systems",
@@ -205,7 +205,7 @@ export const AIRPLANE_HANGAR_PANELS = [
   {
     name: "Benefits",
     category: "Airplane Hangars",
-    desc: "A consistent shop temperature keeps maintenance crews productive and protects avionics and composite work from condensation, while a dry, wipe-clean interior cuts the corrosion risk bare metal framing carries.",
+    desc: "A sealed envelope and insulated roof liner hold a consistent shop temperature, keeping maintenance crews productive and protecting avionics and composite work from condensation, while a dry ceiling and wipe-clean walls cut the corrosion risk bare metal framing carries.",
     img: airplaneHangarBenefitsImg,
   },
 ];
