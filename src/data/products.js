@@ -19,6 +19,32 @@ import metalDoorImg from "../assets/images/Products/Insulated Doors/Metal Doors.
 
 export const PRODUCT_CATEGORIES = [
   {
+    id: "cold-storage-panels",
+    name: "Cold Storage Panels",
+    blurb:
+      "Hygienic-finish panels engineered to hold a tight, consistent thermal envelope for refrigerated and frozen storage, clean rooms, and food-processing spaces.",
+    products: [
+      {
+        name: "HPS Coldbox TPO/PVC Panel",
+        spec: "PIR core · hygienic TPO or PVC finish",
+        desc: "An insulated panel with a hygienic TPO or PVC finish, ideal for cold storage rooms, clean rooms, and processing areas needing moisture resistance and easy maintenance.",
+        img: coldboxTpoPvcImg,
+      },
+      {
+        name: "HPS Box Vinyl Panel",
+        spec: "PIR/PUR core · monolayer vinyl finish",
+        desc: "A monolayer wall panel with a rigid PIR/PUR foam core and a durable vinyl finish suited for wash-down and sanitation-sensitive environments.",
+        img: boxVinylImg,
+      },
+      {
+        name: "HPS Wall Vinyl Panel",
+        spec: "PIR/PUR core · monolayer vinyl finish",
+        desc: "A monolayer wall panel companion to the Box Vinyl line, insulated with rigid PIR/PUR foam for consistent cold-storage wall performance.",
+        img: wallVinylImg,
+      },
+    ],
+  },
+  {
     id: "foam-panels",
     name: "Insulated Wall & Roof Panels",
     blurb:
@@ -85,32 +111,6 @@ export const PRODUCT_CATEGORIES = [
         spec: "Mineral wool core · micro-perforated liner",
         desc: "A self-supporting mineral wool roof panel with a micro-perforated interior liner and tongue-and-groove joint for added sound-dampening performance.",
         img: fireguardRoofAcousticImg,
-      },
-    ],
-  },
-  {
-    id: "cold-storage-panels",
-    name: "Cold Storage Panels",
-    blurb:
-      "Hygienic-finish panels engineered to hold a tight, consistent thermal envelope for refrigerated and frozen storage, clean rooms, and food-processing spaces.",
-    products: [
-      {
-        name: "HPS Coldbox TPO/PVC Panel",
-        spec: "PIR core · hygienic TPO or PVC finish",
-        desc: "An insulated panel with a hygienic TPO or PVC finish, ideal for cold storage rooms, clean rooms, and processing areas needing moisture resistance and easy maintenance.",
-        img: coldboxTpoPvcImg,
-      },
-      {
-        name: "HPS Box Vinyl Panel",
-        spec: "PIR/PUR core · monolayer vinyl finish",
-        desc: "A monolayer wall panel with a rigid PIR/PUR foam core and a durable vinyl finish suited for wash-down and sanitation-sensitive environments.",
-        img: boxVinylImg,
-      },
-      {
-        name: "HPS Wall Vinyl Panel",
-        spec: "PIR/PUR core · monolayer vinyl finish",
-        desc: "A monolayer wall panel companion to the Box Vinyl line, insulated with rigid PIR/PUR foam for consistent cold-storage wall performance.",
-        img: wallVinylImg,
       },
     ],
   },

@@ -47,9 +47,9 @@ function clearAnimOnEnd(e) {
 }
 
 const PRODUCTS_NAV_SECTIONS = [
+  { id: "cold-storage-panels", label: "Cold Storage" },
   { id: "foam-panels", label: "Wall & Roof" },
   { id: "mineral-wool-panels", label: "Fire-Rated" },
-  { id: "cold-storage-panels", label: "Cold Storage" },
   // ids match PRODUCT_CATEGORIES' own "-panels"-suffixed ids (see
   // src/data/products.js) — kept in sync deliberately since these are
   // used both to scroll to the matching <section id="..."> and to
