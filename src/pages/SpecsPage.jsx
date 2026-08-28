@@ -1,7 +1,7 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import "../styles/App.css";
 import "./SpecsPage.css";
-import logo from "../assets/images/General/harvest-panel-logo.webp";
+import logo from "../assets/images/General/harvest_panels_logo.png";
 import bgVideoSrc from "../assets/videos/AI VIdeo - Project1 - 1.mp4";
 import bgVideoPoster from "../assets/images/General/specs-bg-poster.webp";
 import productionVideoSrc from "../assets/videos/Real Video - HPS Panel Production1 - 1.mp4";
@@ -27,26 +27,34 @@ import {
 import { useLightbox } from "../hooks/useLightbox";
 import { useNavScroll } from "../hooks/useNavScroll";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
 import { useToast } from "../hooks/useToast";
-import { scrollCenter } from "../utils/scroll";
+import { scrollCenter, scrollToTop } from "../utils/scroll";
+import { clearAnimOnEnd } from "../utils/animation";
 import Nav from "../components/Nav";
 import Faq from "../components/Faq";
 import Contact from "../components/Contact";
+import PageLoader from "../components/PageLoader";
 import SocialMedia from "../components/SocialMedia";
 import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
 import Toast from "../components/Toast";
 
-// Plain top-level nav links — no flat "Specs" entry, since the "Specs"
-// dropdown trigger below already serves that role while on this page
-// (matches the live reference site: the flat link disappears once its own
-// page's section dropdown takes over that label).
+// This page's own critical first-view assets (see usePageReady) —
+// module-level constants, not recreated per render, since usePageReady's
+// effect depends on these arrays by reference. The production-process
+// video further down the page is not included — it's not above the fold,
+// so there's no reason to block the initial reveal on it.
+const SPECS_CRITICAL_IMAGES = [bgVideoPoster, logo];
+const SPECS_CRITICAL_VIDEOS = [bgVideoSrc];
+
 const specsLinks = [
   { to: "/", label: "Home" },
   { to: "/blog", label: "Blog" },
   { to: "/products", label: "Products" },
+  { id: "specs-top", label: "Specs", onClick: scrollToTop, active: true },
 ];
 
 // Every scrollable spec section, top to bottom — Efficiency through Our
@@ -65,21 +73,6 @@ const SPECS_SECTIONS = [
 ];
 
 const SPECS_SCROLL_SPY_IDS = [...SPECS_SECTIONS.map((s) => s.id), "faq", "contact", "social-media"];
-
-// Once the entrance animation finishes, swap it for a plain "done" class
-// that holds the final opacity — same handler as ProductsPage.jsx's own
-// copy, verbatim. Just removing the animation class would revert the
-// element to .hp-anim-item's base (opacity: 0) since nothing else would be
-// left declaring opacity: 1; and leaving the animation class in place
-// isn't an option either: a held (fill-mode: both) animation outranks
-// normal author rules in the cascade, including :hover, which would
-// otherwise permanently block the tilt/fill-wipe hover effects on foam
-// cards and swatches after their entrance plays.
-function clearAnimOnEnd(e) {
-  if (e.animationName !== "hp-filter-pop") return;
-  e.currentTarget.classList.remove("hp-filter-anim");
-  e.currentTarget.classList.add("hp-anim-done");
-}
 
 // Mirrors WhoWeAreCard in WhoWeAre.jsx exactly, so this section's hover/
 // tap behavior matches Who We Are 100% — desktop gets the navy-fill
@@ -165,10 +158,14 @@ export default function SpecsPage() {
   });
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loaderDone, setLoaderDone] = useState(false);
   const navRef = useNavScroll(menuOpen);
-  const { registerReveal } = useRevealOnScroll();
+  // Gated on `loaderDone` — see HomePage.jsx's own comment on this same
+  // call for why.
+  const { registerReveal } = useRevealOnScroll(loaderDone);
   const [toast, setToast] = useToast();
   const activeSectionId = useScrollSpy(SPECS_SCROLL_SPY_IDS);
+  const pageReady = usePageReady(SPECS_CRITICAL_IMAGES, SPECS_CRITICAL_VIDEOS);
   const [selectedProfileIndex, setSelectedProfileIndex] = useState(0);
   const profileLightbox = useLightbox(PANEL_PROFILES.length);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
@@ -328,11 +325,14 @@ export default function SpecsPage() {
   // hp-filter-pop entrance the moment SpecsPage mounts (nothing needs to
   // be scrolled into view first), cascading section-by-section top to
   // bottom, with a smaller stagger between items within the same section.
-  // Runs once on mount only (empty dep array) — unlike Products, nothing
-  // on this page (selecting a color, expanding a cert) should replay the
-  // whole page's entrance, so there's no cascade-vs-snap distinction to
-  // track here.
+  // Runs once loaderDone flips true (unlike Products, nothing on this page
+  // — selecting a color, expanding a cert — should replay the whole page's
+  // entrance, so there's no cascade-vs-snap distinction to track, and
+  // loaderDone itself only ever flips false→true once). Gated so this
+  // doesn't run to completion hidden behind PageLoader's overlay before
+  // the visitor ever sees it — see usePageReady/PageLoader.
   useEffect(() => {
+    if (!loaderDone) return;
     const root = document.querySelector(".hp-specs-page");
     if (!root) return;
     const sections = Array.from(root.querySelectorAll(".hp-specs-hero, .hp-section"));
@@ -347,7 +347,7 @@ export default function SpecsPage() {
         el.classList.add("hp-filter-anim");
       });
     });
-  }, []);
+  }, [loaderDone]);
 
   // Same collapsed-dropdown pattern as the Products/Home nav — a "Specs"
   // popover grouping every spec section (Efficiency through Our Process)
@@ -356,8 +356,13 @@ export default function SpecsPage() {
   // above.
   const specsNavDropdowns = [
     {
-      key: "sections",
-      label: "Specs",
+      key: "menu",
+      label: "Menu",
+      items: specsLinks,
+    },
+    {
+      key: "contents",
+      label: "Contents",
       items: SPECS_SECTIONS.map((section) => ({
         label: section.label,
         onClick: () => scrollCenter(section.id),
@@ -376,7 +381,9 @@ export default function SpecsPage() {
   ];
 
   return (
-    <div className="hp-specs-page">
+    <div className={`hp-specs-page${loaderDone ? " hp-anim-ready" : ""}`}>
+      <PageLoader ready={pageReady} onDone={() => setLoaderDone(true)} />
+
       <Nav
         menuOpen={menuOpen}
         setMenuOpen={setMenuOpen}
@@ -384,9 +391,10 @@ export default function SpecsPage() {
         logo={logo}
         logoTo="/"
         links={specsLinks}
-        desktopLinks={specsLinks}
+        desktopLinks={[]}
         dropdowns={specsNavDropdowns}
         ctaLabel="Request details"
+        entranceReady={loaderDone}
       />
 
       <div className="hp-bgvideo-layer" aria-hidden="true">

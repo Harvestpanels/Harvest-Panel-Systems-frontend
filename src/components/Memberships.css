@@ -50,6 +50,12 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  border-radius: 16px;
+  /* Clips the front face's logo image to the same rounded corners — the
+     image itself is a plain rectangle (object-fit: contain keeps its
+     aspect ratio but doesn't stop it reaching the face's own edges), so
+     without this its square corners would poke past the rounded ones. */
+  overflow: hidden;
 }
 
 .hp-membership-badge__face--front {

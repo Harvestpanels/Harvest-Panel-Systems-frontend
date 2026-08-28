@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "../styles/App.css";
-import logo from "../assets/images/General/harvest-panel-logo.webp";
+import logo from "../assets/images/General/harvest_panels_logo.png";
 import {
   AIRPLANE_HANGAR_PANELS,
   COLD_STORAGE_PANELS,
@@ -19,11 +19,13 @@ import { CURTAIN_BG_URL, PARALLAX_BG_URL, VIDEO_URL } from "../data/site";
 import { useHeroParallax } from "../hooks/useHeroParallax";
 import { useLightbox } from "../hooks/useLightbox";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
 import { useToast } from "../hooks/useToast";
 import { scrollCenter, scrollToTop } from "../utils/scroll";
 import Nav from "../components/Nav";
+import PageLoader from "../components/PageLoader";
 import Hero from "../components/Hero";
 import WhoWeAre from "../components/WhoWeAre";
 import Sustainability from "../components/Sustainability";
@@ -40,7 +42,7 @@ import Toast from "../components/Toast";
 // Plain top-level nav links, not tucked inside a dropdown — "Home" scrolls
 // to top rather than navigating (this page already is "/").
 const HOME_TOP_LINKS = [
-  { id: "top", label: "Home", onClick: scrollToTop },
+  { id: "top", label: "Home", onClick: scrollToTop, active: true },
   { to: "/blog", label: "Blog" },
   { to: "/products", label: "Products" },
   { to: "/specs", label: "Specs" },
@@ -78,23 +80,51 @@ const INQUIRY_SECTIONS = [
 
 const SCROLL_SPY_IDS = [...OVERVIEW_SECTIONS, ...INQUIRY_SECTIONS].map((s) => s.id);
 
+// This page's own critical first-view assets (see usePageReady) — the
+// hero's poster image (shown immediately, before the scroll-scrubbed
+// background video has buffered) and the logo used everywhere above the
+// fold. Module-level constants, not recreated per render, since
+// usePageReady's effect depends on these arrays by reference.
+const HOME_CRITICAL_IMAGES = [PARALLAX_BG_URL, logo];
+const HOME_CRITICAL_VIDEOS = [VIDEO_URL];
+
 function HomePage() {
   usePageMeta({
     title: "Harvest Panel Systems | Insulated Metal Panels & Doors",
-    description: "Global distributor of Insulated Metal Panels and Doors for Industrial, Commercial, and Residential projects. Stock inventory ships anywhere in the U.S. within 48 hours from our Oklahoma distribution center.",
+    description: "Global distributor of Interior Insulated Metal Panels and Doors for Industrial, Commercial, and Residential projects. Stock inventory ships anywhere in the U.S. within 48 hours from our Oklahoma distribution center.",
   });
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const { registerReveal } = useRevealOnScroll();
+  const [loaderDone, setLoaderDone] = useState(false);
+  // Gated on `loaderDone`, not just mounted unconditionally — see
+  // usePageReady/PageLoader and useRevealOnScroll's own comment: this
+  // page's content shouldn't start its entrance animations until the
+  // loading overlay has actually fully faded away, or the visitor never
+  // gets to see them play.
+  const { registerReveal } = useRevealOnScroll(loaderDone);
   const { navRef, parallaxLayerRef, videoRef, parallaxRef, heroContentRef } = useHeroParallax();
   const lightbox = useLightbox(GALLERY_IMAGES.length);
   const [toast, setToast] = useToast();
+  const pageReady = usePageReady(HOME_CRITICAL_IMAGES, HOME_CRITICAL_VIDEOS);
   const activeSectionId = useScrollSpy(SCROLL_SPY_IDS);
+
+  // Flat fallback for the mobile dropdown, which has no room for nested
+  // popovers — same flattening every other page's own *NavLinks does.
+  const homeNavLinks = [
+    ...HOME_TOP_LINKS,
+    ...OVERVIEW_SECTIONS.map((s) => ({ label: s.label, onClick: () => scrollCenter(s.id) })),
+    ...INQUIRY_SECTIONS.map((s) => ({ label: s.label, onClick: () => scrollCenter(s.id) })),
+  ];
 
   const homeNavDropdowns = [
     {
-      key: "overview",
-      label: "Overview",
+      key: "menu",
+      label: "Menu",
+      items: HOME_TOP_LINKS,
+    },
+    {
+      key: "contents",
+      label: "Contents",
       items: OVERVIEW_SECTIONS.map((s) => ({
         label: s.label,
         onClick: () => scrollCenter(s.id),
@@ -118,14 +148,18 @@ function HomePage() {
   const galleryLightboxImages = GALLERY_IMAGES;
 
   return (
-    <div>
+    <div className={loaderDone ? "hp-anim-ready" : undefined}>
+      <PageLoader ready={pageReady} onDone={() => setLoaderDone(true)} />
+
       <Nav
         menuOpen={menuOpen}
         setMenuOpen={setMenuOpen}
         navRef={navRef}
         logo={logo}
+        links={homeNavLinks}
         dropdowns={homeNavDropdowns}
-        desktopLinks={HOME_TOP_LINKS}
+        desktopLinks={[]}
+        entranceReady={loaderDone}
       />
 
       {/* ===== FIXED VIDEO BACKGROUND ===== */}

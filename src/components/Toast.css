@@ -68,3 +68,7 @@
     max-width: none;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-toast { animation: none; opacity: 1; transform: none; }
+}

@@ -7,8 +7,17 @@
 
 .hp-social-badge {
   aspect-ratio: 1 / 1;
-  perspective: 1200px;
   display: block;
+  /* Real anchor, not a button — see the comment on SocialCard in
+     SocialMedia.jsx for why this stays a plain link instead of the
+     tap-to-flip pattern Memberships.jsx uses for its own (non-linking)
+     badges. */
+  color: inherit;
+  text-decoration: none;
+  /* The 3D flip (see .hp-social-badge__inner below) needs real depth to
+     rotate through — without a perspective here, the rotation would look
+     like a flat horizontal squash instead of a card turning in 3D space. */
+  perspective: 1200px;
 }
 
 .hp-social-badge__inner {
@@ -19,6 +28,9 @@
   transform-style: preserve-3d;
 }
 
+/* Scoped to real hover-capable pointers only — a touch device gets no
+   flip at all, just an ordinary, immediately-tappable link straight to
+   the profile (see the comment on SocialCard in SocialMedia.jsx). */
 @media (hover: hover) {
   .hp-social-badge:hover .hp-social-badge__inner {
     transform: rotateY(180deg);
@@ -28,10 +40,14 @@
 .hp-social-badge__face {
   position: absolute;
   inset: 0;
+  /* Hides each face while it's turned away from the viewer — without
+     this, the back face would show through mirror-flipped behind the
+     front face (and vice versa) for the whole animation instead of only
+     appearing once it's actually facing forward. */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  border-radius: 20px;
-  box-shadow: 0 8px 20px -12px rgba(var(--hp-navy-rgb), 0.35);
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  border-radius: 16px;
 }
 
 .hp-social-badge__face--front {
@@ -42,16 +58,23 @@
 }
 
 .hp-social-badge__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
   color: var(--hp-cream);
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-social-badge:hover .hp-social-badge__icon {
+  transform: scale(1.08);
 }
 
 .hp-social-badge__face--back {
+  /* Pre-rotated 180° so that once the whole card flips, this face lands
+     right-side-up facing the viewer instead of mirrored. */
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
@@ -66,27 +89,25 @@
 .hp-social-badge__face--back h3 {
   font-family: "Big Shoulders Display", sans-serif;
   font-weight: 800;
-  font-size: 20px;
+  font-size: 18px;
   letter-spacing: 0.02em;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .hp-social-badge__face--back p {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   color: rgba(243, 241, 236, 0.8);
   margin: 0;
 }
 
+/* Single column below 1024px — matching the same breakpoint and layout
+   every other card grid on the page switches to. */
 @media (max-width: 1024px) {
-  .hp-social-grid { grid-template-columns: repeat(2, 1fr); max-width: 480px; margin: 24px auto 0; }
+  .hp-social-grid { grid-template-columns: 1fr; max-width: 480px; margin: 24px auto 0; }
 }
 
-@media (hover: none) {
-  .hp-social-badge__inner.is-flipped {
-    transform: rotateY(180deg);
-  }
-  .hp-social-badge {
-    cursor: pointer;
-  }
+@media (max-width: 640px) {
+  .hp-social-badge__face--back { padding: 16px; }
+  .hp-social-badge__face--back p { font-size: 12px; }
 }

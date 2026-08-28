@@ -1,0 +1,31 @@
+.hp-page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--hp-dark);
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+
+.hp-page-loader.is-ready {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hp-page-loader__logo {
+  width: 96px;
+  height: auto;
+  animation: hp-page-loader-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes hp-page-loader-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-page-loader__logo { animation: none; }
+}

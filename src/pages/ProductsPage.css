@@ -92,6 +92,9 @@
   display: inline-block;
   opacity: 0;
   transform: translateY(26px);
+}
+
+.hp-anim-ready .hp-hero-word {
   animation: hp-word-in 0.65s cubic-bezier(0.16,1,0.3,1) both;
 }
 
@@ -110,6 +113,9 @@
 .hp-hero-fade {
   opacity: 0;
   transform: translateY(14px);
+}
+
+.hp-anim-ready .hp-hero-fade {
   animation: hp-fade-in 0.7s cubic-bezier(0.16,1,0.3,1) both;
 }
 
@@ -430,7 +436,6 @@
 @media (hover: none) {
   .hp-products-grid:has(.hp-product-card:hover) .hp-product-card:not(:hover) { opacity: 1; transform: none; }
   .hp-product-card:hover { transform: none; }
-  .hp-product-card:hover .hp-product-card__glare { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

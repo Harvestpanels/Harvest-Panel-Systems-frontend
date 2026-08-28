@@ -147,6 +147,31 @@
   animation: hp-nav-logo-in 0.192s steps(1, end) 1.408s both;
 }
 
+/* Freezes the whole fold-in entrance at its very first frame (via
+   `animation-play-state`, not by not applying the animation at all) while
+   a page's own PageLoader overlay is still up — see the `entranceReady`
+   prop this is keyed off in Nav.jsx. `paused` on an animation that has
+   never yet been `running` holds it at 0%, not wherever it "would" be had
+   it been running since mount — so once this class is removed, the whole
+   ~1.6s sequence plays out in full, in view, instead of most of it having
+   already silently finished behind the loader overlay before the visitor
+   ever saw it. */
+.hp-nav--anim-hold .hp-nav__fold-logo,
+.hp-nav--anim-hold .hp-nav__pill--fold,
+.hp-nav--anim-hold .hp-nav__pill--fold .hp-nav__inner-content,
+.hp-nav--anim-hold .hp-nav__pill--fold .hp-nav__logo-slot {
+  animation-play-state: paused;
+}
+
+@media (max-width: 1024px) {
+  /* Same freeze for the mobile hamburger's own pop-in (see
+     hp-nav-mobile-pop-in above) — its 0.9s built-in delay already covers
+     some of the wait, but not reliably all of it. */
+  .hp-nav--anim-hold .hp-nav__pill {
+    animation-play-state: paused;
+  }
+}
+
 /* Below this breakpoint the nav is always a small 52px hamburger-only
    circle (see the max-width: 1024px block below) — the fold/slide
    transition is a desktop-only flourish and has no sensible "expanded"
@@ -221,7 +246,6 @@
 .hp-nav__logo-slot {
   display: flex;
   align-items: center;
-  margin-left: 13px;
 }
 
 .hp-nav__inner-content {
@@ -247,7 +271,7 @@
   transform: translate(-50%, -50%);
   display: flex;
   justify-content: center;
-  gap: 48px;
+  gap: 64px;
   font-size: 16px;
   font-weight: 700;
   color: rgba(20, 30, 50, 0.7);

@@ -1,3 +1,6 @@
+/* Single-slide "now showing" carousel: one full post (photo + copy) visible
+   at a time, sliding horizontally, like a news outlet's featured-story
+   highlight — not a card grid, so no gap/columns needed here. */
 .hp-blog-slideshow {
   margin-top: 24px;
 }
@@ -6,6 +9,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 16px;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
 }
 
 .hp-blog-slideshow__track {
@@ -17,7 +21,13 @@
 .hp-blog-slide {
   position: relative;
   flex: 0 0 100%;
+  min-width: 0;
   aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .hp-blog-slide { aspect-ratio: 4 / 5; }
 }
 
 .hp-blog-slide__img {
@@ -33,7 +43,13 @@
   left: 24px;
 }
 
+@media (max-width: 900px) {
+  .hp-blog-slide__category { top: 16px; left: 16px; }
+}
+
 .hp-blog-post__category {
+  display: inline-block;
+  align-self: flex-start;
   font-family: "JetBrains Mono", monospace;
   font-size: 11px;
   font-weight: 700;
@@ -41,8 +57,9 @@
   text-transform: uppercase;
   color: var(--hp-cream);
   background: var(--hp-accent);
-  padding: 4px 12px;
   border-radius: 999px;
+  padding: 4px 12px;
+  margin-bottom: 14px;
 }
 
 .hp-blog-slide__label {
@@ -53,6 +70,10 @@
   color: var(--hp-cream);
 }
 
+@media (max-width: 900px) {
+  .hp-blog-slide__label { padding: 24px 24px 28px; }
+}
+
 .hp-blog-slide__label h3 {
   font-family: "Big Shoulders Display", sans-serif;
   font-size: 24px;
@@ -60,21 +81,28 @@
   letter-spacing: 0.02em;
   text-transform: none;
   line-height: 1.2;
-  margin: 0 0 8px;
+  margin: 10px 0 12px;
   max-width: 640px;
 }
 
 .hp-blog-slide__label p {
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.65;
   color: rgba(243, 241, 236, 0.85);
-  margin: 0 0 10px;
+  margin: 0;
   max-width: 640px;
 }
 
 .hp-blog-post__date {
+  display: block;
+  margin-top: 16px;
   font-size: 12px;
+  color: rgba(var(--hp-navy-rgb), 0.5);
+}
+
+.hp-blog-slide__label .hp-blog-post__date {
   color: rgba(243, 241, 236, 0.6);
+  margin-top: 0;
 }
 
 .hp-blog-slideshow__dots {
@@ -82,6 +110,7 @@
   left: 0;
   right: 0;
   bottom: 16px;
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -96,11 +125,12 @@
   padding: 0;
   background: rgba(243, 241, 236, 0.4);
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 
 .hp-blog-slideshow__dot.is-active {
   background: var(--hp-accent);
+  transform: scale(1.2);
 }
 
 @media (max-width: 640px) {

@@ -255,3 +255,7 @@
   .hp-gallery-card:hover::after { opacity: 0; }
   .hp-gallery-card__desc { grid-template-rows: 1fr; opacity: 1; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-gallery-card img { animation: none; opacity: 1; transform: none; }
+}

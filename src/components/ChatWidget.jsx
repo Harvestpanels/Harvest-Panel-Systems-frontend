@@ -4,6 +4,7 @@ import "./ChatWidget.css";
 import { getBotResponse } from "../utils/chatbot";
 import { SUGGESTED_QUESTIONS } from "../data/botKnowledge";
 import { announcePanelOpened, onOtherPanelOpened } from "../utils/floatingPanels";
+import { onAppReady } from "../utils/appReady";
 // WebP, not PNG — same 240x180 artwork, but ~4-5x smaller (WebP's
 // compression beats PNG considerably even at a high, visually-lossless
 // quality setting), which matters most on mobile/slower connections since
@@ -104,6 +105,16 @@ const ENGAGEMENT_INTERVAL_MS = 2 * 60 * 1000;
 const MAX_UNREAD_ENGAGEMENT_MESSAGES = 5;
 
 export default function ChatWidget() {
+  // False until the current page's PageLoader overlay has fully faded away
+  // (see appReady.js) — this component is mounted once in App.jsx outside
+  // any page's own tree, so it has no direct access to that page's
+  // `loaderDone` state otherwise. Holds the launcher's whole entrance
+  // sequence (see ".hp-chat--anim-hold" in ChatWidget.css) frozen at its
+  // first frame until then, instead of it running to completion hidden
+  // behind that overlay before the visitor ever sees it.
+  const [entranceReady, setEntranceReady] = useState(false);
+  useEffect(() => onAppReady(() => setEntranceReady(true)), []);
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([GREETING]);
   const [input, setInput] = useState("");
@@ -371,7 +382,7 @@ export default function ChatWidget() {
   }
 
   return (
-    <div className="hp-chat">
+    <div className={`hp-chat${entranceReady ? "" : " hp-chat--anim-hold"}`}>
       {open && (
         <div className="hp-chat__panel" role="dialog" aria-label="Harvest Panel Systems assistant" aria-modal="false">
           <header className="hp-chat__header">

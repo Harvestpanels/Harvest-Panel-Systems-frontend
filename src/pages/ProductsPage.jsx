@@ -1,7 +1,7 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import "../styles/App.css";
 import "./ProductsPage.css";
-import logo from "../assets/images/General/harvest-panel-logo.webp";
+import logo from "../assets/images/General/harvest_panels_logo.png";
 import dataCenterVideo from "../assets/videos/AI Video - Data Center Background1 - 1.mp4";
 import dataCenterVideoPoster from "../assets/images/General/products-bg-poster.webp";
 import { PRODUCT_CATEGORIES } from "../data/products";
@@ -9,17 +9,26 @@ import { useCountUp } from "../hooks/useCountUp";
 import { useLightbox } from "../hooks/useLightbox";
 import { useNavScroll } from "../hooks/useNavScroll";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
 import { useToast } from "../hooks/useToast";
 import { scrollCenter, scrollToTop } from "../utils/scroll";
+import { clearAnimOnEnd } from "../utils/animation";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
 import Faq from "../components/Faq";
 import Contact from "../components/Contact";
+import PageLoader from "../components/PageLoader";
 import SocialMedia from "../components/SocialMedia";
 import Toast from "../components/Toast";
+
+// This page's own critical first-view assets (see usePageReady) —
+// module-level constants, not recreated per render, since usePageReady's
+// effect depends on these arrays by reference.
+const PRODUCTS_CRITICAL_IMAGES = [dataCenterVideoPoster, logo];
+const PRODUCTS_CRITICAL_VIDEOS = [dataCenterVideo];
 
 // Maps a product into the { src, title, category, desc } shape Lightbox
 // expects (the same shape the photo gallery already feeds it).
@@ -32,19 +41,6 @@ function toAlbumItem(product) {
   };
 }
 
-// Once the entrance animation finishes, swap it for a plain "done" class
-// that holds the final opacity. Just removing the animation class would
-// revert the element to .hp-anim-item's base (opacity: 0) since nothing
-// else would be left declaring opacity: 1 — and leaving the animation
-// class in place isn't an option either: a held (fill-mode: both)
-// animation outranks normal author rules in the cascade, including
-// :hover, which would otherwise permanently block the tilt-on-hover
-// effect on product cards after their entrance plays.
-function clearAnimOnEnd(e) {
-  if (e.animationName !== "hp-filter-pop") return;
-  e.currentTarget.classList.remove("hp-filter-anim");
-  e.currentTarget.classList.add("hp-anim-done");
-}
 
 const PRODUCTS_NAV_SECTIONS = [
   { id: "cold-storage-panels", label: "Cold Storage" },
@@ -310,7 +306,11 @@ export default function ProductsPage() {
   const [query, setQuery] = useState("");
   const [activeCategoryId, setActiveCategoryId] = useState("all");
   const [pendingScrollId, setPendingScrollId] = useState(null);
-  const { registerReveal } = useRevealOnScroll();
+  const [loaderDone, setLoaderDone] = useState(false);
+  const pageReady = usePageReady(PRODUCTS_CRITICAL_IMAGES, PRODUCTS_CRITICAL_VIDEOS);
+  // Gated on `loaderDone` — see HomePage.jsx's own comment on this same
+  // hook for why.
+  const { registerReveal } = useRevealOnScroll(loaderDone);
   const [toast, setToast] = useToast();
   const activeSectionId = useScrollSpy(PRODUCTS_SCROLL_SPY_IDS);
 
@@ -369,7 +369,7 @@ export default function ProductsPage() {
   const productsTopLinks = [
     { to: "/", label: "Home" },
     { to: "/blog", label: "Blog" },
-    { id: "products-top", label: "Products", onClick: scrollToTop },
+    { id: "products-top", label: "Products", onClick: scrollToTop, active: true },
     { to: "/specs", label: "Specs" },
   ];
 
@@ -379,8 +379,13 @@ export default function ProductsPage() {
   // flat `productsNavLinks` list above.
   const productsNavDropdowns = [
     {
-      key: "categories",
-      label: "Categories",
+      key: "menu",
+      label: "Menu",
+      items: productsTopLinks,
+    },
+    {
+      key: "contents",
+      label: "Contents",
       items: PRODUCTS_NAV_SECTIONS.map((section) => ({
         label: section.label,
         onClick: () => handleNavSectionClick(section.id),
@@ -447,6 +452,13 @@ export default function ProductsPage() {
   // (which only happens after real async delay) correctly sees it as false.
   const isFirstRun = useRef(true);
   useEffect(() => {
+    // Gated on `loaderDone` (see usePageReady/PageLoader) — the first,
+    // cascading run of this effect is what plays the whole page's initial
+    // entrance, so it needs to wait until the loading overlay has actually
+    // faded away, or the visitor never gets to see the cascade at all.
+    // Later reruns (search/filter changes) can only happen after that
+    // anyway, since the overlay blocks all interaction until then.
+    if (!loaderDone) return;
     const cascade = isFirstRun.current;
     const timer = setTimeout(() => {
       isFirstRun.current = false;
@@ -478,10 +490,12 @@ export default function ProductsPage() {
     }
 
     return () => clearTimeout(timer);
-  }, [normalizedQuery, activeCategoryId]);
+  }, [normalizedQuery, activeCategoryId, loaderDone]);
 
   return (
-    <div className="hp-products-page">
+    <div className={`hp-products-page${loaderDone ? " hp-anim-ready" : ""}`}>
+      <PageLoader ready={pageReady} onDone={() => setLoaderDone(true)} />
+
       <Nav
         menuOpen={menuOpen}
         setMenuOpen={setMenuOpen}
@@ -489,8 +503,9 @@ export default function ProductsPage() {
         logo={logo}
         links={productsNavLinks}
         dropdowns={productsNavDropdowns}
-        desktopLinks={productsTopLinks}
+        desktopLinks={[]}
         ctaLabel="Request pricing"
+        entranceReady={loaderDone}
       />
 
       <div className="hp-bgvideo-layer" aria-hidden="true">

@@ -334,6 +334,16 @@ export default function Nav({
   // NavDropdown takes. Mobile always uses the flat `links` list instead,
   // since a dropdown nested inside the mobile dropdown is awkward UX.
   dropdowns = [],
+  // False while a page's own PageLoader overlay is still covering the
+  // screen (see usePageReady/PageLoader) — holds the pill's fold-in
+  // entrance (and the mobile hamburger's pop-in) frozen at its very first
+  // frame via CSS `animation-play-state: paused` (see ".hp-nav--anim-hold"
+  // in Nav.css). This does NOT change the animation itself — same
+  // keyframes, same duration, same easing — it only delays when it starts,
+  // the same technique ChatWidget's own launcher entrance uses (see
+  // appReady.js). Defaults to true so a page that doesn't wire this up
+  // still animates immediately.
+  entranceReady = true,
 }) {
   // Plays once per mount (every page navigation), then goes away for good.
   // Driven by React state rather than a CSS class alone: the mobile
@@ -522,10 +532,18 @@ export default function Nav({
 
   useEffect(() => onOtherPanelOpened("nav", () => setMenuOpen(false)), [setMenuOpen]);
 
+  // Gated on `entranceReady`, not run unconditionally on mount — the CSS
+  // animation itself is frozen at its very first frame the whole time
+  // `entranceReady` is false (see ".hp-nav--anim-hold" in Nav.css), so its
+  // real ~1.6s runtime only starts once this does too. Starting this timer
+  // from mount regardless (real wall-clock time) would flip `folding` to
+  // false — tearing down the fold classes — before the still-paused
+  // animation ever got a chance to actually play.
   useEffect(() => {
+    if (!entranceReady) return;
     const timer = setTimeout(() => setFolding(false), FOLD_ANIMATION_MS);
     return () => clearTimeout(timer);
-  }, []);
+  }, [entranceReady]);
 
   // The fold overlay's slide distance (the -402px in hp-nav-fold-logo,
   // Nav.css) was a hardcoded constant tuned for one specific pill width —
@@ -642,7 +660,7 @@ export default function Nav({
   );
 
   return (
-    <nav className={`hp-nav${menuOpen ? " hp-nav--open" : ""}`} ref={navRef} aria-label="Main navigation">
+    <nav className={`hp-nav${menuOpen ? " hp-nav--open" : ""}${entranceReady ? "" : " hp-nav--anim-hold"}`} ref={navRef} aria-label="Main navigation">
       {/* Shown only while the pill is folding/unfolding: starts centered
           over the folded circle, then slides left to land exactly where
           the real logo (inside .hp-nav__inner below) sits, handing off to

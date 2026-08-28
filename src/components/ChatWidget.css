@@ -214,6 +214,28 @@
   animation: hp-chat-nudge-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 1.7s backwards;
 }
 
+/* Freezes the launcher's whole first-load entrance sequence at its very
+   first frame (via `animation-play-state`, not by not applying the
+   animation at all) while a page's own PageLoader overlay is still up —
+   see the `entranceReady` state this is keyed off in ChatWidget.jsx,
+   itself driven by appReady.js since this component lives outside any
+   page's own tree. `paused` on an animation that has never yet been
+   `running` holds it at its first frame indefinitely, not wherever it
+   "would" be had it been running since mount — so once this class is
+   removed, the whole sequence plays out in full, in view, instead of
+   having already silently finished behind the loader overlay before the
+   visitor ever saw it. Scoped to these specific selectors (not every
+   animation under .hp-chat) since .hp-chat-icon-pop/.hp-chat-nudge-in also
+   legitimately replay later, well after entranceReady is already true
+   (a new message notification, reopening the panel) — this only ever
+   matters for their first, initial-mount play. */
+.hp-chat--anim-hold .hp-chat__launcher,
+.hp-chat--anim-hold .hp-chat__launcher-icon,
+.hp-chat--anim-hold .hp-chat__nudge,
+.hp-chat--anim-hold .hp-chat__nudge--online {
+  animation-play-state: paused;
+}
+
 /* Reply landing mid-session already has its own reason to grab attention
    right now — no need to hold it back for the launcher's intro timing. */
 /* `backwards`, not `both` — a `both` fill keeps holding the animation's own

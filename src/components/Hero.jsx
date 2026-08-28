@@ -15,8 +15,8 @@ export default function Hero({ heroContentRef }) {
           Insulate smarter.
         </h1>
         <p className="hp-hero__sub">
-          Harvest Panel Systems is a global distributor of Insulated Metal
-          Panels and Doors for Industrial, Commercial, and
+          Harvest Panel Systems is a global distributor of Interior Insulated
+          Metal Panels and Doors for Industrial, Commercial, and
           Residential projects.
         </p>
         <div className="hp-hero__ctas">

@@ -10,7 +10,17 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 // observes those on the spot instead of relying solely on the one-time
 // mount pass, so newly-mounted content that's already on screen reveals
 // itself immediately rather than staying stuck invisible forever.
-export function useRevealOnScroll() {
+//
+// `enabled` (default true) gates both the initial "already in view" pass
+// and the IntersectionObserver setup — pass `false` while a page's own
+// PageLoader overlay is still covering the screen (see usePageReady/
+// PageLoader) so above-the-fold content doesn't finish its whole reveal
+// transition hidden behind that overlay before the visitor ever sees it.
+// `registerReveal` itself still works normally either way — elements are
+// added to the registry regardless, they just aren't observed/revealed
+// until `enabled` flips true, at which point this effect re-runs and
+// catches every element registered so far.
+export function useRevealOnScroll(enabled = true) {
   const revealRegistry = useRef(new Set());
   const observerRef = useRef(null);
 
@@ -21,6 +31,7 @@ export function useRevealOnScroll() {
   }
 
   useLayoutEffect(() => {
+    if (!enabled) return;
     const vh = window.innerHeight;
     revealRegistry.current.forEach((el) => {
       const rect = el.getBoundingClientRect();
@@ -28,9 +39,10 @@ export function useRevealOnScroll() {
         el.classList.add("is-visible");
       }
     });
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     const isTouch = window.matchMedia("(hover: none)").matches;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -58,7 +70,7 @@ export function useRevealOnScroll() {
     observerRef.current = observer;
     revealRegistry.current.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [enabled]);
 
   return { registerReveal };
 }

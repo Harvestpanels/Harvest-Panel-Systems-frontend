@@ -239,3 +239,13 @@
   .hp-lightbox__title { font-size: 17px; }
   .hp-lightbox__desc { font-size: 12px; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-lightbox,
+  .hp-lightbox__figure,
+  .hp-lightbox__img {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
