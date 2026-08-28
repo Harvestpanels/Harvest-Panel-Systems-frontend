@@ -214,7 +214,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 35px;
+  gap: 36px;
   position: relative;
 }
 
