@@ -14,9 +14,15 @@
   transform: translateY(-140%);
 }
 
-/* Pill container — holds both the top bar and the mobile dropdown */
+/* Pill container — holds both the top bar and the mobile dropdown.
+   This max-width is the single source of truth for the pill's settled
+   desktop width: the fold-in logo's own slide distance is measured off
+   this exact computed value at runtime (see the layout effect in
+   Nav.jsx), so changing the number here automatically lengthens or
+   shortens that slide to match — the logo keeps landing precisely on the
+   real logo's resting spot at whatever width this is set to. */
 .hp-nav__pill {
-  max-width: 920px;
+  max-width: 1060px;
   width: 100%;
   margin: 0 auto;
   border-radius: 999px;
@@ -55,7 +61,29 @@
      expanding, not a differently-sized shape swapped in. */
   0%   { width: 84px; height: 84px; border-radius: 50%; }
   18%  { width: 84px; height: 84px; border-radius: 50%; }
-  100% { width: 100%; height: 84px; border-radius: 999px; }
+  /* Ends at the pill's real *clamped* settled width (set inline per-mount
+     by the same layout effect in Nav.jsx that computes the fold logo's
+     slide distance), not a bare `100%`. Those differ whenever the viewport
+     is wider than the pill's max-width: `100%` interpolates toward the
+     full available width and only hits the max-width clamp near the very
+     end, so mid-animation the pill stays narrower — and its left edge
+     further right — than a proportional expansion to the settled width
+     would put it. The logo's slide is computed from that settled width, so
+     against a `100%` target the logo outran the pill's own edge and
+     visibly poked outside it (measured: 47px past the edge at a 1200px
+     viewport, worse the closer the viewport gets to the cap). Sharing one
+     endpoint keeps the two exactly coupled at every frame and every
+     viewport width. */
+  /* Finishes at 88%, not 100%, then holds — the fold logo's own slide ends
+     at that same 88% mark (see hp-nav-fold-logo below, where 88% is the
+     handoff point it hard-cuts to the real logo at). Sharing both the
+     start (18%) and end (88%) stop means the two run in exact lockstep at
+     every frame. Ending the pill at 100% instead stretched its expansion
+     over 82% of the timeline while the logo covered its slide in 70%, so
+     the logo ran permanently ahead of the pill's own left edge and
+     travelled outside it mid-flight. */
+  88%  { width: var(--pill-final-width, 100%); height: 84px; border-radius: 999px; }
+  100% { width: var(--pill-final-width, 100%); height: 84px; border-radius: 999px; }
 }
 
 /* No opacity ramp anywhere in here — the logo is visible at full opacity

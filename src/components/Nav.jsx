@@ -373,6 +373,7 @@ export default function Nav({
   // targets the logo's actual current position rather than a value baked
   // in for whatever width the page happened to load at.
   const [foldSlideX, setFoldSlideX] = useState(null);
+  const [pillFinalWidth, setPillFinalWidth] = useState(null);
   const logoSlotRef = useRef(null);
   const navigate = useNavigate();
   // Tracks which desktop dropdowns are currently open, toggled straight onto
@@ -547,7 +548,7 @@ export default function Nav({
 
   // The fold overlay's slide distance (the -402px in hp-nav-fold-logo,
   // Nav.css) was a hardcoded constant tuned for one specific pill width —
-  // correct at any width where the pill has reached its 920px cap, but
+  // correct at any width where the pill has reached its 1060px cap, but
   // that's an assumption baked into the number rather than something the
   // animation actually adapts to. Computing it instead makes the animation
   // land on the real logo at whatever width the pill actually settles at,
@@ -564,7 +565,7 @@ export default function Nav({
   // within the collapsed circle, not its final expanded position — the
   // wrong number entirely. Instead this computes the pill's eventual
   // settled width analytically (from the nav's own non-animating box,
-  // min'd against the 920px cap) and combines it with the logo's intrinsic
+  // min'd against the pill's own max-width) and combines it with the logo's intrinsic
   // rendered width, which — being a grid `auto` column — lays out at its
   // natural size regardless of how narrow the (currently clipped) pill is
   // at this moment.
@@ -572,15 +573,41 @@ export default function Nav({
     const nav = navRef.current;
     const logoSlot = logoSlotRef.current;
     const inner = nav?.querySelector(".hp-nav__inner");
-    if (!nav || !logoSlot || !inner) return;
+    const pill = nav?.querySelector(".hp-nav__pill");
+    if (!nav || !logoSlot || !inner || !pill) return;
     const measure = () => {
       const navStyle = getComputedStyle(nav);
       const navPadding = parseFloat(navStyle.paddingLeft) + parseFloat(navStyle.paddingRight);
-      const pillFinalWidth = Math.min(920, nav.getBoundingClientRect().width - navPadding);
+      // Read off .hp-nav__pill's own `max-width` rather than duplicating
+      // that number here. The fold animation only ever animates the pill's
+      // `width`/`height`/`border-radius` (see hp-nav-fold-in in Nav.css),
+      // never its `max-width`, so this computed value is already the
+      // pill's real settled cap even at this instant — while it's still
+      // clipped to the 84px collapsed circle and its *rendered* width
+      // would be useless. Keeping it read-not-copied means widening the
+      // pill in CSS lengthens this slide automatically, instead of the two
+      // silently drifting apart and landing the logo in the wrong place.
+      const pillStyle = getComputedStyle(pill);
+      const pillMaxWidth = parseFloat(pillStyle.maxWidth);
+      const pillCap = Number.isFinite(pillMaxWidth) ? pillMaxWidth : Infinity;
+      const pillFinalWidth = Math.min(pillCap, nav.getBoundingClientRect().width - navPadding);
+      // The pill is `box-sizing: border-box` (set globally in App.css) with
+      // its own 1px border, so its *content* box — which is what
+      // .hp-nav__inner's padding is measured from, and therefore where the
+      // real logo actually sits — starts one border-width inside the
+      // border box that pillFinalWidth describes. Leaving this out landed
+      // the overlay exactly 1px left of the real logo, so the handoff
+      // ended on a small but real sideways jump instead of a clean
+      // crossfade in place (measured: deltaPx -1 at every viewport width).
+      const pillBorderLeft = parseFloat(pillStyle.borderLeftWidth) || 0;
       const innerPaddingLeft = parseFloat(getComputedStyle(inner).paddingLeft) || 0;
       const logoWidth = logoSlot.getBoundingClientRect().width;
       if (pillFinalWidth <= 0 || logoWidth === 0) return;
-      setFoldSlideX(innerPaddingLeft + logoWidth / 2 - pillFinalWidth / 2);
+      setFoldSlideX(pillBorderLeft + innerPaddingLeft + logoWidth / 2 - pillFinalWidth / 2);
+      // Shared with the pill's own fold-in keyframe (see hp-nav-fold-in in
+      // Nav.css) so its width animation ends at exactly the width this
+      // slide distance was computed against — see that keyframe's comment.
+      setPillFinalWidth(pillFinalWidth);
     };
     measure();
     window.addEventListener("resize", measure);
@@ -680,6 +707,7 @@ export default function Nav({
       )}
       <div
         className={`hp-nav__pill${folding ? " hp-nav__pill--fold" : ""}${poppedIn ? " has-popped-in" : ""}`}
+        style={pillFinalWidth !== null ? { "--pill-final-width": `${pillFinalWidth}px` } : undefined}
         onAnimationEnd={(e) => {
           // Plays once on every mount — i.e. every page navigation, since
           // each page mounts its own fresh Nav — folding the pill in and
