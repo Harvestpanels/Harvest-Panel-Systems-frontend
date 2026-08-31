@@ -1,10 +1,10 @@
-import fortisWallImg from "../assets/images/Products/Insulated Wall & Roofs Panels/HPS Fortis Wall Panel.webp";
-import boxWallImg from "../assets/images/Products/Insulated Wall & Roofs Panels/HPS Box Wall Panel.webp";
-import copRoofImg from "../assets/images/Products/Insulated Wall & Roofs Panels/HPS Cop Roof Panel.webp";
-import grecataRoofImg from "../assets/images/Products/Insulated Wall & Roofs Panels/HPS Grecata Roof Panel.webp";
-import coldboxTpoPvcImg from "../assets/images/Products/Cold Storage Panels/HPS Coldbox TPOPVC Panel.webp";
-import boxVinylImg from "../assets/images/Products/Cold Storage Panels/HPS Box Vinyl Panel.webp";
-import wallVinylImg from "../assets/images/Products/Cold Storage Panels/HPS Wall Vinyl Panel.webp";
+import fortisWallImg from "../assets/images/Products/Insulated Wall & Roofs Panels/HP Fortis Wall Panel.webp";
+import boxWallImg from "../assets/images/Products/Insulated Wall & Roofs Panels/HP Box Wall Panel.webp";
+import copRoofImg from "../assets/images/Products/Insulated Wall & Roofs Panels/HP Cop Roof Panel.webp";
+import grecataRoofImg from "../assets/images/Products/Insulated Wall & Roofs Panels/HP Grecata Roof Panel.webp";
+import coldboxTpoPvcImg from "../assets/images/Products/Cold Storage Panels/HP Coldbox TPOPVC Panel.webp";
+import boxVinylImg from "../assets/images/Products/Cold Storage Panels/HP Box Vinyl Panel.webp";
+import wallVinylImg from "../assets/images/Products/Cold Storage Panels/HP Wall Vinyl Panel.webp";
 import fireguardWallExposedImg from "../assets/images/Products/Mineral Wool Fire-Rated Panels/HPS Fireguard Wall Panel - Exposed Fastening.webp";
 import fireguardWallHiddenImg from "../assets/images/Products/Mineral Wool Fire-Rated Panels/HPS Fireguard Wall Panel - Hidden Fastening.webp";
 import fireguardWallAcousticImg from "../assets/images/Products/Mineral Wool Fire-Rated Panels/HPS Fireguard Wall Panel - Acoustic.webp";

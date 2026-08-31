@@ -343,18 +343,14 @@ h3 {
 
 /* Every home-page section: eyebrow scaled up to read as a huge
    sub-headline (originally just the panel sections — Indoor Agriculture,
-   Cold Storage, Pharmaceutical, PEMB, Doors, Trim & Hardware —
+   Cold Storage, Laboratories, Doors, Trim & Hardware —
    now applied site-wide to Who We Are/Sustainability/Gallery/Memberships/
    FAQ/Contact too, for one consistent look across the whole page instead
    of two different heading styles). */
 #indoor-agriculture .hp-section__eyebrow,
 #cold-storage .hp-section__eyebrow,
-#pharmaceutical .hp-section__eyebrow,
 #laboratories .hp-section__eyebrow,
-#airplane-hangars .hp-section__eyebrow,
-#insulated-booths .hp-section__eyebrow,
 #flooring .hp-section__eyebrow,
-#pemb .hp-section__eyebrow,
 #modular-housing .hp-section__eyebrow,
 #doors .hp-section__eyebrow,
 #trim-hardware .hp-section__eyebrow,
@@ -387,12 +383,8 @@ h3 {
    that now-large eyebrow, instead of matching it in size. */
 #indoor-agriculture h2,
 #cold-storage h2,
-#pharmaceutical h2,
 #laboratories h2,
-#airplane-hangars h2,
-#insulated-booths h2,
 #flooring h2,
-#pemb h2,
 #modular-housing h2,
 #doors h2,
 #trim-hardware h2,

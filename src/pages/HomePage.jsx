@@ -2,17 +2,13 @@ import { useState } from "react";
 import "../styles/App.css";
 import logo from "../assets/images/General/harvest_panels_logo.png";
 import {
-  AIRPLANE_HANGAR_PANELS,
   COLD_STORAGE_PANELS,
   DOOR_PANELS,
   FLOORING_PANELS,
   GALLERY_IMAGES,
   INDOOR_AGRICULTURE_PANELS,
-  INSULATED_BOOTH_PANELS,
   LABORATORY_PANELS,
   MODULAR_HOUSING_PANELS,
-  PEMB_PANELS,
-  PHARMACEUTICAL_PANELS,
   TRIM_HARDWARE_PANELS,
 } from "../data/panels";
 import { CURTAIN_BG_URL, PARALLAX_BG_URL, VIDEO_URL } from "../data/site";
@@ -63,12 +59,8 @@ const OVERVIEW_SECTIONS = [
   { id: "why", label: "Who We Are" },
   { id: "indoor-agriculture", label: "Controlled Environment Agriculture" },
   { id: "cold-storage", label: "Cold Storage" },
-  { id: "pharmaceutical", label: "Pharmaceutical" },
   { id: "laboratories", label: "Laboratories" },
-  { id: "airplane-hangars", label: "Airplane Hangars" },
-  { id: "insulated-booths", label: "Insulated Booths" },
   { id: "flooring", label: "Flooring" },
-  { id: "pemb", label: "Pre-Engineered Metal Buildings" },
   { id: "modular-housing", label: "Modular IMP Housing" },
   { id: "doors", label: "Doors" },
   { id: "trim-hardware", label: "Trim & Hardware" },
@@ -97,12 +89,8 @@ const HOME_CRITICAL_IMAGES = [
   ...GALLERY_IMAGES.map((g) => g.src),
   ...INDOOR_AGRICULTURE_PANELS.map((p) => p.img),
   ...COLD_STORAGE_PANELS.map((p) => p.img),
-  ...PHARMACEUTICAL_PANELS.map((p) => p.img),
   ...LABORATORY_PANELS.map((p) => p.img),
-  ...AIRPLANE_HANGAR_PANELS.map((p) => p.img),
-  ...INSULATED_BOOTH_PANELS.map((p) => p.img),
   ...FLOORING_PANELS.map((p) => p.img),
-  ...PEMB_PANELS.map((p) => p.img),
   ...MODULAR_HOUSING_PANELS.map((p) => p.img),
   ...DOOR_PANELS.map((p) => p.img),
   ...TRIM_HARDWARE_PANELS.map((p) => p.img),
@@ -214,14 +202,6 @@ function HomePage() {
         registerReveal={registerReveal}
       />
       <PanelSection
-        id="pharmaceutical"
-        eyebrow="Pharmaceutical industry"
-        heading="Insulated panels for pharmaceutical facilities"
-        description="Sanitary, temperature-controlled panel systems engineered for GMP-compliant pharmaceutical manufacturing, cleanrooms, and storage environments."
-        panels={PHARMACEUTICAL_PANELS}
-        registerReveal={registerReveal}
-      />
-      <PanelSection
         id="laboratories"
         eyebrow="Laboratories"
         heading="Insulated panels for laboratory facilities"
@@ -230,35 +210,11 @@ function HomePage() {
         registerReveal={registerReveal}
       />
       <PanelSection
-        id="airplane-hangars"
-        eyebrow="Airplane hangars"
-        heading="Insulated panels for airplane hangar facilities"
-        description="Long-span insulated panel systems built for the scale of aviation hangars, covering wide clear spans while holding a consistent, weather-tight interior envelope."
-        panels={AIRPLANE_HANGAR_PANELS}
-        registerReveal={registerReveal}
-      />
-      <PanelSection
-        id="insulated-booths"
-        eyebrow="Insulated booths"
-        heading="Insulated panels for booths, huts, and shacks"
-        description="Compact insulated panel structures built for hunting huts, guard shacks, and lawn sheds, keeping small standalone spaces sealed and temperature-stable."
-        panels={INSULATED_BOOTH_PANELS}
-        registerReveal={registerReveal}
-      />
-      <PanelSection
         id="flooring"
         eyebrow="Flooring"
         heading="Flooring systems to match your panel envelope"
         description="Epoxy coatings, grind and seal finishes, and combined material and install packages that round out the building envelope from wall to floor."
         panels={FLOORING_PANELS}
-        registerReveal={registerReveal}
-      />
-      <PanelSection
-        id="pemb"
-        eyebrow="Pre-engineered metal buildings"
-        heading="Complete metal building systems, frame to finish"
-        description="Steel frame structures clad with insulated wall and roof panels, available in custom sizes, designs, and colors for any project."
-        panels={PEMB_PANELS}
         registerReveal={registerReveal}
       />
       <PanelSection

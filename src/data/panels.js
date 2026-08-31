@@ -6,19 +6,7 @@ import coldStorageInteriorImg from "../assets/images/Sections/Cold Storage/Cold 
 import coldStorageBenefitsImg from "../assets/images/Sections/Cold Storage/Cold Storage - Benefits.webp";
 import pharmaceuticalInteriorImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Interior Panels.webp";
 import pharmaceuticalCleanroomImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Cleanroom Panels.webp";
-import pharmaceuticalBenefitsImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Benefits.webp";
 import laboratoriesInteriorImg from "../assets/images/Sections/Laboratories/Laboratories - Interior Panels.webp";
-import laboratoriesLabPanelsImg from "../assets/images/Sections/Laboratories/Laboratories - Lab Panels.webp";
-import laboratoriesBenefitsImg from "../assets/images/Sections/Laboratories/Laboratories - Benefits.webp";
-import insulatedBoothHuntingHutsImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Hunting Huts.webp";
-import insulatedBoothGuardShacksImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Guard Shacks.webp";
-import insulatedBoothLawnShedsImg from "../assets/images/Sections/Insulated Booth/Insulated Booths - Lawn Sheds.webp";
-import pembFrameStructureImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Frame & Structure.webp";
-import airplaneHangarExteriorImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Exterior Wall & Roof Panels.webp";
-import airplaneHangarWallSystemsImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Interior Wall Systems.webp";
-import airplaneHangarBenefitsImg from "../assets/images/Sections/Airplane Hangars/Airplane Hangars - Benefits.webp";
-import pembWallRoofImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Wall & Roof Panels.webp";
-import pembCustomOptionsImg from "../assets/images/Sections/Pre-Engineered Metal Buildings/Pre-engineered metal buildings - Custom Options.webp";
 import hingeCoolerDoorImg from "../assets/images/Sections/Doors/Doors - Hinge Cooler Doors.webp";
 import metalDoorImg from "../assets/images/Sections/Doors/Doors - Metal Doors.webp";
 import slidingCoolerDoorImg from "../assets/images/Sections/Doors/Doors - Sliding Cooler Doors.webp";
@@ -147,87 +135,29 @@ export const COLD_STORAGE_PANELS = [
   },
 ];
 
-export const PHARMACEUTICAL_PANELS = [
+export const LABORATORY_PANELS = [
   {
     name: "GMP & Cleanroom Panels",
-    category: "Pharmaceutical",
+    category: "Laboratories",
     desc: "Seamless, non-shedding panel systems built to ISO 14644 cleanroom classifications and EU GMP Annex 1 grades, with coved wall-to-floor transitions and factory-notched joints that reduce on-site cutting and particulate generation during installation.",
     img: pharmaceuticalInteriorImg,
   },
   {
     name: "USP 797/800 Compounding Panels",
-    category: "Pharmaceutical",
+    category: "Laboratories",
     desc: "Panel envelopes suited to both sterile compounding suites (positive-pressure rooms that protect the product from contamination under USP <797>) and hazardous drug compounding rooms (negative-pressure containment under USP <800>), holding the airtight seal each pressure cascade depends on.",
     img: pharmaceuticalCleanroomImg,
   },
   {
-    name: "Benefits",
-    category: "Pharmaceutical",
-    desc: "An airtight, validated envelope supports the pressure differentials GMP and USP compounding rooms are built around, while seamless surfaces reduce microbial and particulate harborage — shortening the path from construction to validation and production.",
-    img: pharmaceuticalBenefitsImg,
-  },
-];
-
-export const LABORATORY_PANELS = [
-  {
-    name: "Wet Lab & Containment Panels",
+    // The former "Wet Lab & Containment Panels" and "Vivarium & Research
+    // Panels" cards from the old standalone Laboratories section, merged
+    // into one — both sets of detail kept verbatim, just carried on a
+    // single card in place of the Benefits card this section used to end
+    // on.
+    name: "Wet Lab, Containment, Vivarium & Research Panels",
     category: "Laboratories",
-    desc: "Sealed floor, wall, and window junctions built for BSL-rated containment labs, supporting the directional (inward) airflow BSL-3 and BSL-4 spaces require, alongside chemical-resistant surface options for general wet lab use.",
+    desc: "Sealed floor, wall, and window junctions built for BSL-rated containment labs, supporting the directional (inward) airflow BSL-3 and BSL-4 spaces require, alongside chemical-resistant surface options for general wet lab use. Wipe-clean, sanitary panel surfaces for vivariums and animal research spaces, built to pair with ASHRAE 170-compatible ventilation and hold the species-specific environmental control AAALAC-accredited facilities are evaluated against.",
     img: laboratoriesInteriorImg,
-  },
-  {
-    name: "Vivarium & Research Panels",
-    category: "Laboratories",
-    desc: "Wipe-clean, sanitary panel surfaces for vivariums and animal research spaces, built to pair with ASHRAE 170-compatible ventilation and hold the species-specific environmental control AAALAC-accredited facilities are evaluated against.",
-    img: laboratoriesLabPanelsImg,
-  },
-  {
-    name: "Benefits",
-    category: "Laboratories",
-    desc: "An airtight panel envelope supports the negative-pressure containment and precise environmental control that research and testing facilities are audited on, with seamless surfaces that simplify decontamination between studies.",
-    img: laboratoriesBenefitsImg,
-  },
-];
-
-export const AIRPLANE_HANGAR_PANELS = [
-  {
-    name: "Exterior Wall & Roof Panels",
-    category: "Airplane Hangars",
-    desc: "Insulated metal wall and roof panels form the hangar's weather-tight shell, standing up to wind, hail, and UV exposure across wide clear-span steel frames, while continuous, factory-sealed seams hold the building envelope airtight from ridge to eave.",
-    img: airplaneHangarExteriorImg,
-  },
-  {
-    name: "Interior Wall Systems",
-    category: "Airplane Hangars",
-    desc: "Impact-resistant interior wall panels stand up to tow tractors, tugs, and ground equipment traffic along the hangar floor, while sealed joints keep the shop's conditioned air from leaking out around the bay door.",
-    img: airplaneHangarWallSystemsImg,
-  },
-  {
-    name: "Benefits",
-    category: "Airplane Hangars",
-    desc: "A sealed envelope and insulated roof liner hold a consistent shop temperature, keeping maintenance crews productive and protecting avionics and composite work from condensation, while a dry ceiling and wipe-clean walls cut the corrosion risk bare metal framing carries.",
-    img: airplaneHangarBenefitsImg,
-  },
-];
-
-export const INSULATED_BOOTH_PANELS = [
-  {
-    name: "Hunting Huts",
-    category: "Insulated Booths",
-    desc: "Compact, fully insulated hunting huts built to hold a stable interior temperature through cold-weather sits, with a weather-tight panel envelope that resists condensation.",
-    img: insulatedBoothHuntingHutsImg,
-  },
-  {
-    name: "Guard Shacks",
-    category: "Insulated Booths",
-    desc: "Prefabricated guard shacks and security booths with insulated walls and roof for year-round comfort at gatehouses, checkpoints, and jobsite entrances.",
-    img: insulatedBoothGuardShacksImg,
-  },
-  {
-    name: "Lawn Sheds",
-    category: "Insulated Booths",
-    desc: "Insulated lawn and equipment sheds that keep stored tools and equipment protected from temperature swings and moisture, available in custom sizes.",
-    img: insulatedBoothLawnShedsImg,
   },
 ];
 
@@ -249,27 +179,6 @@ export const FLOORING_PANELS = [
     category: "Flooring",
     desc: "Combined material and installation packages that pair your panel order with a complete flooring solution, coordinated on a single project timeline.",
     img: flooringMaterialInstallImg,
-  },
-];
-
-export const PEMB_PANELS = [
-  {
-    name: "Frame & Structure",
-    category: "Metal Building",
-    desc: "Pre-engineered steel frame systems designed for fast erection and a strong, code-compliant structural foundation.",
-    img: pembFrameStructureImg,
-  },
-  {
-    name: "Wall & Roof Panels",
-    category: "Metal Building",
-    desc: "Insulated wall and roof panel systems that clad the structure for a complete, weather-tight building envelope.",
-    img: pembWallRoofImg,
-  },
-  {
-    name: "Custom Options",
-    category: "Metal Building",
-    desc: "Custom sizes, designs, and color options let every pre-engineered building match the look and footprint your project needs.",
-    img: pembCustomOptionsImg,
   },
 ];
 
