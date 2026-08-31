@@ -133,6 +133,57 @@
   transform: scale(1.2);
 }
 
+/* A 9px dot is a fine target for a mouse but far too small for a fingertip
+   (WCAG 2.2 asks for at least 24x24). Rather than enlarge the dots
+   themselves — which would change the design everywhere — the button box
+   is grown to 24x24 on touch devices only, with the visible dot re-drawn
+   at its original 9px via ::before so it looks pixel-identical. The row's
+   `gap` shrinks by exactly the amount each button grew (8px - 15px = the
+   same 17px centre-to-centre spacing as before), so the dots stay in the
+   same visual positions rather than spreading out. Gated on `hover: none`,
+   not a width breakpoint, so a narrow desktop window keeps the compact
+   original. */
+@media (hover: none) {
+  .hp-blog-slideshow__dots {
+    gap: 0;
+  }
+
+  .hp-blog-slideshow__dot {
+    width: 24px;
+    height: 24px;
+    /* Preserves the original 17px centre-to-centre spacing now that each
+       button is 24px wide instead of 9px. */
+    margin: 0 -3.5px;
+    background: none;
+    display: grid;
+    place-items: center;
+    /* The dot is repainted by ::before below, so the button itself must not
+       animate — otherwise the active scale would grow the hit area, not the
+       dot. */
+    transform: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hp-blog-slideshow__dot::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: rgba(243, 241, 236, 0.4);
+    transition: background 0.3s ease, transform 0.3s ease;
+  }
+
+  .hp-blog-slideshow__dot.is-active {
+    background: none;
+    transform: none;
+  }
+
+  .hp-blog-slideshow__dot.is-active::before {
+    background: var(--hp-accent);
+    transform: scale(1.2);
+  }
+}
+
 @media (max-width: 640px) {
   .hp-blog-slide__label { padding: 24px 20px; }
   .hp-blog-slide__label h3 { font-size: 19px; }

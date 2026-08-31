@@ -343,6 +343,11 @@
   color: var(--hp-accent);
 }
 
+/* 10px is legible enough at desktop reading distance for a short
+   all-caps status chip, but drops below comfortable on a phone held at
+   arm's length — bumped a step on touch devices (see the `hover: none`
+   rule further down) rather than everywhere, so the desktop chip keeps
+   its intentionally understated scale. */
 .hp-specs-swatch__badge {
   font-size: 10px;
   font-weight: 700;
@@ -358,6 +363,17 @@
 .hp-specs-swatch__badge.is-in-stock {
   color: #0d7a4c;
   background: rgba(18, 166, 110, 0.14);
+}
+
+/* See the note on .hp-specs-swatch__badge above — a step up in size on
+   touch devices, where the viewing distance is longer relative to the
+   screen. Keyed on `hover: none` rather than a width breakpoint so a
+   narrow desktop window is unaffected. */
+@media (hover: none) {
+  .hp-specs-swatch__badge {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
 }
 
 /* Every panel photo is stacked in the same box (absolute + inset:0) and

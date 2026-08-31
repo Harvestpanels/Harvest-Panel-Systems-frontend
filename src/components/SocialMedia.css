@@ -28,12 +28,32 @@
   transform-style: preserve-3d;
 }
 
-/* Scoped to real hover-capable pointers only — a touch device gets no
-   flip at all, just an ordinary, immediately-tappable link straight to
-   the profile (see the comment on SocialCard in SocialMedia.jsx). */
+/* Scoped to real hover-capable pointers only. Without this gate the rule
+   also matches on touch devices, since many mobile browsers simulate
+   :hover on tap (and can leave it "stuck" until something else is tapped)
+   — that fights the JS-driven .is-flipped toggle below, where a tap that
+   un-flips a card via state can still be visually held flipped by the
+   lingering simulated :hover. Same gate, same reason, as Memberships.css. */
 @media (hover: hover) {
   .hp-social-badge:hover .hp-social-badge__inner {
     transform: rotateY(180deg);
+  }
+}
+
+/* Touch devices have no hover to trigger the flip above, so this is the
+   tap-driven equivalent — .is-flipped is toggled by SocialMedia.jsx on tap
+   (see the comment on SocialCard there), matching the affiliation badges in
+   Memberships.css exactly. Gated to `hover: none` specifically, not to a
+   viewport width, so a desktop browser window merely resized narrow still
+   flips on hover like normal — only genuine touch devices get the tap
+   behavior. */
+@media (hover: none) {
+  .hp-social-badge__inner.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+  .hp-social-badge {
+    cursor: pointer;
   }
 }
 

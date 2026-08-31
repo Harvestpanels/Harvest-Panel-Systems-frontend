@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./SocialMedia.css";
 
 // Same brand SVGs as Footer.jsx's own social row (kept in sync manually —
@@ -52,14 +53,26 @@ const SOCIAL_LINKS = [
 ];
 
 // Mirrors MembershipCard in Memberships.jsx almost exactly (same flip
-// mechanic, same face structure) — the one real difference is this card IS
-// a genuine link (target="_blank" straight to the profile), not a
-// decorative tap-to-reveal: the flip here is purely a hover nicety for
-// desktop (see `@media (hover: hover)` in SocialMedia.css), so touch
-// devices — which never see the flip at all — still get a perfectly
-// ordinary, immediately-tappable link straight to the profile, no JS
-// flip-state or extra tap required.
-function SocialCard({ name, handle, url, icon, brandColor, registerReveal }) {
+// mechanic, same face structure, same accordion-style single-open state) —
+// the one real difference is this card IS a genuine link straight to the
+// profile, so touch needs one extra step Memberships doesn't: the first tap
+// flips the card to reveal the handle (and is NOT allowed to navigate), and
+// only a second tap on the already-flipped card actually opens the profile.
+// Without that guard a touch visitor could never read the back face at all —
+// the tap that flipped it would immediately navigate away from the page.
+//
+// Desktop is unchanged and needs no JS at all: it flips on :hover (see the
+// `@media (hover: hover)` rule in SocialMedia.css) and a click navigates
+// straight away, since the back face is already visible by the time the
+// pointer is over the card.
+//
+// The flip class goes on the *inner* wrapper, never on this outer element —
+// that outer one carries .hp-reveal and registerReveal's ref, and React
+// replaces an element's whole className on any string change, which would
+// silently wipe the "is-visible" class the scroll-reveal observer added
+// imperatively via classList.add. See MembershipCard's own comment in
+// Memberships.jsx for the full write-up of that bug.
+function SocialCard({ name, handle, url, icon, brandColor, registerReveal, flipped, onToggle }) {
   return (
     <a
       className="hp-social-badge hp-reveal"
@@ -67,9 +80,24 @@ function SocialCard({ name, handle, url, icon, brandColor, registerReveal }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={`${name} (opens in a new tab)`}
+      aria-label={
+        flipped
+          ? `${name}, ${handle} (opens in a new tab)`
+          : `${name}, tap to show details`
+      }
+      onClick={(e) => {
+        // Only ever intercepts on genuine touch devices (no hover at all) and
+        // only while this card is still showing its front face. Matching the
+        // `hover: none` media query the CSS flip itself is gated on keeps the
+        // two in lockstep: a desktop window merely resized narrow still has
+        // hover, so it keeps navigating on the first click like normal.
+        if (flipped) return;
+        if (!window.matchMedia("(hover: none)").matches) return;
+        e.preventDefault();
+        onToggle();
+      }}
     >
-      <div className="hp-social-badge__inner">
+      <div className={`hp-social-badge__inner${flipped ? " is-flipped" : ""}`}>
         <div className="hp-social-badge__face hp-social-badge__face--front">
           <span className="hp-social-badge__icon" style={{ background: brandColor }}>
             {icon}
@@ -85,6 +113,10 @@ function SocialCard({ name, handle, url, icon, brandColor, registerReveal }) {
 }
 
 export default function SocialMedia({ registerReveal }) {
+  // Which card (by name) is currently tap-flipped on touch devices — only
+  // one at a time, so flipping a new one automatically flips back whichever
+  // was already open, exactly like Memberships' own affiliation badges.
+  const [flippedName, setFlippedName] = useState(null);
   return (
     <section className="hp-section" id="social-media">
       <div className="hp-section__inner">
@@ -97,7 +129,13 @@ export default function SocialMedia({ registerReveal }) {
           </p>
           <div className="hp-social-grid">
             {SOCIAL_LINKS.map((s) => (
-              <SocialCard key={s.name} {...s} registerReveal={registerReveal} />
+              <SocialCard
+                key={s.name}
+                {...s}
+                registerReveal={registerReveal}
+                flipped={flippedName === s.name}
+                onToggle={() => setFlippedName((cur) => (cur === s.name ? null : s.name))}
+              />
             ))}
           </div>
         </div>

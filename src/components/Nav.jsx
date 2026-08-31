@@ -15,6 +15,7 @@ const MOBILE_MENU_CLOSE_MS = 380;
 const FOLD_ANIMATION_MS = 1650;
 
 const HOME_NAV_LINKS = [
+  { to: "/blog", label: "Blog" },
   { to: "/products", label: "Products" },
   { to: "/specs", label: "Specs" },
   { id: "why", label: "Who We Are" },
@@ -342,7 +343,7 @@ export default function Nav({
   // keyframes, same duration, same easing — it only delays when it starts,
   // the same technique ChatWidget's own launcher entrance uses (see
   // appReady.js). Defaults to true so a page that doesn't wire this up
-  // still animates immediately.
+  // still animates immediately, same as before this existed.
   entranceReady = true,
 }) {
   // Plays once per mount (every page navigation), then goes away for good.
@@ -611,8 +612,34 @@ export default function Nav({
     };
     measure();
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [navRef]);
+
+    // Re-measure once the logo image itself has actually decoded. On a
+    // first visit (cold cache) this effect runs before that image exists:
+    // .hp-logo__img is `height: 44px; width: auto` with no width/height
+    // attributes, so an undecoded image lays out 0px wide, the logoWidth
+    // guard above bails, and --fold-slide-x is never set — leaving the
+    // animation to fall back to the hardcoded distance in Nav.css, which
+    // is tuned for a different pill width and lands the logo well off its
+    // real resting spot. That mismatch is exactly the "logo teleports on
+    // first load, fine after a refresh" bug: on a refresh the image is
+    // already cached, so it measures correctly on the very first pass.
+    const logoImg = logoSlot.querySelector("img");
+    if (logoImg && !logoImg.complete) {
+      logoImg.addEventListener("load", measure);
+      logoImg.addEventListener("error", measure);
+    }
+
+    return () => {
+      window.removeEventListener("resize", measure);
+      logoImg?.removeEventListener("load", measure);
+      logoImg?.removeEventListener("error", measure);
+    };
+    // `entranceReady` is a dependency so this re-measures right as the
+    // intro is unpaused (see the hp-nav--anim-hold gate) — the page's own
+    // PageLoader waits on that same logo image before flipping it true, so
+    // this pass is guaranteed to measure a fully laid-out logo no matter
+    // how slow the first load was.
+  }, [navRef, entranceReady]);
 
   const logoEl = logoTo ? (
     <Link to={logoTo} className="hp-logo" aria-label="Harvest Panel Systems, home">
@@ -695,8 +722,17 @@ export default function Nav({
           pill (which animates its own width/radius for the circle shape)
           so this slide stays a pure translateX with no distortion.
           Unmounted entirely once `folding` goes false (not just hidden),
-          so it can never replay from a later viewport change. */}
-      {folding && (
+          so it can never replay from a later viewport change.
+
+          Also gated on foldSlideX having actually been measured, so this
+          can never animate against Nav.css's hardcoded fallback distance —
+          that fallback is tuned for one specific pill width and lands the
+          logo away from its real resting spot, which reads as the logo
+          teleporting at the handoff. Nothing is lost by waiting: while the
+          measurement is still pending, the page's own PageLoader is still
+          covering the navbar, and this intro is paused behind it anyway
+          (see hp-nav--anim-hold). */}
+      {folding && foldSlideX !== null && (
         <div
           className="hp-nav__fold-logo"
           aria-hidden="true"

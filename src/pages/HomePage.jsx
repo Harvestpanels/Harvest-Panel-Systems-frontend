@@ -39,8 +39,13 @@ import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
 import Toast from "../components/Toast";
 
-// Plain top-level nav links, not tucked inside a dropdown — "Home" scrolls
-// to top rather than navigating (this page already is "/").
+// This page's own destination links, shown as plain top-level nav items
+// (see desktopLinks below) — "Home" scrolls to top rather than navigating
+// (this page already is "/"), and is marked `active` so the mobile
+// dropdown highlights it the same way NavDropdown/MobileDropdownGroup
+// already highlight the current in-page section (the ".is-current" red
+// mark in Nav.css) — this is just that same mechanism applied to "which
+// page you're on" instead of "which section you've scrolled to".
 const HOME_TOP_LINKS = [
   { id: "top", label: "Home", onClick: scrollToTop, active: true },
   { to: "/blog", label: "Blog" },
@@ -80,18 +85,35 @@ const INQUIRY_SECTIONS = [
 
 const SCROLL_SPY_IDS = [...OVERVIEW_SECTIONS, ...INQUIRY_SECTIONS].map((s) => s.id);
 
-// This page's own critical first-view assets (see usePageReady) — the
-// hero's poster image (shown immediately, before the scroll-scrubbed
-// background video has buffered) and the logo used everywhere above the
-// fold. Module-level constants, not recreated per render, since
-// usePageReady's effect depends on these arrays by reference.
-const HOME_CRITICAL_IMAGES = [PARALLAX_BG_URL, logo];
+// Every photo actually used on this page (see usePageReady) — not just the
+// hero's own poster/logo, but every panel/door/trim photo and every photo
+// gallery shot too, so nothing on the page is still loading once a visitor
+// is let in. Module-level constant, not recreated per render, since
+// usePageReady's effect depends on this array by reference.
+const HOME_CRITICAL_IMAGES = [
+  PARALLAX_BG_URL,
+  CURTAIN_BG_URL,
+  logo,
+  ...GALLERY_IMAGES.map((g) => g.src),
+  ...INDOOR_AGRICULTURE_PANELS.map((p) => p.img),
+  ...COLD_STORAGE_PANELS.map((p) => p.img),
+  ...PHARMACEUTICAL_PANELS.map((p) => p.img),
+  ...LABORATORY_PANELS.map((p) => p.img),
+  ...AIRPLANE_HANGAR_PANELS.map((p) => p.img),
+  ...INSULATED_BOOTH_PANELS.map((p) => p.img),
+  ...FLOORING_PANELS.map((p) => p.img),
+  ...PEMB_PANELS.map((p) => p.img),
+  ...MODULAR_HOUSING_PANELS.map((p) => p.img),
+  ...DOOR_PANELS.map((p) => p.img),
+  ...TRIM_HARDWARE_PANELS.map((p) => p.img),
+];
 const HOME_CRITICAL_VIDEOS = [VIDEO_URL];
 
 function HomePage() {
   usePageMeta({
     title: "Harvest Panel Systems | Insulated Metal Panels & Doors",
     description: "Global distributor of Interior Insulated Metal Panels and Doors for Industrial, Commercial, and Residential projects. Stock inventory ships anywhere in the U.S. within 48 hours from our Oklahoma distribution center.",
+    path: "/",
   });
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -108,20 +130,7 @@ function HomePage() {
   const pageReady = usePageReady(HOME_CRITICAL_IMAGES, HOME_CRITICAL_VIDEOS);
   const activeSectionId = useScrollSpy(SCROLL_SPY_IDS);
 
-  // Flat fallback for the mobile dropdown, which has no room for nested
-  // popovers — same flattening every other page's own *NavLinks does.
-  const homeNavLinks = [
-    ...HOME_TOP_LINKS,
-    ...OVERVIEW_SECTIONS.map((s) => ({ label: s.label, onClick: () => scrollCenter(s.id) })),
-    ...INQUIRY_SECTIONS.map((s) => ({ label: s.label, onClick: () => scrollCenter(s.id) })),
-  ];
-
   const homeNavDropdowns = [
-    {
-      key: "menu",
-      label: "Menu",
-      items: HOME_TOP_LINKS,
-    },
     {
       key: "contents",
       label: "Contents",
@@ -156,9 +165,8 @@ function HomePage() {
         setMenuOpen={setMenuOpen}
         navRef={navRef}
         logo={logo}
-        links={homeNavLinks}
         dropdowns={homeNavDropdowns}
-        desktopLinks={[]}
+        desktopLinks={HOME_TOP_LINKS}
         entranceReady={loaderDone}
       />
 

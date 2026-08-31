@@ -42,13 +42,18 @@ import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
 import Toast from "../components/Toast";
 
-// This page's own critical first-view assets (see usePageReady) —
-// module-level constants, not recreated per render, since usePageReady's
-// effect depends on these arrays by reference. The production-process
-// video further down the page is not included — it's not above the fold,
-// so there's no reason to block the initial reveal on it.
-const SPECS_CRITICAL_IMAGES = [bgVideoPoster, logo];
-const SPECS_CRITICAL_VIDEOS = [bgVideoSrc];
+// Every photo actually used on this page (see usePageReady) — not just the
+// hero's own poster/logo, but every colour swatch and panel profile photo
+// too, so nothing on the page is still loading once a visitor is let in.
+// Module-level constants, not recreated per render, since usePageReady's
+// effect depends on these arrays by reference.
+const SPECS_CRITICAL_IMAGES = [
+  bgVideoPoster,
+  logo,
+  ...COLOR_PALETTE.map((c) => c.img),
+  ...PANEL_PROFILES.map((p) => p.img),
+];
+const SPECS_CRITICAL_VIDEOS = [bgVideoSrc, productionVideoSrc];
 
 const specsLinks = [
   { to: "/", label: "Home" },
@@ -155,6 +160,7 @@ export default function SpecsPage() {
   usePageMeta({
     title: "Panel Specs | Harvest Panel Systems",
     description: "PIR foam core details, color options, certifications, fire rating tolerances, and construction efficiency for Harvest Panel Systems insulated metal panels.",
+    path: "/specs",
   });
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -349,17 +355,12 @@ export default function SpecsPage() {
     });
   }, [loaderDone]);
 
-  // Same collapsed-dropdown pattern as the Products/Home nav — a "Specs"
-  // popover grouping every spec section (Efficiency through Our Process)
-  // and an "Inquiry" popover for FAQ/Contact Us/Follow Us — instead of a
-  // long flat row of links. Mobile still uses the flat `specsLinks` list
-  // above.
+  // Same collapsed-dropdown pattern as the Products/Home nav — "Contents"
+  // for every spec section on this page (Efficiency through Our Process),
+  // and "Inquiry" for FAQ/Contact Us/Follow Us. The site's own pages
+  // (Home/Blog/Products/Specs) are a flat row via desktopLinks below, not
+  // tucked into a dropdown.
   const specsNavDropdowns = [
-    {
-      key: "menu",
-      label: "Menu",
-      items: specsLinks,
-    },
     {
       key: "contents",
       label: "Contents",
@@ -390,8 +391,7 @@ export default function SpecsPage() {
         navRef={navRef}
         logo={logo}
         logoTo="/"
-        links={specsLinks}
-        desktopLinks={[]}
+        desktopLinks={specsLinks}
         dropdowns={specsNavDropdowns}
         ctaLabel="Request details"
         entranceReady={loaderDone}

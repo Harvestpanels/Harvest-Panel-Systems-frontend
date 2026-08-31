@@ -20,6 +20,7 @@ export default function NotFoundPage() {
   usePageMeta({
     title: "Page Not Found | Harvest Panel Systems",
     description: "The page you're looking for doesn't exist. Browse our insulated wall, roof, and cold storage panels instead.",
+    noindex: true,
   });
 
   const [menuOpen, setMenuOpen] = useState(false);

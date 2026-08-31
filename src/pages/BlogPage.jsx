@@ -22,25 +22,21 @@ import SocialMedia from "../components/SocialMedia";
 import Footer from "../components/Footer";
 import Toast from "../components/Toast";
 
-// This page's own critical first-view assets (see usePageReady) —
-// module-level constants, not recreated per render, since usePageReady's
+// Every photo actually used on this page (see usePageReady) — not just the
+// hero's own poster/logo, but every post's own photo in the slideshow, so
+// nothing on the page is still loading once a visitor is let in.
+// Module-level constants, not recreated per render, since usePageReady's
 // effect depends on these arrays by reference.
-const BLOG_CRITICAL_IMAGES = [blogBgVideoPoster, logo];
+const BLOG_CRITICAL_IMAGES = [blogBgVideoPoster, logo, ...BLOG_POSTS.map((p) => p.img)];
 const BLOG_CRITICAL_VIDEOS = [blogBgVideo];
 
-// Every scrollable section on this page, top to bottom — grouped into a
-// "Contents" nav dropdown, same pattern SpecsPage.jsx's own "Class"
-// dropdown and ProductsPage.jsx's "Categories" dropdown use.
-const BLOG_SECTIONS = [
-  { id: "posts", label: "Latest Posts" },
-  { id: "testimonials", label: "Customer Testimonials" },
-];
-
-const BLOG_SCROLL_SPY_IDS = [...BLOG_SECTIONS.map((s) => s.id), "faq", "contact", "social-media"];
-
-// Plain top-level nav links, matching the pattern every other page's own
-// nav config uses — "Blog" scrolls to top rather than navigating, since
-// this page already is /blog.
+// This page's own destination links, shown as plain top-level nav items
+// (see desktopLinks below) — matches the pattern every other page's own
+// nav config uses (see HOME_TOP_LINKS in HomePage.jsx). "Blog" scrolls to
+// top rather than navigating (this page already is /blog), and is marked
+// `active` so the mobile dropdown highlights it the same red ".is-current"
+// mark (see Nav.css) the Contents/Inquiry dropdowns already use for the
+// current in-page section.
 const blogTopLinks = [
   { to: "/", label: "Home" },
   { id: "blog-top", label: "Blog", onClick: scrollToTop, active: true },
@@ -48,22 +44,29 @@ const blogTopLinks = [
   { to: "/specs", label: "Specs" },
 ];
 
-// Flat fallback for the mobile dropdown, which has no room for nested
-// popovers — same flattening ProductsPage.jsx's own productsNavLinks does.
-const blogNavLinks = [
-  { to: "/", label: "Home" },
-  { to: "/products", label: "Products" },
-  { to: "/specs", label: "Specs" },
-  ...BLOG_SECTIONS.map((s) => ({ id: s.id, label: s.label, onClick: () => scrollCenter(s.id) })),
+// This page's own scrollable sections, shown as a "Contents" nav dropdown —
+// same pattern as SPECS_SECTIONS/"Specs" in SpecsPage.jsx and
+// PRODUCTS_NAV_SECTIONS/"Categories" in ProductsPage.jsx. Follow Us sits in
+// the Inquiry dropdown instead (see INQUIRY_SECTIONS below), matching
+// where every other page's own nav puts it.
+const BLOG_SECTIONS = [
+  { id: "posts", label: "Latest Posts" },
+  { id: "testimonials", label: "Customer Testimonials" },
+];
+
+const INQUIRY_SECTIONS = [
   { id: "faq", label: "FAQ" },
   { id: "contact", label: "Contact Us" },
   { id: "social-media", label: "Follow Us" },
 ];
 
+const BLOG_SCROLL_SPY_IDS = [...BLOG_SECTIONS, ...INQUIRY_SECTIONS].map((s) => s.id);
+
 export default function BlogPage() {
   usePageMeta({
     title: "Blog & News | Harvest Panel Systems",
     description: "Company news, industry insights, and project case studies from the Harvest Panel Systems team.",
+    path: "/blog",
   });
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -179,12 +182,13 @@ export default function BlogPage() {
   const [toast, setToast] = useToast();
   const activeSectionId = useScrollSpy(BLOG_SCROLL_SPY_IDS);
 
+  // Same collapsed-dropdown pattern as the Products/Specs/Home nav —
+  // "Contents" jumps to any section on this page, "Inquiry" covers FAQ/
+  // Contact Us, both now sections on this page too (see <Faq>/<Contact>
+  // below), so both dropdowns scroll rather than navigate. The site's own
+  // pages (Home/Blog/Products/Specs) are a flat row via desktopLinks below,
+  // not tucked into a dropdown.
   const blogNavDropdowns = [
-    {
-      key: "menu",
-      label: "Menu",
-      items: blogTopLinks,
-    },
     {
       key: "contents",
       label: "Contents",
@@ -197,11 +201,11 @@ export default function BlogPage() {
     {
       key: "inquiry",
       label: "Inquiry",
-      items: [
-        { label: "FAQ", onClick: () => scrollCenter("faq"), active: activeSectionId === "faq" },
-        { label: "Contact Us", onClick: () => scrollCenter("contact"), active: activeSectionId === "contact" },
-        { label: "Follow Us", onClick: () => scrollCenter("social-media"), active: activeSectionId === "social-media" },
-      ],
+      items: INQUIRY_SECTIONS.map((section) => ({
+        label: section.label,
+        onClick: () => scrollCenter(section.id),
+        active: section.id === activeSectionId,
+      })),
     },
   ];
 
@@ -215,8 +219,7 @@ export default function BlogPage() {
         navRef={navRef}
         logo={logo}
         logoTo="/"
-        links={blogNavLinks}
-        desktopLinks={[]}
+        desktopLinks={blogTopLinks}
         dropdowns={blogNavDropdowns}
         ctaLabel="Get a quote"
         entranceReady={loaderDone}

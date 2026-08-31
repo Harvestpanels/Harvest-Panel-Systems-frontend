@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { scrollCenter } from "./utils/scroll";
 import ChatWidget from "./components/ChatWidget";
 
@@ -91,6 +92,11 @@ function App() {
           imported eagerly rather than lazily, so it's present on every
           route immediately, including during a page chunk's own load. */}
       <ChatWidget />
+      {/* Vercel's page-view/traffic analytics — tracks route changes
+          automatically (via useLocation internally), so it only needs to
+          be mounted once here, same as ChatWidget above. No-ops entirely
+          when not actually deployed on Vercel. */}
+      <Analytics />
     </>
   );
 }

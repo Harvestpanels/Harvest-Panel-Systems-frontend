@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import "./PageLoader.css";
 import logo from "../assets/images/General/harvest_panels_logo.png";
 import { markAppReady } from "../utils/appReady";
-import "./PageLoader.css";
 
 // Full-viewport overlay shown until this page's critical first-view assets
 // are ready (see usePageReady) — the page underneath still mounts and

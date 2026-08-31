@@ -232,18 +232,19 @@ h3 {
 }
 
 /* ===================== FIXED BACKGROUND VIDEO ===================== */
-/* Shared by the home page (Hero.jsx) and the Products page (ProductsPage.jsx
-   renders its own <video> with these same classes directly, no Hero
-   involved) — lives here, not in Hero.css, specifically because App.css is
-   imported directly by both pages and can never be route-split away. Hero.css
-   only loads as part of the Hero component's own chunk (home page only), so
-   a visitor landing straight on /products with routes code-split (see
-   App.jsx's React.lazy) would never load it — leaving this fixed video
-   completely unstyled: static position, native pixel size instead of
-   filling the viewport, plain instead of `cover`. Confirmed by inspecting a
-   fresh /products load: .hp-bgvideo-layer computed to position: static and
-   .hp-bgvideo rendered at its raw 1280x720 source size in the corner of the
-   screen with a black void filling the rest of the viewport. */
+/* Shared by the home page (Hero.jsx) and the Products/Blog pages
+   (ProductsPage.jsx/BlogPage.jsx each render their own <video> with these
+   same classes directly, no Hero involved) — lives here, not in Hero.css,
+   specifically because App.css is imported directly by every page and can
+   never be route-split away. Hero.css only loads as part of the Hero
+   component's own chunk (home page only), so a visitor landing straight on
+   /products or /blog with routes code-split (see App.jsx's React.lazy)
+   would never load it — leaving this fixed video completely unstyled:
+   static position, native pixel size instead of filling the viewport,
+   plain instead of `cover`. Confirmed by inspecting a fresh /products load:
+   .hp-bgvideo-layer computed to position: static and .hp-bgvideo rendered
+   at its raw 1280x720 source size in the corner of the screen with a black
+   void filling the rest of the viewport. */
 .hp-bgvideo-layer {
   position: fixed;
   inset: 0;

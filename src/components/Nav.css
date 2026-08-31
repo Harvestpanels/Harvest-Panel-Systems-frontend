@@ -98,11 +98,19 @@
      logo's real, current rendered size — not a hardcoded pixel value. That
      means this keeps landing exactly on the logo at any desktop width, or
      if a user resizes the window while this is still mid-flight, instead
-     of being tuned for one specific width. -402px only survives here as
-     the fallback for the very first frame, before the layout effect has
-     had a chance to run. */
-  88%  { opacity: 1; transform: translate(-50%, -50%) translateX(var(--fold-slide-x, -402px)); animation-timing-function: steps(1, end); }
-  100% { opacity: 0; transform: translate(-50%, -50%) translateX(var(--fold-slide-x, -402px)); }
+     of being tuned for one specific width.
+     The 0px fallback is deliberately inert rather than a real distance.
+     This element is only rendered once that measurement exists (see the
+     foldSlideX gate in Nav.jsx), so the fallback is unreachable in
+     practice — but it previously held a real, hardcoded distance tuned for
+     an older, narrower pill, and that is exactly what shipped the "logo
+     teleports on a first visit" bug: on a cold cache the logo image had
+     not decoded yet, so the measurement bailed, this stale number was used
+     instead, and the logo landed nowhere near its real resting spot. An
+     inert fallback can only ever degrade to "no slide", never to a wrong
+     one. */
+  88%  { opacity: 1; transform: translate(-50%, -50%) translateX(var(--fold-slide-x, 0px)); animation-timing-function: steps(1, end); }
+  100% { opacity: 0; transform: translate(-50%, -50%) translateX(var(--fold-slide-x, 0px)); }
 }
 
 @keyframes hp-nav-content-in {
@@ -175,6 +183,17 @@
   animation: hp-nav-logo-in 0.192s steps(1, end) 1.408s both;
 }
 
+/* Below this breakpoint the nav is always a small 52px hamburger-only
+   circle (see the max-width: 1024px block below) — the fold/slide
+   transition is a desktop-only flourish and has no sensible "expanded"
+   state to land in on mobile, so it's switched off entirely here. */
+@media (max-width: 1024px) {
+  .hp-nav__pill--fold { animation: none; }
+  .hp-nav__pill--fold .hp-nav__inner-content { animation: none; opacity: 1; }
+  .hp-nav__pill--fold .hp-nav__logo-slot { animation: none; opacity: 1; }
+  .hp-nav__fold-logo { animation: none; opacity: 0; }
+}
+
 /* Freezes the whole fold-in entrance at its very first frame (via
    `animation-play-state`, not by not applying the animation at all) while
    a page's own PageLoader overlay is still up — see the `entranceReady`
@@ -198,17 +217,6 @@
   .hp-nav--anim-hold .hp-nav__pill {
     animation-play-state: paused;
   }
-}
-
-/* Below this breakpoint the nav is always a small 52px hamburger-only
-   circle (see the max-width: 1024px block below) — the fold/slide
-   transition is a desktop-only flourish and has no sensible "expanded"
-   state to land in on mobile, so it's switched off entirely here. */
-@media (max-width: 1024px) {
-  .hp-nav__pill--fold { animation: none; }
-  .hp-nav__pill--fold .hp-nav__inner-content { animation: none; opacity: 1; }
-  .hp-nav__pill--fold .hp-nav__logo-slot { animation: none; opacity: 1; }
-  .hp-nav__fold-logo { animation: none; opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

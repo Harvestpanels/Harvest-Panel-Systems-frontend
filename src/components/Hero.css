@@ -183,4 +183,14 @@
   /* Freeze curtain and hero parallax — JS skips these too */
   .hp-parallax { transform: none !important; }
   .hp-hero__content { transform: none !important; opacity: 1 !important; }
+  /* The entrance animations above are skipped entirely under reduced
+     motion (no ".hp-anim-ready" rule ever needs to match), so their own
+     static `opacity: 0` base would otherwise leave the hero text
+     permanently invisible instead of just unanimated. */
+  .hp-hero .hp-eyebrow,
+  .hp-hero h1,
+  .hp-hero__sub,
+  .hp-hero__ctas {
+    opacity: 1 !important;
+  }
 }

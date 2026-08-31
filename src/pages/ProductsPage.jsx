@@ -24,10 +24,16 @@ import PageLoader from "../components/PageLoader";
 import SocialMedia from "../components/SocialMedia";
 import Toast from "../components/Toast";
 
-// This page's own critical first-view assets (see usePageReady) —
-// module-level constants, not recreated per render, since usePageReady's
-// effect depends on these arrays by reference.
-const PRODUCTS_CRITICAL_IMAGES = [dataCenterVideoPoster, logo];
+// Every photo actually used on this page (see usePageReady) — not just the
+// hero's own poster/logo, but every product card's photo too,
+// so nothing on the page is still loading once a visitor is let in.
+// Module-level constant, not recreated per render, since usePageReady's
+// effect depends on this array by reference.
+const PRODUCTS_CRITICAL_IMAGES = [
+  dataCenterVideoPoster,
+  logo,
+  ...PRODUCT_CATEGORIES.flatMap((category) => category.products.map((p) => p.img)),
+];
 const PRODUCTS_CRITICAL_VIDEOS = [dataCenterVideo];
 
 // Maps a product into the { src, title, category, desc } shape Lightbox
@@ -152,6 +158,7 @@ export default function ProductsPage() {
   usePageMeta({
     title: "Products | Harvest Panel Systems",
     description: "Browse our complete line of insulated wall panels, roof panels, fire-rated panels, cold storage panels, doors, and trim & hardware.",
+    path: "/products",
   });
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -351,21 +358,12 @@ export default function ProductsPage() {
     setPendingScrollId(id);
   }
 
-  const productsNavLinks = [
-    { to: "/", label: "Home" },
-    { to: "/specs", label: "Specs" },
-    ...PRODUCTS_NAV_SECTIONS.map((section) => ({
-      id: section.id,
-      label: section.label,
-      onClick: () => handleNavSectionClick(section.id),
-    })),
-    { id: "faq", label: "FAQ" },
-    { id: "contact", label: "Contact Us" },
-    { id: "social-media", label: "Follow Us" },
-  ];
-
-  // Plain top-level nav links, not tucked inside a dropdown — "Products"
-  // scrolls to top rather than navigating (this page already is /products).
+  // This page's own destination links, shown as plain top-level nav items
+  // (see desktopLinks below) — "Products" scrolls to top rather than
+  // navigating (this page already is /products), and is marked `active` so
+  // the mobile dropdown highlights it the same red ".is-current" mark (see
+  // Nav.css) the Contents/Inquiry dropdowns already use for the current
+  // in-page section.
   const productsTopLinks = [
     { to: "/", label: "Home" },
     { to: "/blog", label: "Blog" },
@@ -373,16 +371,12 @@ export default function ProductsPage() {
     { to: "/specs", label: "Specs" },
   ];
 
-  // Same collapsed-dropdown pattern as the homepage nav — a "Categories"
-  // popover grouping every product section, and an "Inquiry" popover for
-  // Contact Us — instead of a long flat row of links. Mobile still uses the
-  // flat `productsNavLinks` list above.
+  // Same collapsed-dropdown pattern as the homepage nav — "Contents"
+  // grouping every product section, and "Inquiry" for FAQ/Contact Us/
+  // Follow Us — instead of a long flat row of links. The site's own pages
+  // (Home/Blog/Products/Specs) are a flat row via desktopLinks below, not
+  // tucked into a dropdown.
   const productsNavDropdowns = [
-    {
-      key: "menu",
-      label: "Menu",
-      items: productsTopLinks,
-    },
     {
       key: "contents",
       label: "Contents",
@@ -501,9 +495,8 @@ export default function ProductsPage() {
         setMenuOpen={setMenuOpen}
         navRef={navRef}
         logo={logo}
-        links={productsNavLinks}
         dropdowns={productsNavDropdowns}
-        desktopLinks={[]}
+        desktopLinks={productsTopLinks}
         ctaLabel="Request pricing"
         entranceReady={loaderDone}
       />

@@ -104,6 +104,43 @@
   .hp-footer__social a:hover { transform: none; }
 }
 
+/* The footer's social icons are 20-22px of actual SVG — precise enough for
+   a mouse, but well under the 24px minimum a fingertip needs (WCAG 2.2
+   2.5.8). The anchor box is grown to 44px on touch devices while the icon
+   inside keeps its own size, so only the tappable area changes, not the
+   design. The row's `gap` shrinks by the same amount each icon grew, so the
+   icons stay visually where they were instead of spreading apart. Keyed on
+   `hover: none` so a narrow desktop window keeps the compact original. */
+@media (hover: none) {
+  .hp-footer__social {
+    gap: 0;
+  }
+
+  .hp-footer__social a {
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    /* 18px original gap - (44px box - ~22px icon) = the same visual spacing
+       between icons as before the box grew. */
+    margin: 0 -2px;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@media (hover: none) and (max-width: 640px) {
+  /* The 640px rule above tightens the row to a 14px gap; match it here so
+     the enlarged boxes keep that tighter mobile spacing rather than the
+     desktop one. */
+  .hp-footer__social {
+    gap: 0;
+  }
+
+  .hp-footer__social a {
+    margin: 0 -4px;
+  }
+}
+
 @media (hover: none) {
   .hp-footer {
     -webkit-backdrop-filter: blur(12px) saturate(130%);
