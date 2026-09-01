@@ -11,7 +11,7 @@ import fireguardWallAcousticImg from "../assets/images/Products/Mineral Wool Fir
 import fireguardRoofImg from "../assets/images/Products/Mineral Wool Fire-Rated Panels/HPS Fireguard Roof Panel.webp";
 import fireguardRoofAcousticImg from "../assets/images/Products/Mineral Wool Fire-Rated Panels/HPS Fireguard Roof Panel - Acoustic.webp";
 import cornerAnglesImg from "../assets/images/Products/Trim & Hardware/Corner Angles.webp";
-import tBarImg from "../assets/images/Products/Trim & Hardware/T-Bar.webp";
+import tBarImg from "../assets/images/Products/Trim & Hardware/HPS - T Bar.webp";
 import miscToolsImg from "../assets/images/Products/Trim & Hardware/Miscellaneous Tools.webp";
 import hingeCoolerDoorImg from "../assets/images/Products/Insulated Doors/Hinge Cooler Doors.webp";
 import slidingCoolerDoorImg from "../assets/images/Products/Insulated Doors/Sliding Cooler Doors.webp";

@@ -11,7 +11,7 @@ import hingeCoolerDoorImg from "../assets/images/Sections/Doors/Doors - Hinge Co
 import metalDoorImg from "../assets/images/Sections/Doors/Doors - Metal Doors.webp";
 import slidingCoolerDoorImg from "../assets/images/Sections/Doors/Doors - Sliding Cooler Doors.webp";
 import trimCornerAnglesImg from "../assets/images/Sections/Trim & Hardware/Trim & Hardware - Corner Angles.webp";
-import trimTBarImg from "../assets/images/Sections/Trim & Hardware/Trim & Hardware - T Bar.webp";
+import trimTBarImg from "../assets/images/Sections/Trim & Hardware/HPS - Trim & Hardware - T Bar.webp";
 import trimMiscellaneousImg from "../assets/images/Sections/Trim & Hardware/Trim & Hardware - Miscellaneous.webp";
 import flooringEpoxyImg from "../assets/images/Sections/Flooring/Flooring - Epoxy Flooring.webp";
 import flooringGrindSealImg from "../assets/images/Sections/Flooring/Flooring - Grind and Seal Flooring.webp";

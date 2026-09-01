@@ -60,10 +60,10 @@ const OVERVIEW_SECTIONS = [
   { id: "indoor-agriculture", label: "Controlled Environment Agriculture" },
   { id: "cold-storage", label: "Cold Storage" },
   { id: "laboratories", label: "Laboratories" },
-  { id: "flooring", label: "Flooring" },
   { id: "modular-housing", label: "Modular IMP Housing" },
   { id: "doors", label: "Doors" },
   { id: "trim-hardware", label: "Trim & Hardware" },
+  { id: "flooring", label: "Flooring" },
   { id: "gallery", label: "Photo Gallery" },
   { id: "memberships", label: "Memberships" },
   { id: "sustainability", label: "Sustainability" },
@@ -210,14 +210,6 @@ function HomePage() {
         registerReveal={registerReveal}
       />
       <PanelSection
-        id="flooring"
-        eyebrow="Flooring"
-        heading="Flooring systems to match your panel envelope"
-        description="Epoxy coatings, grind and seal finishes, and combined material and install packages that round out the building envelope from wall to floor."
-        panels={FLOORING_PANELS}
-        registerReveal={registerReveal}
-      />
-      <PanelSection
         id="modular-housing"
         eyebrow="Modular IMP housing"
         heading="Modular housing built from insulated metal panels"
@@ -239,6 +231,14 @@ function HomePage() {
         heading="Trim & Hardware"
         description="The finishing details that complete every install: trim, fasteners, and sealants engineered specifically for insulated panel systems to keep every seam clean and weather-tight."
         panels={TRIM_HARDWARE_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="flooring"
+        eyebrow="Flooring"
+        heading="Flooring systems to match your panel envelope"
+        description="Epoxy coatings, grind and seal finishes, and combined material and install packages that round out the building envelope from wall to floor."
+        panels={FLOORING_PANELS}
         registerReveal={registerReveal}
       />
       <Gallery images={GALLERY_IMAGES} registerReveal={registerReveal} onSelect={lightbox.openLightbox} />
