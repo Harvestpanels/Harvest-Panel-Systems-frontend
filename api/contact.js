@@ -91,12 +91,12 @@ export default async function handler(request) {
     return new Response(JSON.stringify({ error: "Could not read the submitted form." }), { status: 400 });
   }
 
-  // Honeypot (see the "company" field in Contact.jsx) — invisible to real
-  // visitors, so anything filling it in is a bot. Return a fake success
-  // rather than a 4xx: a real error response teaches scripted spam to
-  // adjust and retry, while a silent "success" gives it no signal at all
+  // Honeypot (see the "hp_hidden_check" field in Contact.jsx) — invisible
+  // to real visitors, so anything filling it in is a bot. Return a fake
+  // success rather than a 4xx: a real error response teaches scripted spam
+  // to adjust and retry, while a silent "success" gives it no signal at all
   // and it moves on.
-  if (formData.get("company")?.toString().trim()) {
+  if (formData.get("hp_hidden_check")?.toString().trim()) {
     return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "Content-Type": "application/json" } });
   }
 

@@ -94,9 +94,19 @@ export default function Contact({ registerReveal, onToast }) {
                   fill this too; a real person never sees or touches it. If
                   it arrives non-empty, the server (api/contact.js) silently
                   drops the submission instead of sending an email. */}
+              {/* Honeypot — named away from any real autofill category
+                  ("company"/"organization" match Chrome's saved-address
+                  autofill, which fills hidden fields by name regardless of
+                  autocomplete="off" or aria-hidden, since those don't
+                  affect autofill heuristics at all. A silently-autofilled
+                  honeypot makes every real submission from a browser with a
+                  saved address profile trip the spam check below and
+                  short-circuit to a fake success without ever reaching
+                  Resend — exactly why submissions were logging 200 but
+                  never sending). */}
               <input
                 type="text"
-                name="company"
+                name="hp_hidden_check"
                 tabIndex={-1}
                 autoComplete="off"
                 aria-hidden="true"

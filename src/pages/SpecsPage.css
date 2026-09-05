@@ -203,7 +203,7 @@
   padding: 10px 22px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
 .hp-specs-profile-pill[aria-pressed="true"] {
@@ -490,6 +490,16 @@
     aspect-ratio: 2.1875 / 1;
     min-height: 0;
   }
+}
+
+/* The profile preview carries .hp-specs-color-preview too (it reuses that
+   section's crossfade/zoom/label treatment), so on a narrow screen it would
+   otherwise inherit the 2.1875/1 ratio set just above — which at phone
+   widths collapses this photo to a ~144px-tall letterbox strip. Squaring it
+   up to 4/3 gives the panel profile room to actually read. Must stay after
+   the 900px block: same specificity, so source order decides. */
+@media (max-width: 640px) {
+  .hp-specs-profile-preview { aspect-ratio: 4 / 3; }
 }
 
 @media (prefers-reduced-motion: reduce) {

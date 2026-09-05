@@ -74,13 +74,14 @@
   .hp-blog-slide__label { padding: 24px 24px 28px; }
 }
 
+/* Only the properties that actually differ from the shared h1,h2,h3 rule in
+   App.css — font-family/weight/letter-spacing/line-height are inherited from
+   it rather than restated here, so this heading tracks the site's global
+   type scale instead of quietly drifting from it (it previously set its own
+   0.02em tracking and 1.2 leading against the global 0.01em / 1.05). */
 .hp-blog-slide__label h3 {
-  font-family: "Big Shoulders Display", sans-serif;
   font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
   text-transform: none;
-  line-height: 1.2;
   margin: 10px 0 12px;
   max-width: 640px;
 }
@@ -102,7 +103,6 @@
 
 .hp-blog-slide__label .hp-blog-post__date {
   color: rgba(243, 241, 236, 0.6);
-  margin-top: 0;
 }
 
 .hp-blog-slideshow__dots {
