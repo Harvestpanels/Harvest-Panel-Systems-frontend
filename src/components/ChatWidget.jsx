@@ -5,13 +5,11 @@ import { getBotResponse } from "../utils/chatbot";
 import { SUGGESTED_QUESTIONS } from "../data/botKnowledge";
 import { announcePanelOpened, onOtherPanelOpened } from "../utils/floatingPanels";
 import { onAppReady } from "../utils/appReady";
+import { mascotIconDefault, mascotIconOpened, mascotIconNewMessage } from "../data/chatIcons";
 // WebP, not PNG — same 240x180 artwork, but ~4-5x smaller (WebP's
 // compression beats PNG considerably even at a high, visually-lossless
 // quality setting), which matters most on mobile/slower connections since
 // this loads as part of the main bundle on every page.
-import mascotIconDefault from "../assets/images/Harvest Panels Mascot Sticker/Harvest Panels Mascot Sticker 1.webp";
-import mascotIconOpened from "../assets/images/Harvest Panels Mascot Sticker/Harvest Panels Mascot Sticker 3.webp";
-import mascotIconNewMessage from "../assets/images/Harvest Panels Mascot Sticker/Harvest Panels Mascot Sticker 2.webp";
 
 // A small, natural "thinking" delay before the bot's reply lands — an
 // instant answer reads as canned/robotic, a brief pause reads as a real

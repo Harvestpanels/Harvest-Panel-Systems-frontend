@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../styles/App.css";
 import logo from "../assets/images/General/harvest_panels_logo.png";
+import homeBgPoster from "../assets/images/General/home-bg-poster.webp";
 import {
   COLD_STORAGE_PANELS,
   DOOR_PANELS,
@@ -83,6 +84,7 @@ const SCROLL_SPY_IDS = [...OVERVIEW_SECTIONS, ...INQUIRY_SECTIONS].map((s) => s.
 // is let in. Module-level constant, not recreated per render, since
 // usePageReady's effect depends on this array by reference.
 const HOME_CRITICAL_IMAGES = [
+  homeBgPoster,
   PARALLAX_BG_URL,
   CURTAIN_BG_URL,
   logo,
@@ -164,7 +166,7 @@ function HomePage() {
           className="hp-bgvideo"
           ref={videoRef}
           src={VIDEO_URL}
-          poster={PARALLAX_BG_URL}
+          poster={homeBgPoster}
           muted
           playsInline
           webkit-playsinline="true"
