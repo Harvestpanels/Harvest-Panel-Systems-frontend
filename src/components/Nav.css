@@ -703,7 +703,7 @@
     max-height: 90px;
     opacity: 1;
     /* Top matches every row's own 14px padding exactly (see
-       .hp-nav__mobile-group-toggle) — combined with "Inquiry"'s own 14px
+       .hp-nav__mobile-group-toggle) — combined with "FAQs"'s own 14px
        bottom padding (and the container's own bottom padding now removed,
        see .hp-nav__mobile.is-open above), the gap before the CTA divider
        ends up the same 28px as the gap between any two other rows,

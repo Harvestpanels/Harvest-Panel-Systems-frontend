@@ -68,7 +68,7 @@ const CATEGORY_FILTERS = [
   ...PRODUCT_CATEGORIES.map((category) => ({ id: category.id, label: category.name })),
 ];
 
-const HERO_HEADING_WORDS = "Panels & doors for every part of the building envelope".split(" ");
+const HERO_HEADING_WORDS = "Structural Insulated Panels and Doors for a perfect climate all year round".split(" ");
 
 // Every product, flattened once with its category attached — this is the
 // single, stable list the search view filters over. Filtering it in place
@@ -224,24 +224,24 @@ export default function ProductsPage() {
   // (see desktopLinks below) — "Products" scrolls to top rather than
   // navigating (this page already is /products), and is marked `active` so
   // the mobile dropdown highlights it the same red ".is-current" mark (see
-  // Nav.css) the Contents/Inquiry dropdowns already use for the current
+  // Nav.css) the Menu/FAQs dropdowns already use for the current
   // in-page section.
   const productsTopLinks = [
     { to: "/", label: "Home" },
-    { to: "/blog", label: "Blog" },
     { id: "products-top", label: "Products", onClick: scrollToTop, active: true },
     { to: "/specs", label: "Specs" },
+    { to: "/blog", label: "Blog" },
   ];
 
-  // Same collapsed-dropdown pattern as the homepage nav — "Contents"
-  // grouping every product section, and "Inquiry" for FAQ/Contact Us/
+  // Same collapsed-dropdown pattern as the homepage nav — "Menu"
+  // grouping every product section, and "FAQs" for FAQ/Contact Us/
   // Follow Us — instead of a long flat row of links. The site's own pages
   // (Home/Blog/Products/Specs) are a flat row via desktopLinks below, not
   // tucked into a dropdown.
   const productsNavDropdowns = [
     {
-      key: "contents",
-      label: "Contents",
+      key: "menu",
+      label: "Menu",
       items: PRODUCTS_NAV_SECTIONS.map((section) => ({
         label: section.label,
         onClick: () => handleNavSectionClick(section.id),
@@ -249,8 +249,8 @@ export default function ProductsPage() {
       })),
     },
     {
-      key: "inquiry",
-      label: "Inquiry",
+      key: "faqs",
+      label: "FAQs",
       items: [
         { label: "FAQ", onClick: () => scrollCenter("faq"), active: activeSectionId === "faq" },
         { label: "Contact Us", onClick: () => scrollCenter("contact"), active: activeSectionId === "contact" },
@@ -390,7 +390,7 @@ export default function ProductsPage() {
             </span>
           ))}
         </h1>
-        <p className="hp-products-hero__sub hp-hero-fade" style={{ animationDelay: "0.45s" }}>
+        <p className="hp-products-hero__sub hp-hero-fade" style={{ animationDelay: "0.67s" }}>
           Browse our complete line of insulated wall panels, roof panels,
           fire-rated panels, cold storage panels, and doors.
         </p>

@@ -45,9 +45,9 @@ import Toast from "../components/Toast";
 // page you're on" instead of "which section you've scrolled to".
 const HOME_TOP_LINKS = [
   { id: "top", label: "Home", onClick: scrollToTop, active: true },
-  { to: "/blog", label: "Blog" },
   { to: "/products", label: "Products" },
   { to: "/specs", label: "Specs" },
+  { to: "/blog", label: "Blog" },
 ];
 
 // Every scrollable section on the homepage, top to bottom — Who We Are
@@ -122,8 +122,8 @@ function HomePage() {
 
   const homeNavDropdowns = [
     {
-      key: "contents",
-      label: "Contents",
+      key: "menu",
+      label: "Menu",
       items: OVERVIEW_SECTIONS.map((s) => ({
         label: s.label,
         onClick: () => scrollCenter(s.id),
@@ -131,8 +131,8 @@ function HomePage() {
       })),
     },
     {
-      key: "inquiry",
-      label: "Inquiry",
+      key: "faqs",
+      label: "FAQs",
       items: INQUIRY_SECTIONS.map((s) => ({
         label: s.label,
         onClick: () => scrollCenter(s.id),

@@ -281,17 +281,10 @@ h3 {
   position: relative;
   border-radius: 28px;
   padding: 56px 48px;
-  /* Solid rather than a translucent pane over a live backdrop-filter blur.
-     The blur was the single largest cost in scrolling: re-sampling the
-     moving background behind every panel, every frame, put the blog page at
-     a 39.8ms p95 with ~30 dropped frames per scroll. Removing it takes that
-     to 18.2ms and 0 dropped. Blur *radius* was not the driver (28px -> 6px
-     barely moved it, measured); only removing the filter entirely helps, so
-     the panel carries its own near-opaque fill instead. Kept high (0.88)
-     deliberately: a lower alpha without the blur would let the background
-     video show through sharply, which reads as the panel going transparent. */
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.80));
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5));
   border: 1px solid rgba(var(--hp-navy-rgb), 0.1);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
   box-shadow:
     0 1px 1px rgba(255, 255, 255, 0.6) inset,
     0 -1px 1px rgba(var(--hp-navy-rgb), 0.08) inset,
@@ -482,6 +475,14 @@ h3 {
 @media (hover: none), (max-width: 1024px) {
   .hp-btn--primary:hover,
   .hp-btn--ghost:hover { transform: none; }
+}
+
+@media (hover: none) {
+  /* Reduce backdrop-filter cost on mobile GPU */
+  .hp-glass {
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    backdrop-filter: blur(12px) saturate(130%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

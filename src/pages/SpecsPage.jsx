@@ -58,9 +58,9 @@ const SPECS_CRITICAL_VIDEOS = [bgVideoSrc, productionVideoSrc];
 
 const specsLinks = [
   { to: "/", label: "Home" },
-  { to: "/blog", label: "Blog" },
   { to: "/products", label: "Products" },
   { id: "specs-top", label: "Specs", onClick: scrollToTop, active: true },
+  { to: "/blog", label: "Blog" },
 ];
 
 // Every scrollable spec section, top to bottom — Efficiency through Our
@@ -219,15 +219,15 @@ export default function SpecsPage() {
     });
   }, [loaderDone]);
 
-  // Same collapsed-dropdown pattern as the Products/Home nav — "Contents"
+  // Same collapsed-dropdown pattern as the Products/Home nav — "Menu"
   // for every spec section on this page (Efficiency through Our Process),
-  // and "Inquiry" for FAQ/Contact Us/Follow Us. The site's own pages
+  // and "FAQs" for FAQ/Contact Us/Follow Us. The site's own pages
   // (Home/Blog/Products/Specs) are a flat row via desktopLinks below, not
   // tucked into a dropdown.
   const specsNavDropdowns = [
     {
-      key: "contents",
-      label: "Contents",
+      key: "menu",
+      label: "Menu",
       items: SPECS_SECTIONS.map((section) => ({
         label: section.label,
         onClick: () => scrollCenter(section.id),
@@ -235,8 +235,8 @@ export default function SpecsPage() {
       })),
     },
     {
-      key: "inquiry",
-      label: "Inquiry",
+      key: "faqs",
+      label: "FAQs",
       items: [
         { label: "FAQ", onClick: () => scrollCenter("faq"), active: activeSectionId === "faq" },
         { label: "Contact Us", onClick: () => scrollCenter("contact"), active: activeSectionId === "contact" },

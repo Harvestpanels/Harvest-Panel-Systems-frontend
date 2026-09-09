@@ -506,7 +506,7 @@ export default function Nav({
       // a bit shorter than its real content, and since it's `overflow:
       // hidden` (no scrolling — see Nav.css), that shortfall doesn't show
       // up as a scrollbar, it silently clips the bottom of the last item
-      // (its own padding included), which is exactly why "Inquiry" kept
+      // (its own padding included), which is exactly why "FAQs" kept
       // reading as jammed up against the divider line no matter how much
       // CSS padding was added below it — the padding was there, just cut off.
       const containerStyle = window.getComputedStyle(el.parentElement);

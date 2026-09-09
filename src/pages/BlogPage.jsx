@@ -36,19 +36,19 @@ const BLOG_CRITICAL_VIDEOS = [blogBgVideo];
 // nav config uses (see HOME_TOP_LINKS in HomePage.jsx). "Blog" scrolls to
 // top rather than navigating (this page already is /blog), and is marked
 // `active` so the mobile dropdown highlights it the same red ".is-current"
-// mark (see Nav.css) the Contents/Inquiry dropdowns already use for the
+// mark (see Nav.css) the Menu/FAQs dropdowns already use for the
 // current in-page section.
 const blogTopLinks = [
   { to: "/", label: "Home" },
-  { id: "blog-top", label: "Blog", onClick: scrollToTop, active: true },
   { to: "/products", label: "Products" },
   { to: "/specs", label: "Specs" },
+  { id: "blog-top", label: "Blog", onClick: scrollToTop, active: true },
 ];
 
-// This page's own scrollable sections, shown as a "Contents" nav dropdown —
+// This page's own scrollable sections, shown as a "Menu" nav dropdown —
 // same pattern as SPECS_SECTIONS/"Specs" in SpecsPage.jsx and
 // PRODUCTS_NAV_SECTIONS/"Categories" in ProductsPage.jsx. Follow Us sits in
-// the Inquiry dropdown instead (see INQUIRY_SECTIONS below), matching
+// the FAQs dropdown instead (see INQUIRY_SECTIONS below), matching
 // where every other page's own nav puts it.
 const BLOG_SECTIONS = [
   { id: "posts", label: "Latest Posts" },
@@ -89,15 +89,15 @@ export default function BlogPage() {
   const activeSectionId = useScrollSpy(BLOG_SCROLL_SPY_IDS);
 
   // Same collapsed-dropdown pattern as the Products/Specs/Home nav —
-  // "Contents" jumps to any section on this page, "Inquiry" covers FAQ/
+  // "Menu" jumps to any section on this page, "FAQs" covers FAQ/
   // Contact Us, both now sections on this page too (see <Faq>/<Contact>
   // below), so both dropdowns scroll rather than navigate. The site's own
   // pages (Home/Blog/Products/Specs) are a flat row via desktopLinks below,
   // not tucked into a dropdown.
   const blogNavDropdowns = [
     {
-      key: "contents",
-      label: "Contents",
+      key: "menu",
+      label: "Menu",
       items: BLOG_SECTIONS.map((section) => ({
         label: section.label,
         onClick: () => scrollCenter(section.id),
@@ -105,8 +105,8 @@ export default function BlogPage() {
       })),
     },
     {
-      key: "inquiry",
-      label: "Inquiry",
+      key: "faqs",
+      label: "FAQs",
       items: INQUIRY_SECTIONS.map((section) => ({
         label: section.label,
         onClick: () => scrollCenter(section.id),
