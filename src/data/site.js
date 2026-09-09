@@ -8,7 +8,7 @@ export const CURTAIN_BG_URL = facilityInteriorImg;
 
 export const CONTACT = {
   address: "5920 Campbell Ln, Piedmont, Oklahoma 73078, United States",
-  phone: "(405) 723-1220",
-  phoneHref: "4057231220",
+  phone: "(405) 778-2808",
+  phoneHref: "4057782808",
   email: "Sales@harvestpanels.com",
 };
