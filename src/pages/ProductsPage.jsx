@@ -2,8 +2,8 @@
 import "../styles/App.css";
 import "./ProductsPage.css";
 import logo from "../assets/images/General/harvest_panels_logo.png";
-import dataCenterVideo from "../assets/videos/AI Video - Data Center Background1 - 1.mp4";
-import dataCenterVideoPoster from "../assets/images/General/products-bg-poster.webp";
+import hangarsVideo from "../assets/videos/AI VIdeo - Airplane Hangars BG 1 - 1.mp4";
+import hangarsVideoPoster from "../assets/images/General/products-bg-poster.webp";
 import { PRODUCT_CATEGORIES } from "../data/products";
 import { useCountUp } from "../hooks/useCountUp";
 import { useScrubbedVideo } from "../hooks/useScrubbedVideo";
@@ -31,11 +31,11 @@ import Toast from "../components/Toast";
 // Module-level constant, not recreated per render, since usePageReady's
 // effect depends on this array by reference.
 const PRODUCTS_CRITICAL_IMAGES = [
-  dataCenterVideoPoster,
+  hangarsVideoPoster,
   logo,
   ...PRODUCT_CATEGORIES.flatMap((category) => category.products.map((p) => p.img)),
 ];
-const PRODUCTS_CRITICAL_VIDEOS = [dataCenterVideo];
+const PRODUCTS_CRITICAL_VIDEOS = [hangarsVideo];
 
 // Maps a product into the { src, title, category, desc } shape Lightbox
 // expects (the same shape the photo gallery already feeds it).
@@ -367,8 +367,8 @@ export default function ProductsPage() {
         <video
           className="hp-bgvideo"
           ref={bgVideoRef}
-          src={dataCenterVideo}
-          poster={dataCenterVideoPoster}
+          src={hangarsVideo}
+          poster={hangarsVideoPoster}
           muted
           playsInline
           webkit-playsinline="true"

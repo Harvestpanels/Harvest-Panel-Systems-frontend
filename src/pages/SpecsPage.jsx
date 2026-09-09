@@ -2,7 +2,7 @@
 import "../styles/App.css";
 import "./SpecsPage.css";
 import logo from "../assets/images/General/harvest_panels_logo.png";
-import bgVideoSrc from "../assets/videos/AI VIdeo - Project1 - 1.mp4";
+import bgVideoSrc from "../assets/videos/AI Video - Cold Storage BG1 - 1.mp4";
 import bgVideoPoster from "../assets/images/General/specs-bg-poster.webp";
 import productionVideoSrc from "../assets/videos/Real Video - HPS Panel Production1 - 1.mp4";
 import {

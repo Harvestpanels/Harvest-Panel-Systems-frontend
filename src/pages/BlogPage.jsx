@@ -2,7 +2,7 @@ import { useState } from "react";
 import "../styles/App.css";
 import "./BlogPage.css";
 import logo from "../assets/images/General/harvest_panels_logo.png";
-import blogBgVideo from "../assets/videos/AI Video - Blog BG1 - 1.mp4";
+import blogBgVideo from "../assets/videos/AI Video - CEA BG1 - 1.mp4";
 import blogBgVideoPoster from "../assets/images/General/blog-bg-poster.webp";
 import { BLOG_POSTS, TESTIMONIALS } from "../data/blog";
 import { useNavScroll } from "../hooks/useNavScroll";

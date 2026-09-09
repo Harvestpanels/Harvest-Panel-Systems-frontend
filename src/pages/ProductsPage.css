@@ -12,10 +12,12 @@
   position: relative;
   border-radius: 28px;
   padding: 56px 48px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5));
+  /* Solid, for the same reason .hp-glass is (see App.css) — this page's
+     seven full-width panels each ran their own live backdrop blur over the
+     scrolling video, which is what kept /products at a ~33ms p95 long after
+     the shared .hp-glass blur was removed. */
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.80));
   border: 1px solid rgba(var(--hp-navy-rgb), 0.1);
-  -webkit-backdrop-filter: blur(28px) saturate(150%);
-  backdrop-filter: blur(28px) saturate(150%);
   box-shadow:
     0 1px 1px rgba(255, 255, 255, 0.6) inset,
     0 -1px 1px rgba(var(--hp-navy-rgb), 0.08) inset,
@@ -39,13 +41,6 @@
 
 @media (max-width: 640px) {
   .hp-products-panel { padding: 28px 20px; border-radius: 18px; }
-}
-
-@media (hover: none) {
-  .hp-products-panel {
-    -webkit-backdrop-filter: blur(12px) saturate(130%);
-    backdrop-filter: blur(12px) saturate(130%);
-  }
 }
 
 /* Just top clearance/spacing now — the actual panel width and padding
