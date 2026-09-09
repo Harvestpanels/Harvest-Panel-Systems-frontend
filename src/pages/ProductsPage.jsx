@@ -6,6 +6,7 @@ import dataCenterVideo from "../assets/videos/AI Video - Data Center Background1
 import dataCenterVideoPoster from "../assets/images/General/products-bg-poster.webp";
 import { PRODUCT_CATEGORIES } from "../data/products";
 import { useCountUp } from "../hooks/useCountUp";
+import { useScrubbedVideo } from "../hooks/useScrubbedVideo";
 import { useLightbox } from "../hooks/useLightbox";
 import { useNavScroll } from "../hooks/useNavScroll";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -164,151 +165,12 @@ export default function ProductsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useNavScroll(menuOpen);
 
-  // Same scroll-scrubbed video technique the home page's background uses
-  // (see useHeroParallax.js) — the video stays paused and its currentTime
-  // is driven directly off scroll progress through the whole page, so the
-  // footage itself visibly advances as you scroll instead of just playing
-  // on a loop regardless of what you're doing. Kept as a local effect
-  // rather than reusing that hook: it also drives hero-fade/curtain-
-  // parallax/nav-hide behavior this page doesn't have (it already gets
-  // its nav scroll behavior from useNavScroll above).
-  const bgVideoRef = useRef(null);
-  // Cached viewport height, not re-read from window.innerHeight on every
-  // scroll tick — mobile Chrome/Safari collapse their toolbar as the page
-  // scrolls, changing innerHeight mid-gesture independent of the user
-  // resizing anything, which would otherwise make the same scroll
-  // position map to a different point in the video from one tick to the
-  // next (same root cause already fixed for the home page's hero
-  // parallax in useHeroParallax.js). Updated only on a genuine resize
-  // (width also changes), not on that toolbar-driven noise.
-  const vhRef = useRef(window.innerHeight);
-  const vwRef = useRef(window.innerWidth);
-  useEffect(() => {
-    const video = bgVideoRef.current;
-    if (!video) return;
-    let raf = null;
-    let lastVideoTime = -1;
-    let videoSeeking = false;
-    let pendingTarget = null;
-    let videoUnlocked = false;
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const isTouch = window.matchMedia("(hover: none)").matches;
-    const SEEK_THRESHOLD = isTouch ? 0.08 : 0.03;
-    // Chases the raw scroll-mapped target with a capped per-tick step on
-    // touch — a fast flick can jump the raw target across several seconds
-    // of footage in one tick, and snapping straight there reads as the
-    // background suddenly zooming/lurching. See useHeroParallax.js for
-    // the full rationale (this mirrors it).
-    let smoothedTouchTime = null;
-    const MAX_TOUCH_STEP_SEC = 0.06;
-
-    function seekVideo(target) {
-      if (reducedMotion) return;
-      if (videoSeeking) { pendingTarget = target; return; }
-      lastVideoTime = target;
-      videoSeeking = true;
-      video.currentTime = target;
-    }
-
-    function onSeeked() {
-      videoSeeking = false;
-      if (pendingTarget !== null) {
-        const t = pendingTarget;
-        pendingTarget = null;
-        seekVideo(t);
-      }
-    }
-
-    // Requires the video to have actually played once before seeking is
-    // allowed — play it silently then immediately pause to "unlock" it,
-    // same as the home page's video. Same on touch and desktop; scroll
-    // drives which frame shows either way (see onScroll below).
-    function unlockVideo() {
-      if (videoUnlocked) return;
-      videoUnlocked = true;
-      video.muted = true;
-      const p = video.play();
-      // Pause immediately/synchronously too (not just once the play()
-      // promise resolves) — on mobile browsers that promise can take
-      // noticeably longer to settle than actual decode start, which left
-      // the video visibly autoplaying for a real stretch on load/refresh.
-      video.pause();
-      if (p && typeof p.then === "function") {
-        p.then(() => { video.pause(); video.currentTime = 0; }).catch(() => {});
-      } else {
-        video.pause();
-        video.currentTime = 0;
-      }
-    }
-
-    video.addEventListener("seeked", onSeeked);
-    video.load();
-    video.addEventListener("canplay", unlockVideo, { once: true });
-    window.addEventListener("touchstart", unlockVideo, { passive: true, once: true });
-
-    // Matches useHeroParallax.js's own onScroll exactly (no extra
-    // time-based throttle beyond the rAF coalescing above) — an earlier
-    // version of this effect added a MIN_SEEK_INTERVAL_MS gap on top,
-    // which actually made this page's scrub feel *choppier* than the
-    // home page's, not smoother: it capped seeks to ~8/sec regardless of
-    // how often the browser was already willing to paint. rAF coalescing
-    // alone (only one seek queued per animation frame, via the `raf`
-    // guard) plus the pending-seek coalescing in seekVideo/onSeeked below
-    // is what the home page relies on, and it holds up fine even on this
-    // page's own background video.
-    function onScroll() {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = null;
-        if (reducedMotion || !videoUnlocked || !video.duration || !isFinite(video.duration)) return;
-        const scrollable = document.documentElement.scrollHeight - vhRef.current;
-        if (scrollable <= 0) return;
-        const progress = Math.max(0, Math.min(1, window.scrollY / scrollable));
-        const rawTarget = progress * video.duration;
-        let target = rawTarget;
-        if (isTouch) {
-          // Seeded from the video's actual current time, not the raw
-          // target — seeding it at the target would let the very first
-          // scroll tick (if it happens to already be a big flick) skip
-          // the clamp entirely on that one tick.
-          if (smoothedTouchTime === null) smoothedTouchTime = video.currentTime || 0;
-          const diff = rawTarget - smoothedTouchTime;
-          const step = Math.max(-MAX_TOUCH_STEP_SEC, Math.min(MAX_TOUCH_STEP_SEC, diff));
-          smoothedTouchTime += step;
-          target = smoothedTouchTime;
-        }
-        if (Math.abs(target - lastVideoTime) > SEEK_THRESHOLD) seekVideo(target);
-      });
-    }
-    function onResize() {
-      if (window.innerWidth !== vwRef.current) {
-        vwRef.current = window.innerWidth;
-        vhRef.current = window.innerHeight;
-      }
-    }
-    window.addEventListener("resize", onResize);
-
-    // touchmove, not just scroll — same as useHeroParallax.js. Mobile
-    // Safari/Chrome can throttle/delay `scroll` events until an active
-    // touch-drag gesture settles, so scrubbing only on `scroll` reads as
-    // the video "catching up" in one jump once you lift your finger
-    // rather than tracking the drag continuously. touchmove fires
-    // throughout the gesture itself, closing that gap.
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("touchmove", onScroll, { passive: true });
-    onScroll();
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("touchmove", onScroll);
-      window.removeEventListener("touchstart", unlockVideo);
-      window.removeEventListener("resize", onResize);
-      video.removeEventListener("seeked", onSeeked);
-      video.removeEventListener("canplay", unlockVideo);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+  // Scroll-scrubbed background video — the clip stays paused and its
+  // currentTime tracks scroll progress through the page. See
+  // hooks/useScrubbedVideo.js; this page needs only the scrub, not the home
+  // page's hero-fade/curtain-parallax (its nav behavior comes from
+  // useNavScroll above).
+  const bgVideoRef = useScrubbedVideo();
 
   const [query, setQuery] = useState("");
   const [activeCategoryId, setActiveCategoryId] = useState("all");

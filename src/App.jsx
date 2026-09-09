@@ -72,29 +72,6 @@ function ScrollToTop() {
 
 function App() {
 
-  // Drops the frosted-glass blur while the page is in motion and restores it
-  // the instant scrolling stops (see the `html.hp-scrolling` rule in App.css
-  // for the measurements behind this). Deliberately a trailing timer rather
-  // than a scroll-position comparison: momentum scrolling delivers events in
-  // bursts with gaps, so anything that asks "did scrollY change since the last
-  // frame?" flickers the class on and off mid-gesture and re-pays the layer
-  // cost it is meant to avoid.
-  useEffect(() => {
-    const root = document.documentElement;
-    let timer;
-    const onScroll = () => {
-      root.classList.add("hp-scrolling");
-      clearTimeout(timer);
-      timer = setTimeout(() => root.classList.remove("hp-scrolling"), 150);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      clearTimeout(timer);
-      root.classList.remove("hp-scrolling");
-    };
-  }, []);
-
   return (
     <>
       <ScrollToTop />

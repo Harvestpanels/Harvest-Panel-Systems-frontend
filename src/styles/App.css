@@ -477,23 +477,6 @@ h3 {
   .hp-btn--ghost:hover { transform: none; }
 }
 
-/* The frosted glass is the single biggest cost on these pages: measured with
-   everything else held constant, disabling backdrop-filter on .hp-glass alone
-   took p95 frame time from 33.4ms to 16.7ms and dropped frames from 51 to 0.
-   Radius is not the driver (28px -> 8px barely moved it) and the cost is the
-   same at 1x and 6x CPU throttle — it is GPU compositing work, re-sampling the
-   fixed video backdrop every frame as the card scrolls across it, so every
-   device pays it.
-
-   So the blur is suspended only while the page is actually scrolling, when a
-   moving frosted panel is imperceptible anyway, and restored the moment
-   scrolling stops — which is when anyone actually looks at it. See the
-   `hp-scrolling` class, set in App.jsx. */
-html.hp-scrolling .hp-glass {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
 @media (hover: none) {
   /* Reduce backdrop-filter cost on mobile GPU */
   .hp-glass {

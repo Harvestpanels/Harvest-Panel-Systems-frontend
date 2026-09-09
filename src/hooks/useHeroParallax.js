@@ -1,4 +1,5 @@
 ﻿import { useEffect, useLayoutEffect, useRef } from "react";
+import { createVideoScrubber } from "./useScrubbedVideo";
 
 // Drives the fixed video background, the parallax "curtain" reveal, the
 // hero fade/shift, and the nav's solid/hidden state — all keyed off scroll
@@ -43,81 +44,13 @@ export function useHeroParallax() {
 
   useEffect(() => {
     let raf = null;
-    let lastVideoTime = -1;
-    let videoSeeking = false;
-    let pendingTarget = null;
-    let videoUnlocked = false;
     let hoverHideTimer = null;
     const video = videoRef.current;
 
     const isTouch = window.matchMedia("(hover: none)").matches;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const SEEK_THRESHOLD = isTouch ? 0.08 : 0.03;
-    // Tracks the video-time the visitor has actually "seen" scrubbed to on
-    // touch, separate from the raw scroll-mapped target — a fast flick can
-    // jump the raw target across several seconds of footage in one tick,
-    // and snapping straight there reads as the background suddenly
-    // zooming/lurching (the footage itself pans/zooms over time, so a big
-    // time-jump looks like a big visual jump). Chasing the target with a
-    // capped per-tick step instead means the video always advances
-    // smoothly through the footage in between, same as a real desktop
-    // scroll-scrub, no matter how fast the flick was.
-    let smoothedTouchTime = null;
-    const MAX_TOUCH_STEP_SEC = 0.06;
-
-    function seekVideo(target) {
-      if (!video || reducedMotion) return;
-      if (videoSeeking) { pendingTarget = target; return; }
-      lastVideoTime = target;
-      videoSeeking = true;
-      video.currentTime = target;
-    }
-
-    function onSeeked() {
-      videoSeeking = false;
-      if (pendingTarget !== null) {
-        const t = pendingTarget;
-        pendingTarget = null;
-        seekVideo(t);
-      }
-    }
-
-    // iOS / mobile: video must be played at least once before seeking is
-    // allowed. We play it silently then pause immediately to "unlock" it —
-    // same on touch and desktop, scroll drives which frame shows either
-    // way (see onScroll below).
-    function unlockVideo() {
-      if (videoUnlocked || !video) return;
-      videoUnlocked = true;
-      video.muted = true;
-      const p = video.play();
-      // Pause immediately/synchronously, not just once the play() promise
-      // resolves — on mobile browsers that promise can take noticeably
-      // longer to settle than actual decode start, which left the video
-      // visibly autoplaying for a real stretch after landing on/refreshing
-      // a page (only ever appeared to "stop on scroll" because that's
-      // roughly when the delayed pause happened to land). Pausing right
-      // away stops it almost immediately everywhere; the .then() pause
-      // stays as a fallback for browsers that ignore a pause() called
-      // before playback has truly started.
-      video.pause();
-      if (p && typeof p.then === "function") {
-        p.then(() => {
-          video.pause();
-          video.currentTime = 0;
-        }).catch(() => {});
-      } else {
-        video.pause();
-        video.currentTime = 0;
-      }
-    }
-
-    if (video) {
-      video.addEventListener("seeked", onSeeked);
-      // Trigger load so the browser buffers the video
-      video.load();
-      video.addEventListener("canplay", unlockVideo, { once: true });
-    }
+    const scrubber = video ? createVideoScrubber(video) : null;
+    scrubber?.attach();
 
     function onScroll() {
       if (raf) return;
@@ -172,32 +105,12 @@ export function useHeroParallax() {
           }
 
           const scrollable = document.documentElement.scrollHeight - vh;
-          if (videoUnlocked && video?.duration && isFinite(video.duration) && scrollable > 0) {
-            const progress = Math.max(0, Math.min(1, y / scrollable));
-            const rawTarget = progress * video.duration;
-            let target = rawTarget;
-            if (isTouch) {
-              // Seeded from the video's actual current time, not the raw
-              // target — seeding it at the target would let the very
-              // first scroll tick (if it happens to already be a big
-              // flick) skip the clamp entirely on that one tick.
-              if (smoothedTouchTime === null) smoothedTouchTime = video.currentTime || 0;
-              const diff = rawTarget - smoothedTouchTime;
-              const step = Math.max(-MAX_TOUCH_STEP_SEC, Math.min(MAX_TOUCH_STEP_SEC, diff));
-              smoothedTouchTime += step;
-              target = smoothedTouchTime;
-            }
-            if (Math.abs(target - lastVideoTime) > SEEK_THRESHOLD) seekVideo(target);
-          }
+          if (scrollable > 0) scrubber?.update(y / scrollable);
         }
 
         raf = null;
       });
     }
-
-    // Fallback unlock on first touch
-    function onFirstInteraction() { unlockVideo(); }
-    window.addEventListener("touchstart", onFirstInteraction, { passive: true, once: true });
 
     // Reveal the nav whenever the cursor hovers near its position, even
     // while it would otherwise be hidden from scrolling down. Moving away
@@ -259,14 +172,12 @@ export function useHeroParallax() {
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("touchmove", onScroll);
-      window.removeEventListener("touchstart", onFirstInteraction);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", onResize);
       clearTimeout(hoverHideTimer);
       if (raf) cancelAnimationFrame(raf);
       if (mouseRaf) cancelAnimationFrame(mouseRaf);
-      video?.removeEventListener("seeked", onSeeked);
-      video?.removeEventListener("canplay", unlockVideo);
+      scrubber?.destroy();
     };
   }, []);
 
