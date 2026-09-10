@@ -349,6 +349,7 @@ h3 {
    of two different heading styles). */
 #indoor-agriculture .hp-section__eyebrow,
 #cold-storage .hp-section__eyebrow,
+#pvc-panels .hp-section__eyebrow,
 #laboratories .hp-section__eyebrow,
 #flooring .hp-section__eyebrow,
 #modular-housing .hp-section__eyebrow,
@@ -383,6 +384,7 @@ h3 {
    that now-large eyebrow, instead of matching it in size. */
 #indoor-agriculture h2,
 #cold-storage h2,
+#pvc-panels h2,
 #laboratories h2,
 #flooring h2,
 #modular-housing h2,

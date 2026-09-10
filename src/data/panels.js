@@ -7,6 +7,9 @@ import coldStorageBenefitsImg from "../assets/images/Sections/Cold Storage/Cold 
 import pharmaceuticalInteriorImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Interior Panels.webp";
 import pharmaceuticalCleanroomImg from "../assets/images/Sections/Pharmaceutical/Pharmaceutical - Cleanroom Panels.webp";
 import laboratoriesInteriorImg from "../assets/images/Sections/Laboratories/Laboratories - Interior Panels.webp";
+import pvcAgriculturalImg from "../assets/images/Sections/PVC Panels/AI Photo - Agricultural & Livestock1 - 1.webp";
+import pvcFoodBeverageImg from "../assets/images/Sections/PVC Panels/AI Photo - Food & Beverages Processing1 - 1.webp";
+import pvcWetAreaImg from "../assets/images/Sections/PVC Panels/AI Photo - Commercial Wet Area & Restroom1 - 1.webp";
 import hingeCoolerDoorImg from "../assets/images/Sections/Doors/Doors - Hinge Cooler Doors.webp";
 import metalDoorImg from "../assets/images/Sections/Doors/Doors - Metal Doors.webp";
 import slidingCoolerDoorImg from "../assets/images/Sections/Doors/Doors - Sliding Cooler Doors.webp";
@@ -132,6 +135,33 @@ export const COLD_STORAGE_PANELS = [
     category: "Cold Storage",
     desc: "A continuous, factory-sealed envelope cuts the condensation and ice buildup that come from thermal gaps, while panel construction installs faster than traditional built-up cooler/freezer walls — keeping product at spec from the loading dock to the back of the aisle.",
     img: coldStorageBenefitsImg,
+  },
+];
+
+// PVC panels sit alongside the insulated lines rather than under them: they
+// are a non-insulated, hygienic *finish* sold across several of the markets
+// Harvest already serves (agriculture, food processing, general commercial),
+// not a thermal envelope. Each card maps the product onto one of those
+// existing markets and names the certifications or conditions that audience
+// is actually buying against.
+export const PVC_PANELS = [
+  {
+    name: "Agricultural & Livestock PVC Panels",
+    category: "PVC Panels",
+    desc: "Washdown-durable panel surfaces for dairy parlors, poultry and hog housing, and equine stables, standing up to ammonia, manure, and daily pressure-washing without the rot, rust, or bacterial growth that break down wood and painted steel.",
+    img: pvcAgriculturalImg,
+  },
+  {
+    name: "Food & Beverage Processing PVC Panels",
+    category: "PVC Panels",
+    desc: "USDA-, FDA-, and cGMP-compliant panel surfaces for meat and poultry processing floors, breweries, and commercial kitchens, with seamless, non-porous joints that resist the bacterial harborage sanitary design audits are built to catch.",
+    img: pvcFoodBeverageImg,
+  },
+  {
+    name: "Commercial Wet-Area & Restroom PVC Panels",
+    category: "PVC Panels",
+    desc: "100% waterproof panel systems for restrooms, locker rooms, car washes, and pool enclosures, resisting mold and mildew in continuously wet environments and wiping clean with soap and water instead of specialty cleaners.",
+    img: pvcWetAreaImg,
   },
 ];
 

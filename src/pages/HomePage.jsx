@@ -8,6 +8,7 @@ import {
   FLOORING_PANELS,
   GALLERY_IMAGES,
   INDOOR_AGRICULTURE_PANELS,
+  PVC_PANELS,
   LABORATORY_PANELS,
   MODULAR_HOUSING_PANELS,
   TRIM_HARDWARE_PANELS,
@@ -60,6 +61,7 @@ const OVERVIEW_SECTIONS = [
   { id: "why", label: "Who We Are" },
   { id: "indoor-agriculture", label: "Controlled Environment Agriculture" },
   { id: "cold-storage", label: "Cold Storage" },
+  { id: "pvc-panels", label: "PVC Panels" },
   { id: "laboratories", label: "Laboratories" },
   { id: "modular-housing", label: "Modular IMP Housing" },
   { id: "doors", label: "Doors" },
@@ -91,6 +93,7 @@ const HOME_CRITICAL_IMAGES = [
   ...GALLERY_IMAGES.map((g) => g.src),
   ...INDOOR_AGRICULTURE_PANELS.map((p) => p.img),
   ...COLD_STORAGE_PANELS.map((p) => p.img),
+  ...PVC_PANELS.map((p) => p.img),
   ...LABORATORY_PANELS.map((p) => p.img),
   ...FLOORING_PANELS.map((p) => p.img),
   ...MODULAR_HOUSING_PANELS.map((p) => p.img),
@@ -201,6 +204,14 @@ function HomePage() {
         heading="Insulated panels for cold storage facilities"
         description="Interior panel systems engineered to hold a consistent thermal envelope for refrigerated and frozen storage."
         panels={COLD_STORAGE_PANELS}
+        registerReveal={registerReveal}
+      />
+      <PanelSection
+        id="pvc-panels"
+        eyebrow="PVC panels"
+        heading="Waterproof PVC panels for hygienic, washdown-ready spaces"
+        description="Waterproof, non-porous PVC wall and ceiling panels engineered as a low-maintenance alternative to FRP and drywall, holding a sanitary, mold- and bacteria-resistant surface across agricultural, food-processing, and commercial installations."
+        panels={PVC_PANELS}
         registerReveal={registerReveal}
       />
       <PanelSection
