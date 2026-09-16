@@ -31,7 +31,6 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
-import { useToast } from "../hooks/useToast";
 import { scrollCenter, scrollToTop } from "../utils/scroll";
 import { clearAnimOnEnd } from "../utils/animation";
 import Nav from "../components/Nav";
@@ -41,7 +40,6 @@ import PageLoader from "../components/PageLoader";
 import SocialMedia from "../components/SocialMedia";
 import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
-import Toast from "../components/Toast";
 
 // Every photo actually used on this page (see usePageReady) — not just the
 // hero's own poster/logo, but every colour swatch and panel profile photo
@@ -170,7 +168,6 @@ export default function SpecsPage() {
   // Gated on `loaderDone` — see HomePage.jsx's own comment on this same
   // call for why.
   const { registerReveal } = useRevealOnScroll(loaderDone);
-  const [toast, setToast] = useToast();
   const activeSectionId = useScrollSpy(SPECS_SCROLL_SPY_IDS);
   const pageReady = usePageReady(SPECS_CRITICAL_IMAGES, SPECS_CRITICAL_VIDEOS);
   const [selectedProfileIndex, setSelectedProfileIndex] = useState(0);
@@ -629,13 +626,11 @@ export default function SpecsPage() {
 
       <Faq registerReveal={registerReveal} />
 
-      <Contact registerReveal={registerReveal} onToast={setToast} />
+      <Contact registerReveal={registerReveal} />
 
       <SocialMedia registerReveal={registerReveal} />
 
       <Footer logo={logo} />
-
-      <Toast toast={toast} onClose={() => setToast(null)} />
 
       {colorLightbox.lightboxOpen && (
         <Lightbox

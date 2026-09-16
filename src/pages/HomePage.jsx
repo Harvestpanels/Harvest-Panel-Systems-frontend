@@ -20,7 +20,6 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
-import { useToast } from "../hooks/useToast";
 import { scrollCenter, scrollToTop } from "../utils/scroll";
 import Nav from "../components/Nav";
 import PageLoader from "../components/PageLoader";
@@ -35,7 +34,6 @@ import Contact from "../components/Contact";
 import SocialMedia from "../components/SocialMedia";
 import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
-import Toast from "../components/Toast";
 
 // This page's own destination links, shown as plain top-level nav items
 // (see desktopLinks below) — "Home" scrolls to top rather than navigating
@@ -119,7 +117,6 @@ function HomePage() {
   const { registerReveal } = useRevealOnScroll(loaderDone);
   const { navRef, parallaxLayerRef, videoRef, parallaxRef, heroContentRef } = useHeroParallax();
   const lightbox = useLightbox(GALLERY_IMAGES.length);
-  const [toast, setToast] = useToast();
   const pageReady = usePageReady(HOME_CRITICAL_IMAGES, HOME_CRITICAL_VIDEOS);
   const activeSectionId = useScrollSpy(SCROLL_SPY_IDS);
 
@@ -258,7 +255,7 @@ function HomePage() {
       <Memberships registerReveal={registerReveal} />
       <Sustainability registerReveal={registerReveal} />
       <Faq registerReveal={registerReveal} />
-      <Contact registerReveal={registerReveal} onToast={setToast} />
+      <Contact registerReveal={registerReveal} />
       <SocialMedia registerReveal={registerReveal} />
       <Footer logo={logo} />
 
@@ -271,8 +268,6 @@ function HomePage() {
           onPrev={lightbox.lightboxPrev}
         />
       )}
-
-      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

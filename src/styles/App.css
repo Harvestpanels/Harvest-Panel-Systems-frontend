@@ -85,39 +85,34 @@ button {
    separately. */
 .hp-chat__messages,
 .hp-nav__mobile,
-.hp-specs-datatable-wrap,
-.hp-contact__form textarea {
+.hp-specs-datatable-wrap {
   scrollbar-width: thin;
   scrollbar-color: rgba(var(--hp-navy-rgb), 0.3) transparent;
 }
 
 .hp-chat__messages::-webkit-scrollbar,
 .hp-nav__mobile::-webkit-scrollbar,
-.hp-specs-datatable-wrap::-webkit-scrollbar,
-.hp-contact__form textarea::-webkit-scrollbar {
+.hp-specs-datatable-wrap::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 .hp-chat__messages::-webkit-scrollbar-track,
 .hp-nav__mobile::-webkit-scrollbar-track,
-.hp-specs-datatable-wrap::-webkit-scrollbar-track,
-.hp-contact__form textarea::-webkit-scrollbar-track {
+.hp-specs-datatable-wrap::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .hp-chat__messages::-webkit-scrollbar-thumb,
 .hp-nav__mobile::-webkit-scrollbar-thumb,
-.hp-specs-datatable-wrap::-webkit-scrollbar-thumb,
-.hp-contact__form textarea::-webkit-scrollbar-thumb {
+.hp-specs-datatable-wrap::-webkit-scrollbar-thumb {
   background: rgba(var(--hp-navy-rgb), 0.25);
   border-radius: 999px;
 }
 
 .hp-chat__messages::-webkit-scrollbar-thumb:hover,
 .hp-nav__mobile::-webkit-scrollbar-thumb:hover,
-.hp-specs-datatable-wrap::-webkit-scrollbar-thumb:hover,
-.hp-contact__form textarea::-webkit-scrollbar-thumb:hover {
+.hp-specs-datatable-wrap::-webkit-scrollbar-thumb:hover {
   background: rgba(var(--hp-navy-rgb), 0.4);
 }
 
@@ -501,5 +496,23 @@ h3 {
   .hp-section h2 {
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* ===================== TOUCH TAP TARGETS ===================== */
+/* Phone and email links are ordinary inline text wherever they appear — the
+   footer, the contact section's details list, FAQ answers — so their hit box
+   is only as tall as the ~17-20px line they sit on. That is under the 24px
+   minimum a fingertip needs (WCAG 2.2 2.5.8), the same problem the footer's
+   social icons solve by growing to 44px.
+   Vertical padding on an *inline* element grows its hit box without adding
+   to the line box, so the tappable area clears 24px while every one of those
+   links stays visually exactly where it was. Done once here rather than per
+   component so a new tel:/mailto: link anywhere inherits it. Keyed on
+   `hover: none` so a narrow desktop window keeps the compact original. */
+@media (hover: none) {
+  a[href^="tel:"],
+  a[href^="mailto:"] {
+    padding: 6px 2px;
   }
 }

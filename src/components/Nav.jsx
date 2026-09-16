@@ -395,7 +395,7 @@ export default function Nav({
 
   // The mobile panel itself is static (no internal scroll — see its own
   // .is-open rule in Nav.css), sized to exactly fit its collapsed content.
-  // But expanding one of its accordion groups (Overview/Inquiry) grows
+  // But expanding one of its accordion groups (Menu/FAQs) grows
   // past that fixed height, and with no scroll there'd be no way to reach
   // whatever that growth pushes past the bottom edge. Same
   // Set-of-open-keys pattern as the desktop dropdowns above, just toggling
@@ -793,7 +793,7 @@ export default function Nav({
           </div>
         </div>
         {/* Mobile dropdown — same plain top-level links (Home/Products) plus
-            Overview/Categories/Inquiry grouping as desktop when `dropdowns`
+            Menu/FAQs grouping as desktop when `dropdowns`
             is supplied, rendered as inline accordions instead of floating
             popovers; falls back to the flat `links` list for pages that
             don't use dropdowns at all (e.g. the 404 page). The CTA is a

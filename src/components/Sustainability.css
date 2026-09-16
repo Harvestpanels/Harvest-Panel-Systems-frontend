@@ -5,7 +5,16 @@
   margin-top: 24px;
 }
 
-.hp-card {
+/* Scoped with the .hp-cards parent deliberately. App.css also matches bare
+   `.hp-card` (in its .hp-reveal/.hp-card/... scroll-reveal group) and sets
+   its own `transition` shorthand. At equal specificity the winner is
+   whichever stylesheet the bundler happens to emit last — and these sites
+   code-split CSS per page, so that order is not something to rely on. A
+   losing shorthand doesn't merge, it disappears: the hover box-shadow,
+   border-color and background transitions below would silently stop
+   animating. The extra ancestor makes this rule win every time, which is
+   the behaviour that was already in effect (verified in the browser). */
+.hp-cards .hp-card {
   border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
   padding: 32px 28px;
   transition-delay: 0.05s;

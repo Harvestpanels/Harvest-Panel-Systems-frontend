@@ -1,58 +1,12 @@
 import "./Contact.css";
-import { useState } from "react";
 import { CONTACT } from "../data/site";
-import { validateForm } from "../utils/validation";
+import PipedriveForm from "./PipedriveForm";
 
-export default function Contact({ registerReveal, onToast }) {
-  const [formStatus, setFormStatus] = useState("idle");
-  const [formErrors, setFormErrors] = useState({});
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
-    const errors = validateForm(data);
-
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      setFormStatus("error");
-      onToast("A few details need a second look, check the highlighted fields below.");
-      return;
-    }
-
-    setFormErrors({});
-    setFormStatus("sending");
-
-    try {
-      const res = await fetch("/api/contact", { method: "POST", body: data });
-      if (!res.ok) {
-        // 422 means the server's own validation caught something the
-        // client-side check above missed (defense in depth, not expected
-        // in normal use) — surface those field errors same as usual.
-        // Anything else (429 rate-limited, 502 send failure, etc.) carries
-        // its own specific { error } message worth showing verbatim
-        // rather than a single generic one for every failure reason.
-        if (res.status === 422) {
-          const { errors: serverErrors } = await res.json().catch(() => ({ errors: {} }));
-          setFormErrors(serverErrors);
-          setFormStatus("idle");
-          return;
-        }
-        const { error } = await res.json().catch(() => ({ error: null }));
-        throw new Error(error || "send failed");
-      }
-      setFormStatus("sent");
-      form.reset();
-    } catch (err) {
-      setFormStatus("idle");
-      onToast(
-        err.message && err.message !== "send failed"
-          ? err.message
-          : "Something went wrong sending your message. Please try again or call/email us directly."
-      );
-    }
-  }
-
+// The enquiry form is Pipedrive's hosted web form (see PipedriveForm.jsx),
+// so submissions become Pipedrive leads directly rather than going through
+// this site's own /api/contact + Resend path. The section keeps its own
+// contact-details column beside it, unchanged.
+export default function Contact({ registerReveal }) {
   return (
     <section className="hp-section" id="contact">
       <div className="hp-section__inner">
@@ -75,77 +29,45 @@ export default function Contact({ registerReveal, onToast }) {
                 <span><a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></span>
               </li>
             </ul>
+
+            {/* Fills the column beside the (taller) form, and answers what
+                someone is most likely wondering right before they hit send.
+                Every line is drawn from copy already published elsewhere on
+                the site — Who We Are for availability/how-we-work, the FAQ
+                entries for estimates, lead times and licensing — so this
+                block states nothing new about the business. */}
+            <ul className="hp-contact__facts hp-reveal" ref={registerReveal}>
+              <li>
+                <strong>Free estimates</strong>
+                <span>Design assistance, budgeting, and a no-cost estimate on every project.</span>
+              </li>
+              <li>
+                <strong>Lead times</strong>
+                <span>Stock panels ship within days. Custom orders typically 3&ndash;8 weeks.</span>
+              </li>
+              <li>
+                <strong>Installation</strong>
+                <span>An in-house crew, backed by nationwide contractor partnerships.</span>
+              </li>
+              <li>
+                <strong>Licensed &amp; insured</strong>
+                <span>Fully licensed and insured for panel and door installation nationwide.</span>
+              </li>
+              <li>
+                <strong>Markets served</strong>
+                <span>Cultivation, cold storage, data centre, industrial, commercial, and residential.</span>
+              </li>
+              <li>
+                <strong>What we supply</strong>
+                <span>Panels and doors in PIR, EPS, PVC, and mineral wool cores, plus trim and hardware.</span>
+              </li>
+            </ul>
           </div>
 
-          {formStatus === "sent" ? (
-            <div className="hp-form-success hp-reveal" ref={registerReveal} role="status" aria-live="polite">
-              <p className="hp-form-success__title">Message sent!</p>
-              <p>Thanks for reaching out. Our team will get back to you within one business day.</p>
-              <button type="button" className="hp-btn hp-btn--primary" onClick={() => { setFormStatus("idle"); setFormErrors({}); }}>
-                Send another message
-              </button>
-            </div>
-          ) : (
-            <form className="hp-contact__form hp-reveal" ref={registerReveal} onSubmit={handleSubmit} noValidate>
-              {/* Honeypot — invisible to real visitors (off-screen, not
-                  display:none, since some spam bots specifically skip
-                  display:none fields), excluded from tab order and screen
-                  readers. Spam bots that blindly fill every input in a form
-                  fill this too; a real person never sees or touches it. If
-                  it arrives non-empty, the server (api/contact.js) silently
-                  drops the submission instead of sending an email. */}
-              {/* Honeypot — named away from any real autofill category
-                  ("company"/"organization" match Chrome's saved-address
-                  autofill, which fills hidden fields by name regardless of
-                  autocomplete="off" or aria-hidden, since those don't
-                  affect autofill heuristics at all. A silently-autofilled
-                  honeypot makes every real submission from a browser with a
-                  saved address profile trip the spam check below and
-                  short-circuit to a fake success without ever reaching
-                  Resend — exactly why submissions were logging 200 but
-                  never sending). */}
-              <input
-                type="text"
-                name="hp_hidden_check"
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-                style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
-              />
-
-              <label htmlFor="f-name">Name <span aria-hidden="true">*</span></label>
-              <input id="f-name" type="text" name="name" autoComplete="name" aria-required="true" aria-describedby={formErrors.name ? "f-name-err" : undefined} aria-invalid={!!formErrors.name} />
-              {formErrors.name && <span id="f-name-err" className="hp-field-error" role="alert">{formErrors.name}</span>}
-
-              <label htmlFor="f-email">Email <span aria-hidden="true">*</span></label>
-              <input id="f-email" type="email" name="email" autoComplete="email" aria-required="true" aria-describedby={formErrors.email ? "f-email-err" : undefined} aria-invalid={!!formErrors.email} />
-              {formErrors.email && <span id="f-email-err" className="hp-field-error" role="alert">{formErrors.email}</span>}
-
-              <label htmlFor="f-phone">Phone <span aria-hidden="true">*</span></label>
-              <input id="f-phone" type="tel" name="phone" autoComplete="tel" aria-required="true" aria-describedby={formErrors.phone ? "f-phone-err" : undefined} aria-invalid={!!formErrors.phone} />
-              {formErrors.phone && <span id="f-phone-err" className="hp-field-error" role="alert">{formErrors.phone}</span>}
-
-              <label htmlFor="f-message">Message</label>
-              <textarea id="f-message" name="message" rows={4} />
-
-              <label htmlFor="f-attachment">Attach floor plan for a quote (max 10MB)</label>
-              <input
-                id="f-attachment"
-                type="file"
-                name="attachment"
-                accept=".pdf,.dwg,.png,.jpg,.jpeg"
-                className="hp-file-input"
-                aria-describedby={formErrors.attachment ? "f-attachment-err" : undefined}
-                aria-invalid={!!formErrors.attachment}
-              />
-              {formErrors.attachment && <span id="f-attachment-err" className="hp-field-error" role="alert">{formErrors.attachment}</span>}
-
-              <button type="submit" className="hp-btn hp-btn--primary" disabled={formStatus === "sending"}>
-                {formStatus === "sending" ? "Sending…" : "Send message"}
-              </button>
-              <p className="hp-contact__legal">By submitting this form you agree to be contacted by Harvest Panel Systems regarding your inquiry.</p>
-            </form>
-          )}
+          <div className="hp-contact__form-col hp-reveal" ref={registerReveal}>
+            <PipedriveForm className="hp-contact__pipedrive" />
+            <p className="hp-contact__legal">By submitting this form you agree to be contacted by Harvest Panel Systems regarding your inquiry.</p>
+          </div>
         </div>
       </div>
     </section>

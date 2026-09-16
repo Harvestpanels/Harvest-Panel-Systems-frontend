@@ -637,7 +637,7 @@
   border-top: 1px solid rgba(20, 30, 50, 0.1);
 }
 
-/* Expanding one of the accordion groups below (Overview/Inquiry) grows
+/* Expanding one of the accordion groups below (Menu/FAQs) grows
    the panel's real content past that fixed height — scrolling turns back
    on for as long as at least one group is actually expanded (see
    handleGroupExpandedChange in Nav.jsx), so whatever the expansion pushed
@@ -948,5 +948,30 @@
 @media (max-width: 1024px) {
   .hp-nav__quote:hover {
     transform: none;
+  }
+}
+
+/* On a touch device (an iPad in landscape still gets the desktop nav) these
+   links are only ~20px of text tall — under the 24px minimum a fingertip
+   needs (WCAG 2.2 2.5.8). Vertical padding would grow the nav pill, whose
+   height the whole header layout is tuned around, so the hit area is
+   extended with an absolutely positioned pseudo-element instead: invisible,
+   out of flow, centred on the link. The tappable box becomes 44px and
+   nothing on screen moves by a pixel. */
+@media (hover: none) {
+  .hp-nav__links a,
+  .hp-nav__quote {
+    position: relative;
+  }
+
+  .hp-nav__links a::after,
+  .hp-nav__quote::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 44px;
   }
 }

@@ -1,4 +1,4 @@
-﻿import { useEffect, useLayoutEffect, useRef } from "react";
+﻿﻿import { useEffect, useLayoutEffect, useRef } from "react";
 import { createVideoScrubber } from "./useScrubbedVideo";
 
 // Drives the fixed video background, the parallax "curtain" reveal, the
@@ -75,7 +75,7 @@ export function useHeroParallax() {
         // Hide nav once scrolled past the top; only hovering near the top
         // (see onMouseMove below) or scrolling back to the very top reveals
         // it. Also held visible while the mobile menu or a desktop
-        // Menu/Overview/Inquiry dropdown is open — those popups are
+        // Menu/FAQs dropdown is open — those popups are
         // positioned relative to the nav (or portaled but anchored to it),
         // so hiding the nav out from under an open one would strand it.
         if (!menuIsOpen) {

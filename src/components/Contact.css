@@ -62,93 +62,84 @@
 
 .hp-contact__details a:hover { color: var(--hp-accent); }
 
-.hp-contact__form {
+/* Secondary facts under the contact details, filling the column beside the
+   taller form. Two columns on desktop so four short items read as a tidy
+   block rather than a long thin list down one side; the label styling is
+   deliberately identical to .hp-contact__details strong above so the two
+   groups read as one family, separated only by the rule. */
+.hp-contact__facts {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 26px 0 0;
+  border-top: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 26px;
+}
+
+/* Deliberately without the accent rule .hp-contact__details li carries: at
+   four items across two columns those bars stacked up into a grid of
+   vertical lines that fought with the form beside them. The shared label
+   styling is what ties the two lists together instead. */
+.hp-contact__facts li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hp-contact__facts strong {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4a8fd6;
+}
+
+/* Matches this section's own body copy (.hp-panel-section__desc: 15px/1.65
+   at 72% navy) rather than inventing a third text size for the column. */
+.hp-contact__facts span {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(var(--hp-navy-rgb), 0.72);
+}
+
+/* ===================== PIPEDRIVE WEB FORM ===================== */
+/* The enquiry form is Pipedrive's hosted embed (see PipedriveForm.jsx). Its
+   loader replaces our container with an <iframe> whose height it drives
+   itself via postMessage, so all we own is the column it sits in: full
+   width of the grid cell, plus a min-height so the two-column row doesn't
+   visibly jump as the iframe loads and reports its real height. */
+.hp-contact__form-col {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.hp-contact__form label {
-  display: block;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(var(--hp-navy-rgb), 0.6);
-  font-family: "JetBrains Mono", monospace;
-  margin-top: 10px;
-}
-
-.hp-contact__form label:first-of-type { margin-top: 0; }
-
-.hp-contact__form input,
-.hp-contact__form textarea {
-  display: block;
+.hp-contact__pipedrive {
   width: 100%;
-  font-family: "Inter", sans-serif;
-  font-size: 15px;
-  color: var(--hp-navy);
-  background: rgba(var(--hp-navy-rgb), 0.04);
-  border: 1px solid rgba(var(--hp-navy-rgb), 0.14);
-  border-radius: 6px;
-  padding: 11px 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  margin-top: 6px;
+  min-height: 520px;
+  /* Pipedrive's form fills its iframe edge to edge with no outer margin of
+     its own, so without padding here every label and field sits flush
+     against the card border. The padding is ours, not theirs — it insets
+     the whole iframe inside the white card. */
+  padding: 26px 24px;
+  /* Pipedrive renders its form on a solid white background we can't style
+     from here (it's cross-origin — its document is unreachable to our CSS),
+     so it would otherwise land as a hard rectangle on the frosted panel.
+     Clipping it to the same rounded, bordered card treatment the rest of
+     the site uses makes it read as a deliberate panel instead. */
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
+  box-shadow: 0 10px 30px rgba(var(--hp-navy-rgb), 0.08);
+  background: #fff;
 }
 
-.hp-contact__form textarea {
-  resize: none;
-  height: 120px;
-  overflow-y: auto;
-  /* Scrollbar look is shared site-wide — see styles/App.css. */
+.hp-contact__pipedrive iframe {
+  width: 100% !important;
+  border: 0;
+  display: block;
 }
-
-.hp-contact__form input:focus,
-.hp-contact__form textarea:focus {
-  outline: none;
-  border-color: var(--hp-accent);
-  box-shadow: 0 0 0 3px rgba(var(--hp-accent-rgb), 0.2);
-}
-
-.hp-contact__form input[aria-invalid="true"],
-.hp-contact__form textarea[aria-invalid="true"] {
-  border-color: #e0453d;
-}
-
-.hp-file-input {
-  padding: 8px 14px;
-  cursor: pointer;
-  color: rgba(var(--hp-navy-rgb), 0.6);
-  font-size: 14px;
-}
-
-/* Style the native "choose file" button consistently across browsers/devices —
-   otherwise it renders as each OS's default button style. */
-.hp-file-input::file-selector-button,
-.hp-file-input::-webkit-file-upload-button {
-  margin-right: 12px;
-  padding: 8px 18px;
-  border: none;
-  border-radius: 999px;
-  background: var(--hp-navy);
-  color: var(--hp-cream);
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
-}
-
-.hp-file-input:hover::file-selector-button,
-.hp-file-input:hover::-webkit-file-upload-button {
-  background: #1f3050;
-}
-
-.hp-file-input:active::file-selector-button,
-.hp-file-input:active::-webkit-file-upload-button {
-  transform: scale(0.97);
-}
-
-.hp-contact__form .hp-btn { margin-top: 10px; align-self: flex-start; }
 
 .hp-contact__legal {
   font-size: 11px;
@@ -156,68 +147,20 @@
   margin: 4px 0 0;
 }
 
-/* Inline field error */
-.hp-field-error {
-  display: block;
-  font-size: 12px;
-  color: #e0453d;
-  margin-top: 4px;
-  font-family: "Inter", sans-serif;
-}
-
-/* Success state */
-.hp-form-success {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-  padding: 32px 0;
-  /* Matches the form's own natural height (measured at 593px) — without
-     this, swapping the grid's right column between the form and this much
-     shorter success message changes which side is tallest, and CSS
-     grid's default `auto` row sizing shrinks the *whole* row (both
-     columns, including .hp-contact__info on the left) down to match,
-     visibly resizing the entire card. */
-  min-height: 593px;
-}
-
-.hp-form-success__title {
-  font-family: "Big Shoulders Display", sans-serif;
-  font-size: clamp(24px, 6vw, 32px);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  color: var(--hp-navy);
-  margin: 0;
-}
-
-.hp-form-success p {
-  font-size: 15px;
-  line-height: 1.65;
-  color: rgba(var(--hp-navy-rgb), 0.72);
-}
-
 @media (max-width: 1024px) {
   .hp-contact__grid { grid-template-columns: 1fr; gap: 36px; }
   /* Stacked to one column here — the min-height guard above exists only
      to stop the two-column row from resizing itself, which no longer
      applies once there's no shared row to protect. */
-  .hp-form-success { min-height: 0; }
+  /* Same reasoning: once stacked to one column there's no shared row to
+     protect, and the form is taller than this floor anyway. */
+  .hp-contact__pipedrive { min-height: 0; }
 }
 
 @media (max-width: 640px) {
-  .hp-contact__form .hp-btn { align-self: stretch; justify-content: center; }
-}
-
-@media (max-width: 400px) {
-  /* The "no file chosen" label is rendered natively by the browser, not
-     styleable text — narrowing the button gives it enough room that it
-     stops getting truncated to "No fil...hosen" on the smallest screens. */
-  .hp-file-input { font-size: 12px; padding: 8px 10px; }
-  .hp-file-input::file-selector-button,
-  .hp-file-input::-webkit-file-upload-button {
-    margin-right: 8px;
-    padding: 7px 12px;
-    font-size: 12px;
-  }
+  /* Narrow screens need the width more than the inset. */
+  .hp-contact__pipedrive { padding: 16px 12px; }
+  /* One column: two columns of this at phone width leaves each item about
+     20 characters wide, which wraps every line to ribbons. */
+  .hp-contact__facts { grid-template-columns: 1fr; gap: 18px; margin-top: 26px; padding-top: 22px; }
 }

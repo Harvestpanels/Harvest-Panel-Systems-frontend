@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 // Tracks which of the given section ids is currently "active" — the last
 // one whose top has scrolled up past the nav — for highlighting the
-// matching item in the Overview/Categories/Inquiry nav dropdowns. Plain
+// matching item in the Menu/FAQs nav dropdowns. Plain
 // rAF-coalesced scroll listener, consistent with the project's other
 // scroll-driven hooks (useHeroParallax/useNavScroll). Sections that are
 // hidden (display: none — e.g. a filtered-out Products category) are

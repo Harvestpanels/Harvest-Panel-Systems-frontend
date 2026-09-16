@@ -13,7 +13,6 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
-import { useToast } from "../hooks/useToast";
 import { scrollCenter, scrollToTop } from "../utils/scroll";
 import { clearAnimOnEnd } from "../utils/animation";
 import Nav from "../components/Nav";
@@ -23,7 +22,6 @@ import Faq from "../components/Faq";
 import Contact from "../components/Contact";
 import PageLoader from "../components/PageLoader";
 import SocialMedia from "../components/SocialMedia";
-import Toast from "../components/Toast";
 
 // Every photo actually used on this page (see usePageReady) — not just the
 // hero's own poster/logo, but every product card's photo too,
@@ -180,7 +178,6 @@ export default function ProductsPage() {
   // Gated on `loaderDone` — see HomePage.jsx's own comment on this same
   // hook for why.
   const { registerReveal } = useRevealOnScroll(loaderDone);
-  const [toast, setToast] = useToast();
   const activeSectionId = useScrollSpy(PRODUCTS_SCROLL_SPY_IDS);
 
   // Clicking any product card opens a shared lightbox "album" scoped to
@@ -495,13 +492,11 @@ export default function ProductsPage() {
 
       <Faq registerReveal={registerReveal} />
 
-      <Contact registerReveal={registerReveal} onToast={setToast} />
+      <Contact registerReveal={registerReveal} />
 
       <SocialMedia registerReveal={registerReveal} />
 
       <Footer logo={logo} />
-
-      <Toast toast={toast} onClose={() => setToast(null)} />
 
       {albumLightbox.lightboxOpen && (
         <Lightbox
