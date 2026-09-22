@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { scrollCenter } from "./utils/scroll";
 import ChatWidget from "./components/ChatWidget";
+import RequireAuth from "./components/RequireAuth";
 
 // Route-level code splitting — each page (plus everything it imports:
 // components, hooks, and every image it references) only downloads when a
@@ -14,6 +15,17 @@ const ProductsPage = lazy(() => import("./pages/ProductsPage"));
 const SpecsPage = lazy(() => import("./pages/SpecsPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+
+// Customer portal. Lazy like every other route, so none of its code — or the
+// Supabase client it pulls in — ships to a visitor who only reads the
+// marketing pages.
+const PortalLayout = lazy(() => import("./pages/PortalLayout"));
+const PortalLoginPage = lazy(() => import("./pages/PortalLoginPage"));
+const PortalSignupPage = lazy(() => import("./pages/PortalSignupPage"));
+const PortalForgotPage = lazy(() => import("./pages/PortalForgotPage"));
+const PortalResetPage = lazy(() => import("./pages/PortalResetPage"));
+const PortalPage = lazy(() => import("./pages/PortalPage"));
+const PortalAdminPage = lazy(() => import("./pages/PortalAdminPage"));
 
 // React Router keeps the browser's scroll position across navigations by
 // default (it's an SPA — there's no real page load to reset it), so
@@ -86,6 +98,21 @@ function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/specs" element={<SpecsPage />} />
           <Route path="/blog" element={<BlogPage />} />
+
+          {/* Portal. The three public routes stay reachable signed-out;
+              everything under RequireAuth waits for the session check before
+              rendering so a refresh does not bounce a signed-in user to the
+              login screen. RequireAuth only decides what to render — the real
+              protection is Row Level Security in Postgres. */}
+          <Route path="/portal" element={<PortalLayout />}>
+            <Route index element={<RequireAuth><PortalPage /></RequireAuth>} />
+            <Route path="login" element={<PortalLoginPage />} />
+            <Route path="signup" element={<PortalSignupPage />} />
+            <Route path="forgot" element={<PortalForgotPage />} />
+            <Route path="reset" element={<PortalResetPage />} />
+            <Route path="admin" element={<RequireAuth adminOnly><PortalAdminPage /></RequireAuth>} />
+          </Route>
+
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
