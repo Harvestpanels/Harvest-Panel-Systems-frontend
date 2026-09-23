@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import AuthProvider from "../context/AuthProvider";
+import PageLoader from "../components/PageLoader";
 
 // Wraps every /portal route in the auth session provider.
 //
@@ -11,7 +13,24 @@ import AuthProvider from "../context/AuthProvider";
 export default function PortalLayout() {
   return (
     <AuthProvider>
-      <Outlet />
+      {/* Its own boundary, showing the loading screen rather than App.jsx's
+          `null` fallback.
+
+          A portal page only starts fetching its chunk once RequireAuth has a
+          session, which is well after the loading screen in index.html has
+          handed over. While that chunk is in flight React suspends — and a
+          suspended tree is hidden with display:none, not unmounted, so the
+          loader that was on screen vanished and the null fallback left the
+          page blank for about 300ms. That read as a blink between two loading
+          screens, and only on the portal: every marketing page has its chunk
+          in hand before the handover, so it never suspends at this point.
+
+          ready={false} because this only means "the code is still arriving" —
+          the page's own PageLoader takes over the moment it mounts, and that
+          one decides when loading has actually finished. */}
+      <Suspense fallback={<PageLoader ready={false} />}>
+        <Outlet />
+      </Suspense>
     </AuthProvider>
   );
 }
