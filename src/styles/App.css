@@ -182,6 +182,11 @@ h3 {
   display: block;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
   transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), filter 0.25s ease;
+}
+
+/* Same reasoning as .hp-btn above — the logo only moves on hover. */
+.hp-logo:hover .hp-logo__img,
+.hp-logo:focus-visible .hp-logo__img {
   will-change: transform;
 }
 
@@ -204,6 +209,14 @@ h3 {
   cursor: pointer;
   font-family: "Inter", sans-serif;
   transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.22s ease;
+}
+
+/* will-change only while the transform is actually changing. Declared on the
+   base rule it pins a GPU layer for the element's whole life — and with this
+   one on every button on the site, that was a standing memory cost for an
+   effect that only happens on hover. */
+.hp-btn:hover,
+.hp-btn:focus-visible {
   will-change: transform;
 }
 

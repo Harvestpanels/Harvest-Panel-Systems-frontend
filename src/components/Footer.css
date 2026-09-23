@@ -46,12 +46,13 @@
 .hp-footer__social a {
   display: inline-flex;
   transition: color 0.2s ease, transform 0.2s cubic-bezier(0.16,1,0.3,1);
-  will-change: transform;
 }
 
-.hp-footer__social a:hover {
+.hp-footer__social a:hover,
+.hp-footer__social a:focus-visible {
   color: var(--hp-accent);
   transform: translateY(-2px);
+  will-change: transform;
 }
 
 /* True brand colors on hover for each platform */

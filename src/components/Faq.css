@@ -50,8 +50,15 @@
   color: var(--hp-accent);
   font-size: 18px;
   flex-shrink: 0;
-  will-change: transform;
   transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* Only while the question is open or being pointed at — there is one of these
+   per FAQ entry, so declaring it on the base rule held a layer for every row
+   on the page at once. */
+.hp-faq-item__q:hover .hp-faq-item__icon,
+.hp-faq-item__q[aria-expanded="true"] .hp-faq-item__icon {
+  will-change: transform;
 }
 
 .hp-faq-item__q[aria-expanded="true"] .hp-faq-item__icon {

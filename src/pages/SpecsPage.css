@@ -613,8 +613,13 @@
   color: var(--hp-accent);
   font-size: 18px;
   flex-shrink: 0;
-  will-change: transform;
   transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* One per certification row — same reasoning as the FAQ icon. */
+.hp-specs-cert-item__q:hover .hp-specs-cert-item__icon,
+.hp-specs-cert-item__q[aria-expanded="true"] .hp-specs-cert-item__icon {
+  will-change: transform;
 }
 
 .hp-specs-cert-item__q[aria-expanded="true"] .hp-specs-cert-item__icon {

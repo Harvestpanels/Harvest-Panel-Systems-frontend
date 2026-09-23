@@ -162,7 +162,6 @@
   margin-top: 6px;
 }
 
-.hp-portal-form--admin label { color: rgba(243, 241, 236, 0.6); }
 
 /* The document rows carry their own dark surface, so a select sitting inside
    one needs the compact treatment rather than the full-width form style. */
