@@ -19,6 +19,15 @@ const FADE_OUT_MS = 500;
 // time already exceeds this floor.
 const MIN_VISIBLE_MS = 900;
 
+// Removes the static loading screen that index.html paints before React has
+// mounted. Called the moment this component renders, so the handover happens
+// under a screen that already looks identical — the HTML one and this one are
+// the same dark ground and the same pulsing mark.
+function dismissBootLoader() {
+  const boot = document.getElementById("hp-boot");
+  if (boot) boot.remove();
+}
+
 export default function PageLoader({ ready, onDone }) {
   const [fading, setFading] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -27,6 +36,22 @@ export default function PageLoader({ ready, onDone }) {
   // react-hooks/purity rule); a lazy initializer function is the
   // sanctioned escape hatch since React guarantees it only runs once.
   const [mountedAt] = useState(() => Date.now());
+
+  // The pulse restarts from zero whenever a new PageLoader mounts, and some
+  // routes mount more than one in sequence — the portal shows RequireAuth's
+  // while the session is checked, then PortalShell's. Two independent
+  // animations meant the logo visibly jumped mid-load there but not on the
+  // marketing pages, which mount exactly one.
+  //
+  // Offsetting the delay by how far into the cycle the page already is puts
+  // every instance, and the static one in index.html, on the same phase. The
+  // cycle length must match hp-page-loader-pulse in PageLoader.css.
+  const [pulseDelay] = useState(() => `-${(performance.now() % 1400).toFixed(0)}ms`);
+
+  // useLayoutEffect, not useEffect: this runs before the browser paints, so
+  // there is no frame where the HTML loader has been removed but this one has
+  // not yet drawn.
+  useLayoutEffect(dismissBootLoader, []);
   // Read via a ref inside the effect below, not as a dependency directly —
   // callers typically pass an inline arrow function (a fresh identity every
   // render), and depending on it directly would re-run that effect (and
@@ -69,7 +94,7 @@ export default function PageLoader({ ready, onDone }) {
 
   return (
     <div className={`hp-page-loader${fading ? " is-ready" : ""}`} aria-hidden={fading}>
-      <img src={logo} alt="" className="hp-page-loader__logo" />
+      <img src={logo} alt="" className="hp-page-loader__logo" style={{ animationDelay: pulseDelay }} />
     </div>
   );
 }

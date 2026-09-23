@@ -13,20 +13,6 @@
    The `-rgb` variants sit alongside their hex counterpart so translucent
    tints (rgba(var(--hp-navy-rgb), 0.1) etc.) can share the same source
    color instead of needing a second hardcoded triplet. */
-:root {
-  --hp-dark: #1b1d1f;
-  --hp-cream: #f3f1ec;
-  --hp-navy: #10233f;
-  --hp-navy-rgb: 16, 35, 63;
-  --hp-accent: #105c94;
-  --hp-accent-rgb: 16, 92, 148;
-  --hp-accent-hover: #0c4670;
-  /* Kept as a distinct token from --hp-accent (the brand blue) — the chat
-     widget's "new message" alert dot is meant to read as an urgent
-     notification color, not the brand accent, so it stays red regardless
-     of what the primary accent color is. */
-  --hp-alert: #c8262e;
-}
 
 * {
   box-sizing: border-box;
@@ -42,15 +28,6 @@ body,
 
 html {
   scroll-behavior: smooth;
-  /* Always reserve the scrollbar's width, even on a page short enough not to
-     need one. The nav pill is centred in the viewport, so without this a page
-     that doesn't scroll is 15px wider than one that does and its nav sits
-     7.5px further right than every other page's — visible as the navbar
-     jumping sideways when you move between them. The portal's sign-in screen
-     is the only page short enough to hit it today, but any future short page
-     would too. Also stops the page lurching sideways when a dialog locks
-     scrolling (see AuthModal/Lightbox). */
-  scrollbar-gutter: stable;
 }
 
 body {

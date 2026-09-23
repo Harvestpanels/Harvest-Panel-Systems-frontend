@@ -4,11 +4,45 @@
   in a component stylesheet.
 */
 
+/* The design tokens live HERE, not in App.css, because this is the only
+   stylesheet main.jsx loads eagerly. App.css ships with a lazily-loaded page
+   chunk, so anything defined there is unavailable for the first few hundred
+   milliseconds — which meant the rules in this file referencing var(--hp-dark)
+   resolved to nothing, and the page painted white until a page chunk arrived. */
 :root {
   /* Tell the browser this is a dark-only site so native UI elements
      (scrollbars, date pickers, etc.) render dark by default and never
      flash white on paint. */
   color-scheme: dark;
+
+  --hp-dark: #1b1d1f;
+  --hp-cream: #f3f1ec;
+  --hp-navy: #10233f;
+  --hp-navy-rgb: 16, 35, 63;
+  --hp-accent: #105c94;
+  --hp-accent-rgb: 16, 92, 148;
+  --hp-accent-hover: #0c4670;
+  /* Kept as a distinct token from --hp-accent (the brand blue) — the chat
+     widget's "new message" alert dot is meant to read as an urgent
+     notification color, not the brand accent, so it stays red regardless
+     of what the primary accent color is. */
+  --hp-alert: #c8262e;
+}
+
+/* Set here as well as in App.css so the page has its background from the very
+   first stylesheet, not from the page chunk. */
+html,
+body {
+  background: var(--hp-dark);
+}
+
+/* Always reserve the scrollbar's width, even on a page short enough not to
+   need one, so centred content sits in the same place on every page.
+   Eager rather than in App.css: the loading screen is centred too, and if the
+   gutter only appeared once the page chunk loaded, the logo visibly jumped
+   7px sideways as React's loader replaced the one in index.html. */
+html {
+  scrollbar-gutter: stable;
 }
 
 body {
