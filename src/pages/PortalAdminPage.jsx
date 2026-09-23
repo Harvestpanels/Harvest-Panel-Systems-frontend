@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import PortalShell from "../components/PortalShell";
+import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -11,7 +12,7 @@ import { usePageMeta } from "../hooks/usePageMeta";
 // profiles_admin_write). Hiding this route from non-admins is a courtesy; the
 // database is what actually refuses a non-admin who calls the API directly.
 export default function PortalAdminPage() {
-  usePageMeta({ title: "Admin | Harvest Panel Systems", description: "Portal administration.", path: "/portal/admin" });
+  usePageMeta({ title: "Admin | Harvest Panel Systems", description: "Portal administration.", path: "/portal/admin", noindex: true });
   const { profile } = useAuth();
   const [accounts, setAccounts] = useState([]);
   const [people, setPeople] = useState([]);
@@ -104,61 +105,76 @@ export default function PortalAdminPage() {
   return (
     <PortalShell>
       <main className="hp-portal__main">
-        <p className="hp-portal__company">Admin</p>
-        <h1 className="hp-portal__title">Share a document</h1>
-        <p className="hp-portal__hint">Upload a file and attach it to a customer account.</p>
-
-        {msg && (
-          <p className={"hp-portal-msg hp-portal-msg--" + (msg.type === "ok" ? "ok" : "error")} role="alert">
-            {msg.text}
-          </p>
-        )}
-
-        <form className="hp-portal-form hp-portal-form--admin" onSubmit={handleUpload}>
-          <label htmlFor="a-account">Customer account</label>
-          <select id="a-account" name="account_id" required defaultValue="">
-            <option value="" disabled>Choose an account</option>
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>{a.company_name}</option>
-            ))}
-          </select>
-
-          <label htmlFor="a-title">Document title</label>
-          <input id="a-title" name="title" type="text" placeholder="Leave blank to use the file name" />
-
-          <label htmlFor="a-file">File</label>
-          <input id="a-file" name="file" type="file" required />
-
-          <button type="submit" className="hp-btn hp-btn--primary" disabled={busy}>
-            {busy ? "Uploading..." : "Upload and share"}
-          </button>
-        </form>
-
-        <h2 className="hp-portal__subtitle">People</h2>
-        <p className="hp-portal__hint">
-          Each signup creates its own account. Move colleagues onto one shared account so
-          they see the same documents.
+        <p className="hp-portal__company hp-reveal">Admin</p>
+        <h1 className="hp-portal__title hp-reveal">Admin tools</h1>
+        <p className="hp-portal__hint hp-reveal">
+          Share documents and manage which account each person belongs to.
+          {" "}<Link to="/portal">Back to your account</Link>.
         </p>
 
-        <ul className="hp-doc-list">
-          {people.map((p) => (
-            <li className="hp-doc" key={p.id}>
-              <span>
-                <span className="hp-doc__name">{p.full_name || p.email}</span>
-                <span className="hp-doc__meta">{p.email} {p.role === "admin" ? "- admin" : ""}</span>
-              </span>
-              <select
-                aria-label={"Account for " + p.email}
-                value={p.account_id || ""}
-                onChange={(e) => moveToAccount(p.id, e.target.value)}
-              >
-                {accounts.map((a) => (
-                  <option key={a.id} value={a.id}>{a.company_name}</option>
-                ))}
-              </select>
-            </li>
-          ))}
-        </ul>
+      {msg && (
+        <p className={"hp-portal-msg hp-portal-msg--" + (msg.type === "ok" ? "ok" : "error")} role="alert">
+          {msg.text}
+        </p>
+      )}
+
+        <div className="hp-panels hp-panels--spaced">
+        <section className="hp-panel hp-reveal">
+          <h2>Share a document</h2>
+          <p className="hp-panel__note">Upload a file and attach it to a customer account.</p>
+
+          <form className="hp-portal-form hp-portal-form--dark" onSubmit={handleUpload}>
+            <label htmlFor="a-account">Customer account</label>
+            <select id="a-account" name="account_id" required defaultValue="">
+              <option value="" disabled>Choose an account</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.company_name}</option>
+              ))}
+            </select>
+
+            <label htmlFor="a-title">Document title</label>
+            <input id="a-title" name="title" type="text" placeholder="Leave blank to use the file name" />
+
+            <label htmlFor="a-file">File</label>
+            <input id="a-file" name="file" type="file" required />
+
+            <button type="submit" className="hp-btn hp-btn--primary" disabled={busy}>
+              {busy ? "Uploading..." : "Upload and share"}
+            </button>
+          </form>
+        </section>
+
+        <section className="hp-panel hp-reveal">
+          <h2>People</h2>
+          <p className="hp-panel__note">
+            Each signup creates its own account. Move colleagues onto one shared account so they
+            see the same documents.
+          </p>
+
+          <ul className="hp-people">
+            {people.map((p) => (
+              <li className="hp-person" key={p.id}>
+                <span className="hp-person__text">
+                  <span className="hp-person__name">
+                    {p.full_name || p.email}
+                    {p.role === "admin" && <span className="hp-badge hp-badge--admin">Admin</span>}
+                  </span>
+                  <span className="hp-person__email">{p.email}</span>
+                </span>
+                <select
+                  aria-label={"Account for " + p.email}
+                  value={p.account_id || ""}
+                  onChange={(e) => moveToAccount(p.id, e.target.value)}
+                >
+                  {accounts.map((a) => (
+                    <option key={a.id} value={a.id}>{a.company_name}</option>
+                  ))}
+                </select>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
       </main>
     </PortalShell>
   );

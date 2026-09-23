@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../styles/cards.css";
 import "./Sustainability.css";
 
 const CARDS = [

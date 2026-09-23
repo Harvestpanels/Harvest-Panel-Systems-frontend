@@ -1,0 +1,55 @@
+name: Supabase keep-alive
+
+# A free-tier Supabase project pauses after about a week with no activity, and
+# a paused project takes the whole customer portal down until someone notices
+# and restores it by hand. A portal used monthly would be dead every time a
+# customer actually needed it.
+#
+# This makes one trivial read a week so the project never goes idle that long.
+# Twice weekly rather than exactly weekly, so a single skipped run (GitHub does
+# drop scheduled jobs under load) does not cross the threshold on its own.
+#
+# Setup — add these two repository secrets under
+# Settings > Secrets and variables > Actions:
+#   SUPABASE_URL              https://<project-ref>.supabase.co
+#   SUPABASE_PUBLISHABLE_KEY  the same publishable key the site ships with
+#
+# The publishable key is safe here: it is already in the built JavaScript on
+# every page, and grants nothing on its own — Row Level Security decides what
+# any request can actually read. Do NOT use the service_role key.
+
+on:
+  schedule:
+    - cron: "0 7 * * 1,4"   # Mondays and Thursdays, 07:00 UTC
+  workflow_dispatch:         # so it can also be run by hand from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the REST endpoint
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error::SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY must be set as repository secrets."
+            exit 1
+          fi
+
+          # Selects a single row and asks for almost none of it back. Enough to
+          # count as activity, small enough to be free.
+          status=$(curl -s -o /tmp/body -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/accounts?select=id&limit=1" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY")
+
+          echo "HTTP $status"
+
+          # 200 is a normal read. 401/403 mean RLS refused an anonymous caller,
+          # which is correct and still proves the project is awake — the point
+          # is that it answered at all, not what it said.
+          case "$status" in
+            200|401|403) echo "Project is awake."; exit 0 ;;
+            *) echo "::error::Unexpected response $status"; cat /tmp/body; exit 1 ;;
+          esac

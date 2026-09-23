@@ -10,6 +10,7 @@ export default function PortalLoginPage() {
     title: "Sign in | Harvest Panel Systems",
     description: "Customer portal sign in.",
     path: "/portal/login",
+    noindex: true,
   });
   const { session, loading } = useAuth();
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ export default function PortalLoginPage() {
   return (
     <PortalShell>
       <div className="hp-portal__center">
-        <div className="hp-portal-card">
+        <div className="hp-portal-card hp-reveal">
           <h1>Sign in</h1>
           <p className="hp-portal-card__sub">Access documents shared with your account.</p>
 

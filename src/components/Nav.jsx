@@ -1,4 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AuthModalContext } from "../context/authModalContext";
+import { useSessionHint } from "../hooks/useSessionHint";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import "./Nav.css";
@@ -30,7 +32,25 @@ const HOME_NAV_LINKS = [
 // actually play instead of just vanishing on the closing click.
 const PANEL_CLOSE_MS = 160;
 
-function NavDropdown({ label, items, onOpenChange }) {
+// Smallest gap a dropdown panel keeps from the viewport edge when clamped.
+const EDGE_GAP = 12;
+
+function NavDropdown({
+  label,
+  items,
+  onOpenChange,
+  // Optional custom trigger. Without these it renders the plain text
+  // trigger the Menu/FAQs dropdowns use.
+  triggerClassName,
+  triggerContent,
+  triggerLabel,
+  // Extra class on the popover itself. It is portaled to <body>, so it cannot
+  // be reached with a descendant selector from the trigger.
+  panelClassName,
+  // Optional non-interactive block pinned above the items, e.g. the signed-in
+  // email address on the account menu.
+  header,
+}) {
   const [open, setOpen] = useState(false);
   const [prevOpen, setPrevOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -59,9 +79,20 @@ function NavDropdown({ label, items, onOpenChange }) {
   // its own independent, and in practice unreliable, exit transition.
   const [hasEntered, setHasEntered] = useState(false);
   const [panelPos, setPanelPos] = useState(null);
+  // The panel node as state, not just a ref, so the clamping pass below can be
+  // keyed on it actually attaching. A ref alone cannot do that: it never
+  // triggers a render, and the rAF pass runs before React has committed the
+  // panel, so it would measure null.
+  const [panelEl, setPanelEl] = useState(null);
   const wrapRef = useRef(null);
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
+  // useCallback so the identity is stable — an inline ref would be torn down
+  // and re-attached on every render, re-firing the effect endlessly.
+  const setPanelRef = useCallback((node) => {
+    panelRef.current = node;
+    setPanelEl(node);
+  }, []);
   // Set by the trigger's own ArrowDown/ArrowUp handler (below) when the
   // menu isn't open yet — read once the panel finishes mounting so opening
   // via the keyboard lands focus on the first (or last) item, same as any
@@ -93,6 +124,29 @@ function NavDropdown({ label, items, onOpenChange }) {
     onOpenChange?.(open);
   }, [open, onOpenChange]);
 
+  // Centred under its trigger, then clamped to stay fully on screen.
+  //
+  // The clamp matters for the account menu: it is wider than the Menu/FAQs
+  // panels and hangs off an avatar at the pill's right edge, so between
+  // 1025px and ~1150px a purely centred panel ran past the right edge.
+  // Clamping rather than right-anchoring keeps it centred wherever there is
+  // room, which is how the Menu and FAQs panels behave.
+  //
+  // The width is read from the mounted panel, so the very first pass (before
+  // it exists) is unclamped; the layout effect below re-runs this as soon as
+  // the panel attaches, while it is still transparent.
+  const updatePos = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const centre = rect.left + rect.width / 2;
+    const half = (panelRef.current?.offsetWidth ?? 0) / 2;
+    const viewport = document.documentElement.clientWidth;
+    const left = half
+      ? Math.min(Math.max(centre, half + EDGE_GAP), viewport - half - EDGE_GAP)
+      : centre;
+    setPanelPos({ top: rect.bottom + 14, left });
+  }, []);
+
   // Flips the panel into its visible state one frame after mounting, so
   // the CSS transition has a closed starting point to animate from.
   useEffect(() => {
@@ -103,6 +157,14 @@ function NavDropdown({ label, items, onOpenChange }) {
     });
     return () => cancelAnimationFrame(raf);
   }, [open]);
+
+  // Re-runs the moment the panel attaches, which is the first point its width
+  // can be measured and therefore the first point it can be clamped. A layout
+  // effect so the correction lands before the browser paints — and the panel is
+  // still transparent at this point either way, so it is never visible.
+  useLayoutEffect(() => {
+    if (panelEl) updatePos();
+  }, [panelEl, updatePos]);
 
   // Lands focus on the first/last item after a keyboard-triggered open
   // (ArrowDown/ArrowUp on the trigger — see pendingFocusRef below). Keyed
@@ -128,10 +190,6 @@ function NavDropdown({ label, items, onOpenChange }) {
 
   useEffect(() => {
     if (!open) return;
-    const updatePos = () => {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      if (rect) setPanelPos({ top: rect.bottom + 14, left: rect.left + rect.width / 2 });
-    };
     updatePos();
     const handleOutside = (e) => {
       if (wrapRef.current?.contains(e.target) || panelRef.current?.contains(e.target)) return;
@@ -155,16 +213,18 @@ function NavDropdown({ label, items, onOpenChange }) {
       window.removeEventListener("resize", updatePos);
       window.removeEventListener("scroll", updatePos, true);
     };
-  }, [open]);
+  }, [open, updatePos]);
 
   return (
     <div className="hp-nav__menu-dropdown" ref={wrapRef}>
       <button
         ref={triggerRef}
         type="button"
-        className={`hp-nav__menu-trigger${open ? " is-active" : ""}`}
+        className={`${triggerClassName || "hp-nav__menu-trigger"}${open ? " is-active" : ""}`}
         aria-haspopup="true"
         aria-expanded={open}
+        aria-label={triggerLabel}
+        title={triggerLabel}
         onClick={() => setOpen((o) => !o)}
         onKeyDown={(e) => {
           if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -177,13 +237,13 @@ function NavDropdown({ label, items, onOpenChange }) {
           }
         }}
       >
-        {label}
+        {triggerContent ?? label}
       </button>
       {mounted && panelPos &&
         createPortal(
           <div
-            ref={panelRef}
-            className={`hp-nav__menu-panel${visualOpen ? " is-open" : ""}${hasEntered ? " has-entered" : ""}`}
+            ref={setPanelRef}
+            className={`hp-nav__menu-panel${panelClassName ? " " + panelClassName : ""}${visualOpen ? " is-open" : ""}${hasEntered ? " has-entered" : ""}`}
             style={{ top: panelPos.top, left: panelPos.left }}
             onKeyDown={(e) => {
               const els = Array.from(panelRef.current?.querySelectorAll(".hp-nav__menu-item") ?? []);
@@ -204,6 +264,7 @@ function NavDropdown({ label, items, onOpenChange }) {
               }
             }}
           >
+            {header && <div className="hp-nav__menu-header">{header}</div>}
             {items.map((item, i) => {
               // Computed here instead of a fixed set of :nth-child CSS
               // rules — that only covered up to the 10th item, so any
@@ -212,11 +273,14 @@ function NavDropdown({ label, items, onOpenChange }) {
               // continuing the cascade. Same 0.02s base + 0.03s-per-item
               // progression the old rules used, just uncapped.
               const style = { animationDelay: `${(0.02 + i * 0.03).toFixed(2)}s` };
+              // `separated` draws a hairline above the item (used to set Sign
+              // out apart from the navigation entries); `danger` tints it.
+              const extra = `${item.separated ? " is-separated" : ""}${item.danger ? " is-danger" : ""}`;
               return item.to ? (
                 <Link
                   key={item.label}
                   to={item.to}
-                  className={`hp-nav__menu-item${item.active ? " is-current" : ""}`}
+                  className={`hp-nav__menu-item${item.active ? " is-current" : ""}${extra}`}
                   style={style}
                   onClick={() => setOpen(false)}
                 >
@@ -226,7 +290,7 @@ function NavDropdown({ label, items, onOpenChange }) {
                 <button
                   key={item.label}
                   type="button"
-                  className={`hp-nav__menu-item${item.active ? " is-current" : ""}`}
+                  className={`hp-nav__menu-item${item.active ? " is-current" : ""}${extra}`}
                   style={style}
                   onClick={() => { item.onClick(); setOpen(false); }}
                 >
@@ -248,7 +312,15 @@ function NavDropdown({ label, items, onOpenChange }) {
 // accordion-exclusive), each with its own measured max-height (via
 // ResizeObserver on its content) so the expand/collapse transition tracks
 // that group's real item count rather than a guessed constant.
-function MobileDropdownGroup({ label, items, navigate, onNavigate, tabIndex, onExpandedChange }) {
+function MobileDropdownGroup({
+  label, items, navigate, onNavigate, tabIndex, onExpandedChange,
+  // Optional replacement for the plain text label — the account group shows
+  // the visitor's avatar and email here instead of a word.
+  trigger,
+  // Extra class on the group wrapper, for a variant that needs its own
+  // spacing or divider (see .hp-nav__mobile-group--account).
+  className = "",
+}) {
   const [expanded, setExpanded] = useState(false);
   const innerRef = useRef(null);
   const [height, setHeight] = useState(0);
@@ -262,7 +334,7 @@ function MobileDropdownGroup({ label, items, navigate, onNavigate, tabIndex, onE
   }, []);
 
   return (
-    <div className="hp-nav__mobile-group">
+    <div className={`hp-nav__mobile-group${className ? " " + className : ""}`}>
       <button
         type="button"
         className={`hp-nav__mobile-group-toggle${expanded ? " is-expanded" : ""}`}
@@ -274,7 +346,7 @@ function MobileDropdownGroup({ label, items, navigate, onNavigate, tabIndex, onE
           onExpandedChange?.(next);
         }}
       >
-        {label}
+        {trigger ?? label}
         <svg className="hp-nav__mobile-group-chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
           <path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -283,13 +355,13 @@ function MobileDropdownGroup({ label, items, navigate, onNavigate, tabIndex, onE
         className={`hp-nav__mobile-group-panel${expanded ? " is-open" : ""}`}
         style={{ maxHeight: expanded ? height : 0 }}
       >
-        <div ref={innerRef}>
+        <div className="hp-nav__mobile-group-panel-inner" ref={innerRef}>
           {items.map((item) =>
             item.to ? (
               <Link
                 key={item.label}
                 to={item.to}
-                className={`hp-nav__mobile-group-item${item.active ? " is-current" : ""}`}
+                className={`hp-nav__mobile-group-item${item.active ? " is-current" : ""}${item.danger ? " is-danger" : ""}`}
                 tabIndex={tabIndex}
                 onClick={(e) => {
                   e.preventDefault();
@@ -303,7 +375,7 @@ function MobileDropdownGroup({ label, items, navigate, onNavigate, tabIndex, onE
               <button
                 key={item.label}
                 type="button"
-                className={`hp-nav__mobile-group-item${item.active ? " is-current" : ""}`}
+                className={`hp-nav__mobile-group-item${item.active ? " is-current" : ""}${item.danger ? " is-danger" : ""}`}
                 tabIndex={tabIndex}
                 onClick={() => { item.onClick(); onNavigate(); }}
               >
@@ -317,6 +389,18 @@ function MobileDropdownGroup({ label, items, navigate, onNavigate, tabIndex, onE
   );
 }
 
+// The account menu behind the nav avatar. Plain `to` links, deliberately:
+// <Nav> renders on every marketing page, where AuthProvider is NOT mounted
+// (it is lazy-loaded with the portal — see PortalLayout), so nothing here may
+// call useAuth or touch the Supabase client. Signing out therefore navigates
+// to /portal/signout, which does hold the SDK and revokes the session there.
+const ACCOUNT_ITEMS = [
+  { to: "/portal", label: "Your documents" },
+  { to: "/portal/profile", label: "Profile" },
+  { to: "/portal/settings", label: "Settings" },
+  { to: "/portal/signout", label: "Sign out", separated: true, danger: true },
+];
+
 export default function Nav({
   menuOpen,
   setMenuOpen,
@@ -328,9 +412,14 @@ export default function Nav({
   // shows up in the mobile dropdown, which has no room for nested menus.
   desktopLinks,
   logoTo,
-  ctaLabel = "Get a quote",
+  // The nav CTA is the customer portal sign-in. By default it opens the
+  // AuthModal over the current page rather than navigating: `onCtaClick`
+  // wins over `ctaTo` (a real route) and `ctaHref` (an in-page anchor),
+  // both of which are still supported for any page that wants them.
+  ctaLabel = "Log in",
   ctaHref = "#contact",
   ctaTo,
+  onCtaClick,
   // Desktop-only popover menus, e.g. [{ key, label, items }] — same shape
   // NavDropdown takes. Mobile always uses the flat `links` list instead,
   // since a dropdown nested inside the mobile dropdown is awkward UX.
@@ -421,7 +510,11 @@ export default function Nav({
     const expanded = expandedGroupsRef.current;
     if (isExpanded) expanded.add(key);
     else expanded.delete(key);
-    mobilePanelRef.current?.classList.toggle("has-expanded-group", expanded.size > 0);
+    // React state, not classList.toggle on the node: the panel's className is
+    // rendered from state (it also carries `is-overflowing`), so the next
+    // render would wipe an imperatively-added class straight back off — which
+    // is exactly what stopped an expanded group from being scrollable.
+    setHasExpandedGroup(expanded.size > 0);
     instantResizeRef.current = true;
   };
 
@@ -458,6 +551,14 @@ export default function Nav({
   const mobileInnerRef = useRef(null);
   const mobileCtaWrapRef = useRef(null);
   const [mobileMaxHeight, setMobileMaxHeight] = useState(0);
+  // True when the collapsed list alone is taller than the space available, so
+  // the panel has to scroll. Without this the panel only scrolled while an
+  // accordion was expanded, and on a short viewport (or a zoomed-in browser)
+  // the last rows of the menu were simply clipped and unreachable.
+  const [mobileOverflows, setMobileOverflows] = useState(false);
+  // Whether any accordion group is currently open. Also turns scrolling on,
+  // since expanding one grows the content past the panel's capped height.
+  const [hasExpandedGroup, setHasExpandedGroup] = useState(false);
   // Mirrors instantResizeRef into actual rendered style (see the JSX
   // below) — an accordion group expanding/collapsing inside the panel
   // (see MobileDropdownGroup) changes the panel's real content height
@@ -484,6 +585,14 @@ export default function Nav({
   // `true` could still be read.
   useLayoutEffect(() => {
     instantResizeRef.current = false;
+  }, [menuOpen]);
+
+  // Groups unmount with the menu, so their expanded state has to be dropped
+  // too — otherwise the panel reopens still flagged as expanded.
+  useEffect(() => {
+    if (menuOpen) return;
+    expandedGroupsRef.current.clear();
+    setHasExpandedGroup(false);
   }, [menuOpen]);
   useEffect(() => {
     const el = mobileInnerRef.current;
@@ -512,7 +621,16 @@ export default function Nav({
       const containerStyle = window.getComputedStyle(el.parentElement);
       const containerPaddingY =
         parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
-      setMobileMaxHeight(Math.max(0, Math.min(el.scrollHeight + containerPaddingY, available)));
+      // Rounded up before it is applied: a fractional content height (the
+      // usual case — borders and line boxes rarely land on whole pixels) gets
+      // floored into clientHeight, leaving scrollHeight 1px larger and the
+      // panel permanently "overflowing" by a pixel. That was enough to show a
+      // scrollbar on a menu that actually fits.
+      const content = Math.ceil(el.scrollHeight + containerPaddingY);
+      setMobileMaxHeight(Math.max(0, Math.min(content, available)));
+      // Tolerance on top of that, so a stray pixel from a later reflow cannot
+      // flip scrolling on either.
+      setMobileOverflows(content > available + 2);
     };
     const ro = new ResizeObserver(measure);
     ro.observe(el);
@@ -690,7 +808,33 @@ export default function Nav({
     );
   };
 
-  const desktopCta = ctaTo ? (
+  // Falls back to the app-wide auth modal when a page does not pass its own
+  // handler, so every <Nav> gets the sign-in dialog without each page having
+  // to wire it up. Read via useContext rather than the useAuth-style hook
+  // because that hook throws without a provider, and Nav should still render
+  // (with its ctaTo/ctaHref behaviour) outside one.
+  const authModal = useContext(AuthModalContext);
+  const handleCta = onCtaClick || authModal?.openAuthModal;
+
+  // Signed in: the CTA becomes an avatar linking to the portal, the way most
+  // SaaS sites swap their sign-in button once you have an account. See
+  // useSessionHint for why this does not read the Supabase client directly.
+  const { signedIn, email } = useSessionHint();
+  const initial = (email || "?").trim().charAt(0).toUpperCase();
+
+  const desktopCta = signedIn ? (
+    <NavDropdown
+      panelClassName="hp-nav__menu-panel--account"
+      triggerClassName="hp-nav__avatar"
+      triggerLabel={email ? `Account: ${email}` : "Account"}
+      triggerContent={<span aria-hidden="true">{initial}</span>}
+      header={email || "Signed in"}
+      items={ACCOUNT_ITEMS}
+      onOpenChange={(isOpen) => handleDropdownOpenChange("account", isOpen)}
+    />
+  ) : handleCta ? (
+    <button type="button" className="hp-nav__quote" onClick={handleCta}>{ctaLabel}</button>
+  ) : ctaTo ? (
     <Link to={ctaTo} className="hp-nav__quote">{ctaLabel}</Link>
   ) : (
     <a href={ctaHref} className="hp-nav__quote" onClick={(e) => navClick(e, ctaHref.replace("#", ""))}>
@@ -698,7 +842,19 @@ export default function Nav({
     </a>
   );
 
-  const mobileCta = ctaTo ? (
+  // Nothing in the CTA slot once signed in: "Log in" no longer applies, and
+  // Sign out now lives inside the account accordion (see mobileDropdowns).
+  // The wrapper collapses to nothing on its own when this is null.
+  const mobileCta = signedIn ? null : handleCta ? (
+    <button
+      type="button"
+      className="hp-nav__quote hp-nav__mobile-cta"
+      tabIndex={menuOpen ? 0 : -1}
+      onClick={() => { setMenuOpen(false); handleCta(); }}
+    >
+      {ctaLabel}
+    </button>
+  ) : ctaTo ? (
     <Link to={ctaTo} className="hp-nav__quote hp-nav__mobile-cta" tabIndex={menuOpen ? 0 : -1}>
       {ctaLabel}
     </Link>
@@ -712,6 +868,39 @@ export default function Nav({
       {ctaLabel}
     </a>
   );
+
+  // Desktop keeps `dropdowns` untouched — adding a seventh trigger there would
+  // widen the pill's link row and break its alignment with the other pages.
+  // Sign out is not repeated here; it is the mobile CTA directly below.
+  // Signed in, the account entries become the last accordion in the mobile
+  // panel, triggered by the avatar rather than a word — the phone equivalent
+  // of the desktop popover, and it sits where the old "Sign out" row was.
+  // Sign out is one of its items now rather than a separate CTA below, so
+  // there is a single account control instead of two.
+  //
+  // Desktop keeps `dropdowns` untouched: a seventh trigger there would widen
+  // the pill's link row and break its alignment with the other pages.
+  const mobileDropdowns = signedIn
+    ? [...dropdowns.map((d, i) =>
+        // The account row draws its own divider (the heavier one that matches
+        // the header rule under the logo), so the group directly above it
+        // drops its bottom border — otherwise the two stack into a double line.
+        i === dropdowns.length - 1
+          ? { ...d, className: "hp-nav__mobile-group--flush" }
+          : d
+      ), {
+        key: "account",
+        className: "hp-nav__mobile-group--account",
+        items: ACCOUNT_ITEMS,
+        trigger: (
+          <span className="hp-nav__mobile-account">
+            <span className="hp-nav__mobile-account-avatar" aria-hidden="true">{initial}</span>
+            <span className="hp-nav__mobile-account-email">{email || "Your account"}</span>
+          </span>
+        ),
+        label: email || "Your account",
+      }]
+    : dropdowns;
 
   return (
     <nav className={`hp-nav${menuOpen ? " hp-nav--open" : ""}${entranceReady ? "" : " hp-nav--anim-hold"}`} ref={navRef} aria-label="Main navigation">
@@ -808,7 +997,7 @@ export default function Nav({
             it ever need to scroll. */}
         <div
           ref={mobilePanelRef}
-          className={`hp-nav__mobile${menuOpen ? " is-open" : ""}`}
+          className={`hp-nav__mobile${menuOpen ? " is-open" : ""}${mobileOverflows ? " is-overflowing" : ""}${hasExpandedGroup ? " has-expanded-group" : ""}`}
           aria-hidden={!menuOpen}
           style={{
             maxHeight: menuOpen ? mobileMaxHeight : 0,
@@ -816,16 +1005,18 @@ export default function Nav({
           }}
         >
           <div ref={mobileInnerRef}>
-            {dropdowns.length > 0
+            {mobileDropdowns.length > 0
               ? (
                   <>
                     {(desktopLinks ?? []).map((link) =>
                       renderLink(link, { tabIndex: menuOpen ? 0 : -1, onNavigate: () => setMenuOpen(false) })
                     )}
-                    {dropdowns.map((dropdown) => (
+                    {mobileDropdowns.map((dropdown) => (
                       <MobileDropdownGroup
                         key={dropdown.key}
                         label={dropdown.label}
+                        trigger={dropdown.trigger}
+                        className={dropdown.className}
                         items={dropdown.items}
                         navigate={navigate}
                         onNavigate={() => setMenuOpen(false)}
@@ -840,9 +1031,14 @@ export default function Nav({
                 )}
           </div>
         </div>
-        <div className={`hp-nav__mobile-cta-wrap${menuOpen ? " is-open" : ""}`} ref={mobileCtaWrapRef}>
-          {mobileCta}
-        </div>
+        {/* Omitted entirely when there is no CTA (signed in — Sign out lives in
+            the account accordion instead). Rendering it empty would still show
+            its divider and padding as a blank bar under the menu. */}
+        {mobileCta && (
+          <div className={`hp-nav__mobile-cta-wrap${menuOpen ? " is-open" : ""}`} ref={mobileCtaWrapRef}>
+            {mobileCta}
+          </div>
+        )}
       </div>
     </nav>
   );

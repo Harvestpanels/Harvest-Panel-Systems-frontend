@@ -178,7 +178,8 @@ export const EXTERNAL_FACE_PROFILES = [
 // Every column these engineering tables share — panel nominal thickness,
 // steel sheets 24/26 gauge, 4⅝" bearing — transcribed from the reference
 // Harvest Panels spec sheet (harvestpanels.com/pir-panels).
-export const PANEL_THICKNESS_COLUMNS = ["1⅝\"", "2\"", "2½\"", "3\"", "4\"", "5\"", "6\"", "8\""];
+// Local to this file — every consumer is one of the tables below.
+const PANEL_THICKNESS_COLUMNS = ["1⅝\"", "2\"", "2½\"", "3\"", "4\"", "5\"", "6\"", "8\""];
 
 export const PANEL_WEIGHT = {
   columns: PANEL_THICKNESS_COLUMNS,

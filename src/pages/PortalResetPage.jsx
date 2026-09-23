@@ -13,6 +13,7 @@ export default function PortalResetPage() {
     title: "Choose a new password | Harvest Panel Systems",
     description: "Set a new portal password.",
     path: "/portal/reset",
+    noindex: true,
   });
   const navigate = useNavigate();
   const [error, setError] = useState(null);
@@ -45,7 +46,7 @@ export default function PortalResetPage() {
   return (
     <PortalShell>
       <div className="hp-portal__center">
-        <div className="hp-portal-card">
+        <div className="hp-portal-card hp-reveal">
           <h1>New password</h1>
           <p className="hp-portal-card__sub">Choose a new password for your account.</p>
 

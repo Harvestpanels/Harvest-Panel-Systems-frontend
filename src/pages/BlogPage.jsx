@@ -113,7 +113,7 @@ export default function BlogPage() {
   ];
 
   return (
-    <div className={`hp-blog-page${loaderDone ? " hp-anim-ready" : ""}`}>
+    <div className={loaderDone ? "hp-anim-ready" : undefined}>
       <PageLoader ready={pageReady} onDone={() => setLoaderDone(true)} />
 
       <Nav
@@ -124,9 +124,12 @@ export default function BlogPage() {
         logoTo="/"
         desktopLinks={blogTopLinks}
         dropdowns={blogNavDropdowns}
-        ctaLabel="Get a quote"
         entranceReady={loaderDone}
       />
+
+      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
+          focusable programmatically without adding a tab stop. */}
+      <span id="hp-main" tabIndex={-1} />
 
       <div className="hp-bgvideo-layer" aria-hidden="true">
         <video

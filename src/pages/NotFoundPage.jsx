@@ -38,9 +38,12 @@ export default function NotFoundPage() {
         navRef={navRef}
         logo={logo}
         logoTo="/"
-        ctaTo="/#contact"
         entranceReady={loaderDone}
       />
+
+      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
+          focusable programmatically without adding a tab stop. */}
+      <span id="hp-main" tabIndex={-1} />
 
       <section className="hp-section hp-notfound">
         <div className="hp-section__inner hp-notfound__inner">

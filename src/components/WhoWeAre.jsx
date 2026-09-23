@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../styles/cards.css";
 import "./WhoWeAre.css";
 
 const CARDS = [

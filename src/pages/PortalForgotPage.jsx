@@ -9,6 +9,7 @@ export default function PortalForgotPage() {
     title: "Reset password | Harvest Panel Systems",
     description: "Reset your customer portal password.",
     path: "/portal/forgot",
+    noindex: true,
   });
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -32,7 +33,7 @@ export default function PortalForgotPage() {
   return (
     <PortalShell>
       <div className="hp-portal__center">
-        <div className="hp-portal-card">
+        <div className="hp-portal-card hp-reveal">
           <h1>Reset password</h1>
           <p className="hp-portal-card__sub">We will email you a link to choose a new one.</p>
 

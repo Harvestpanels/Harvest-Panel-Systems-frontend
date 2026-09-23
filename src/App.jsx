@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { scrollCenter } from "./utils/scroll";
 import ChatWidget from "./components/ChatWidget";
 import RequireAuth from "./components/RequireAuth";
+import ErrorBoundary from "./components/ErrorBoundary";
+import AuthModalProvider from "./context/AuthModalProvider";
 
 // Route-level code splitting — each page (plus everything it imports:
 // components, hooks, and every image it references) only downloads when a
@@ -25,7 +27,10 @@ const PortalSignupPage = lazy(() => import("./pages/PortalSignupPage"));
 const PortalForgotPage = lazy(() => import("./pages/PortalForgotPage"));
 const PortalResetPage = lazy(() => import("./pages/PortalResetPage"));
 const PortalPage = lazy(() => import("./pages/PortalPage"));
+const PortalProfilePage = lazy(() => import("./pages/PortalProfilePage"));
+const PortalSettingsPage = lazy(() => import("./pages/PortalSettingsPage"));
 const PortalAdminPage = lazy(() => import("./pages/PortalAdminPage"));
+const PortalSignOutPage = lazy(() => import("./pages/PortalSignOutPage"));
 
 // React Router keeps the browser's scroll position across navigations by
 // default (it's an SPA — there's no real page load to reset it), so
@@ -85,13 +90,19 @@ function ScrollToTop() {
 function App() {
 
   return (
-    <>
+    <AuthModalProvider>
       <ScrollToTop />
       {/* No visible fallback UI — the page's own dark body background
           (see --hp-dark in App.css) already shows during this brief gap,
           and each page chunk is small enough on a real connection that a
           spinner would just flash on and off, reading as more broken than
           a plain, momentary continuation of the page background. */}
+      {/* First thing in the tab order on every page, so a keyboard or screen
+          reader user can jump the navbar instead of tabbing through it on
+          every route. Visually hidden until focused (see .hp-skip-link). */}
+      <a className="hp-skip-link" href="#hp-main">Skip to content</a>
+
+      <ErrorBoundary>
       <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -110,12 +121,19 @@ function App() {
             <Route path="signup" element={<PortalSignupPage />} />
             <Route path="forgot" element={<PortalForgotPage />} />
             <Route path="reset" element={<PortalResetPage />} />
+            <Route path="profile" element={<RequireAuth><PortalProfilePage /></RequireAuth>} />
+            <Route path="settings" element={<RequireAuth><PortalSettingsPage /></RequireAuth>} />
+            {/* Not wrapped in RequireAuth: arriving here already signed out
+                (a stale nav, a second tab) should still land you home, not
+                bounce you to a sign-in form. */}
+            <Route path="signout" element={<PortalSignOutPage />} />
             <Route path="admin" element={<RequireAuth adminOnly><PortalAdminPage /></RequireAuth>} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
+      </ErrorBoundary>
       {/* Global floating assistant — rendered once here (not per-page) and
           imported eagerly rather than lazily, so it's present on every
           route immediately, including during a page chunk's own load. */}
@@ -125,7 +143,7 @@ function App() {
           be mounted once here, same as ChatWidget above. No-ops entirely
           when not actually deployed on Vercel. */}
       <Analytics />
-    </>
+    </AuthModalProvider>
   );
 }
 

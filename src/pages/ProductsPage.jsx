@@ -356,9 +356,12 @@ export default function ProductsPage() {
         logo={logo}
         dropdowns={productsNavDropdowns}
         desktopLinks={productsTopLinks}
-        ctaLabel="Request pricing"
         entranceReady={loaderDone}
       />
+
+      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
+          focusable programmatically without adding a tab stop. */}
+      <span id="hp-main" tabIndex={-1} />
 
       <div className="hp-bgvideo-layer" aria-hidden="true">
         <video

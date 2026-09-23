@@ -22,7 +22,7 @@ export default function AuthProvider({ children }) {
     // here — the database will not return anyone else's profile.
     const { data } = await supabase
       .from("profiles")
-      .select("id, account_id, full_name, email, role")
+      .select("id, account_id, full_name, email, role, created_at")
       .eq("id", userId)
       .maybeSingle();
     setProfile(data ?? null);

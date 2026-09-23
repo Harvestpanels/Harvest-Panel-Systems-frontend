@@ -9,6 +9,7 @@ export default function PortalSignupPage() {
     title: "Create an account | Harvest Panel Systems",
     description: "Create a customer portal account.",
     path: "/portal/signup",
+    noindex: true,
   });
   const [error, setError] = useState(null);
   const [sent, setSent] = useState(false);
@@ -38,7 +39,11 @@ export default function PortalSignupPage() {
           full_name: String(form.get("full_name")).trim(),
           company: String(form.get("company")).trim(),
         },
-        emailRedirectTo: window.location.origin + "/portal/login",
+        // Confirming the email creates a session, so send them straight to
+          // their documents. /portal/login would only bounce them onward,
+          // and landing on a sign-in form after clicking "confirm" reads
+          // as though the confirmation failed.
+          emailRedirectTo: window.location.origin + "/portal",
       },
     });
 
@@ -54,7 +59,7 @@ export default function PortalSignupPage() {
   return (
     <PortalShell>
       <div className="hp-portal__center">
-        <div className="hp-portal-card">
+        <div className="hp-portal-card hp-reveal">
           <h1>Create an account</h1>
           <p className="hp-portal-card__sub">
             Confirm your email, then sign in. Documents appear here once our team shares

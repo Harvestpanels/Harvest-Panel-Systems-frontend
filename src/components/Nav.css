@@ -401,6 +401,66 @@
   pointer-events: auto;
 }
 
+/* The account menu. Positioning is the shared one — centred under its trigger,
+   exactly like the Menu and FAQs panels — so this only widens it enough for an
+   email address to sit on one line. */
+.hp-nav__menu-panel--account {
+  min-width: 208px;
+}
+
+/* The signed-in email above the items. Not focusable and not a menu item —
+   it is a label for the menu, so it is deliberately not in the tab order. */
+.hp-nav__menu-header {
+  padding: 8px 12px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(20, 30, 50, 0.1);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(20, 30, 50, 0.55);
+  font-family: "JetBrains Mono", monospace;
+  overflow-wrap: anywhere;
+}
+
+/* Sets Sign out apart from the navigation entries above it, so it is not
+   tapped by accident while reaching for Settings. */
+/* The divider lives in the gap ABOVE this item, as its own hairline, rather
+   than as a border on the item itself. As a border it was part of the item's
+   box, so the hover tint started at the line and swallowed it, and squaring
+   the top corners to suit turned the hover into a slab instead of the rounded
+   fill every other item gets. Drawn in the margin, the item keeps its normal
+   padding and full 8px radius, and hovering it highlights the row cleanly
+   below the line.
+   ::after, not ::before — .hp-nav__menu-item.is-current already uses ::before
+   for its current-item dot. */
+.hp-nav__menu-item.is-separated {
+  position: relative;
+  margin-top: 9px;
+}
+
+.hp-nav__menu-item.is-separated::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(20, 30, 50, 0.1);
+  /* Purely decorative, and must never intercept the pointer. */
+  pointer-events: none;
+}
+
+.hp-nav__menu-item.is-danger {
+  color: rgba(150, 30, 30, 0.85);
+}
+
+/* Same weight as the normal hover fill (0.06), just tinted red, so Sign out
+   highlights like every other row instead of reading as a heavier block. */
+.hp-nav__menu-item.is-danger:hover {
+  color: #8a1c1c;
+  background: rgba(150, 30, 30, 0.06);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hp-nav__menu-panel { transition: opacity 0.12s ease; transform: translate(-50%, 0) scale(1); }
 }
@@ -500,7 +560,19 @@
 }
 
 /* Plain text CTA link in the desktop nav — no border/background, just like the other nav links */
+/* Renders as an <a> when the CTA navigates, or a <button> when it opens the
+   auth modal. A button carries the browser's own chrome — grey background,
+   bevelled border, system font, default cursor — which is why the resets are
+   here rather than in a separate rule: both elements have to look like the
+   same plain accent-coloured text. */
 .hp-nav__quote {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  cursor: pointer;
   font-size: 17px;
   font-weight: 600;
   color: var(--hp-accent);
@@ -633,7 +705,10 @@
      height is simply clipped rather than reachable by scrolling to it. */
   opacity: 1;
   overflow: hidden;
-  padding: 11px 20px 18px;
+  /* Bottom padding also read by .hp-nav__mobile-group--account, which cancels
+     it so the space under the avatar isn't this padding plus its own. */
+  --hp-menu-pad-b: 18px;
+  padding: 11px 20px var(--hp-menu-pad-b);
   border-top: 1px solid rgba(20, 30, 50, 0.1);
 }
 
@@ -643,7 +718,12 @@
    handleGroupExpandedChange in Nav.jsx), so whatever the expansion pushed
    past the bottom edge stays reachable, instead of just clipped and
    invisible with no way to get to it. */
-.hp-nav__mobile.is-open.has-expanded-group {
+/* `.is-overflowing` is set by Nav.jsx whenever the collapsed list is already
+   taller than the room available — a short viewport, a zoomed-in browser, or
+   simply more rows once signed in. Without it the panel kept `overflow:
+   hidden` and the last rows were clipped with no way to reach them. */
+.hp-nav__mobile.is-open.has-expanded-group,
+.hp-nav__mobile.is-open.is-overflowing {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -918,6 +998,13 @@
   .hp-nav .hp-logo { display: none; }
   .hp-nav__links { display: none; }
   .hp-nav__quote:not(.hp-nav__mobile-cta) { display: none; }
+  /* The avatar is the desktop account control — it opens a floating popover,
+     which has nowhere sensible to sit on a phone. Mobile gets the account
+     accordion at the foot of the menu instead (.hp-nav__mobile-group--account),
+     so this would only be a second, worse way in. */
+  /* `.hp-nav` prefix is load-bearing: the base .hp-nav__avatar rule is defined
+     further down this file, so at equal specificity it would win on order. */
+  .hp-nav .hp-nav__avatar { display: none; }
   .hp-nav__inner { display: flex; padding: 0; gap: 0; width: 52px; height: 52px; align-items: center; justify-content: center; }
   /* When open: show logo on left, X on right */
   .hp-nav--open .hp-nav__inner { width: 100%; height: auto; padding: 12px 16px; justify-content: space-between; }
@@ -974,4 +1061,197 @@
     transform: translateY(-50%);
     height: 44px;
   }
+}
+
+/* Replaces the "Log in" CTA once a session exists — the same swap most SaaS
+   navbars make. Initial-based rather than an uploaded photo: there is no
+   avatar upload in the portal, and an initial is instantly recognisable
+   without a network request. */
+/* This is a <button> (it opens the account menu), so it needs the browser's
+   default button chrome stripped — without these resets it renders as a grey
+   bordered box instead of the accent circle, the same way .hp-nav__quote did
+   when it stopped being a link. */
+.hp-nav__avatar {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--hp-accent);
+  color: var(--hp-cream);
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  transition: background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+}
+
+.hp-nav__avatar:hover { background: var(--hp-accent-hover); transform: translateY(-2px); }
+.hp-nav__avatar:active { transform: translateY(0); }
+
+/* Held while its menu is open, so the avatar reads as pressed rather than
+   springing back up under an open panel — same idea as
+   .hp-nav__menu-trigger.is-active. */
+.hp-nav__avatar.is-active {
+  background: var(--hp-accent-hover);
+  transform: translateY(0);
+}
+
+
+/* ---- mobile account accordion ------------------------------------------
+   The last group in the mobile menu, standing in for the desktop avatar
+   popover. Set apart with a divider above it — the same separation the old
+   Sign out CTA had, in the same spot — because it acts on the account rather
+   than navigating the site. */
+/* The account row is separated by the SAME rule the header uses under the
+   logo (.hp-nav__mobile.is-open's border-top, rgba(20,30,50,0.1)) rather than
+   the lighter 0.08 that divides ordinary menu rows — it closes the navigation
+   list and opens the account section, the same job the header rule does.
+   The group above it drops its own bottom border (see
+   .hp-nav__mobile-group--flush), so this is the only line there.
+
+   The negative inline margin is what makes it *look* the same: the header rule
+   sits on the panel itself and so spans its full width, while this sits inside
+   the panel's 20px side padding and would otherwise stop short at both ends.
+   Bleeding out by that padding and adding it back as padding puts the line
+   edge to edge while leaving the row's content aligned with every other row.
+
+   No extra vertical space: the rule alone is the separation. Adding margin
+   here pushed the collapsed menu past the height available on a short or
+   zoomed-in viewport, which is what was clipping the last row. */
+.hp-nav__mobile-group--account {
+  border-top: 1px solid rgba(20, 30, 50, 0.1);
+  border-bottom: none;
+  margin-inline: -20px;
+  padding-inline: 20px;
+  /* Cancels the panel's own bottom padding beneath this row, so the space
+     under the avatar is set by the row alone and matches the space above it.
+     Without this the gap below was the row's padding plus the panel's — 26px
+     against 10px above, which is what made the avatar sit high. */
+  margin-bottom: calc(var(--hp-menu-pad-b, 18px) * -1);
+}
+
+/* Puts that cancelled padding back inside the expanded list, so Sign out — the
+   last item — ends with the same breathing room the menu has everywhere else
+   instead of sitting flush against the panel's bottom edge. Measured by the
+   group's ResizeObserver along with the items, so the expand animation still
+   lands on the right height. */
+.hp-nav__mobile-group--account .hp-nav__mobile-group-panel-inner {
+  padding-bottom: var(--hp-menu-pad-b, 18px);
+}
+
+.hp-nav__mobile-group--flush { border-bottom: none; }
+
+.hp-nav__mobile-account {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  /* Puts the avatar in the same column as the logo in the header above.
+     The menu panel pads its sides by 20px, the header row by 16px, so menu
+     content starts 4px further in — this takes that 4px back and the avatar's
+     left edge lands exactly on the logo's.
+     Aligned by left edge rather than centre on purpose: the logo is 34px wide
+     on a small phone and 53px on anything larger, so a centre match would
+     hold at one size and drift at every other. Both left edges are a fixed
+     offset from the panel, so this holds everywhere. */
+  margin-left: -4px;
+}
+
+/* Same accent circle as the desktop .hp-nav__avatar, a little smaller to sit
+   comfortably on a menu row. */
+/* 30px, with the row's own padding reduced to match (see below), so the
+   account row ends up exactly as tall as every other menu row — 50px — and
+   the dividers keep an even rhythm down the whole menu. A taller row here was
+   the main thing making the list look uneven. */
+.hp-nav__mobile-account-avatar {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--hp-accent);
+  color: var(--hp-cream);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Equal, generous space above and below the avatar — the same treatment the
+   header gives the logo (25px above / 24px below a 28px mark), which makes
+   this row read as the account zone under its own full-width rule rather than
+   as one more cramped menu row. 23px + the 30px avatar + the 1px rule comes
+   to 77px, near enough the header's own 76px.
+
+   padding-left: 0 drops the row's own 4px indent, so the avatar starts at the
+   panel's padding edge; the rest of the alignment onto the logo's column is
+   done by the avatar's own negative margin (see .hp-nav__mobile-account). */
+.hp-nav__mobile-group--account .hp-nav__mobile-group-toggle {
+  padding-top: 23px;
+  padding-bottom: 23px;
+  padding-left: 0;
+}
+
+/* Truncates rather than wrapping: a long address would otherwise push the
+   chevron off the row. */
+.hp-nav__mobile-account-email {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(20, 30, 50, 0.75);
+}
+
+/* Sign out, set apart from the navigation entries above it.
+   The `a.` in the second selector is load-bearing: mobile menu links are
+   coloured by `.hp-nav__mobile a:not(.hp-nav__mobile-cta)`, whose specificity
+   (0,3,1) beats a plain `.hp-nav__mobile-group-item.is-danger` (0,2,0), so
+   without matching that weight this rule silently loses. The first selector
+   covers the same item rendered as a <button> (an item with onClick rather
+   than a `to`), which that link rule never matches. */
+.hp-nav__mobile .hp-nav__mobile-group-item.is-danger,
+.hp-nav__mobile a.hp-nav__mobile-group-item.is-danger {
+  color: rgba(150, 30, 30, 0.85);
+}
+
+.hp-nav__mobile .hp-nav__mobile-group-item.is-danger:hover,
+.hp-nav__mobile a.hp-nav__mobile-group-item.is-danger:hover {
+  color: #8a1c1c;
+}
+
+
+/* ---- short / zoomed viewports ------------------------------------------
+   One modest step down, not a crush. Earlier this squeezed rows to 9px and
+   then 6px to force everything to fit, which made the menu look cramped and
+   unbalanced — the fit is not worth the design. Rows stay comfortable, and
+   the panel scrolls (see .is-overflowing) when a viewport genuinely cannot
+   hold them, which is the honest answer on a landscape phone. */
+@media (max-height: 560px) {
+  .hp-nav__mobile.is-open { --hp-menu-pad-b: 12px; padding: 8px 20px var(--hp-menu-pad-b); }
+
+  .hp-nav__mobile a:not(.hp-nav__mobile-cta),
+  .hp-nav__mobile-group-toggle {
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+
+  /* Same balanced treatment, scaled down with everything else at this size. */
+  .hp-nav__mobile-group--account .hp-nav__mobile-group-toggle {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
+  .hp-nav__mobile-group-item { padding-top: 9px; padding-bottom: 9px; }
+
+  .hp-nav--open .hp-nav__inner { padding: 9px 16px; }
 }

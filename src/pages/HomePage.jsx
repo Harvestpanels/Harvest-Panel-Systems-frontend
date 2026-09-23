@@ -160,6 +160,10 @@ function HomePage() {
         entranceReady={loaderDone}
       />
 
+      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
+          focusable programmatically without adding a tab stop. */}
+      <span id="hp-main" tabIndex={-1} />
+
       {/* ===== FIXED VIDEO BACKGROUND ===== */}
       <div className="hp-bgvideo-layer" aria-hidden="true">
         <video

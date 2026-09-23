@@ -10,45 +10,17 @@
   flex-direction: column;
 }
 
-.hp-portal__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.hp-portal__bar-logo { height: 34px; width: auto; display: block; }
-
-.hp-portal__bar-right { display: flex; align-items: center; gap: 16px; }
-
-.hp-portal__who {
-  font-size: 13px;
-  color: rgba(243, 241, 236, 0.66);
-  font-family: "JetBrains Mono", monospace;
-}
-
-.hp-portal__link {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--hp-cream);
-  padding: 6px 2px;
-}
-
-.hp-portal__link:hover { color: #fff; text-decoration: underline; }
-
 /* ---- centred auth screens (login / signup / reset) ---- */
+/* 180px top matches .hp-products-hero's own offset, so the first thing on a
+   portal screen sits exactly where the first thing on a marketing page does.
+   Deliberately top-aligned rather than vertically centred: centring floats
+   the card with viewport height, which reads as a different page. */
 .hp-portal__center {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 48px 20px 72px;
+  padding: 180px 20px 72px;
 }
 
 .hp-portal-card {
@@ -112,6 +84,33 @@
 .hp-portal-form .hp-btn { margin-top: 22px; justify-content: center; }
 .hp-portal-form .hp-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
 
+/* Recovery actions on the "could not open your account" screen — a primary
+   retry with a quieter sign-out beneath it, not two competing buttons. */
+.hp-portal-card__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.hp-portal-card__actions .hp-btn { width: 100%; justify-content: center; }
+
+.hp-portal__linkbtn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  padding: 6px 4px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(var(--hp-navy-rgb), 0.7);
+}
+
+.hp-portal__linkbtn:hover { color: var(--hp-navy); text-decoration: underline; }
+
 .hp-portal__alt {
   margin: 22px 0 0;
   font-size: 14px;
@@ -143,80 +142,13 @@
   color: var(--hp-accent-hover);
 }
 
-.hp-portal-loading {
-  min-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(243, 241, 236, 0.7);
-  font-family: "JetBrains Mono", monospace;
-  font-size: 13px;
-}
-
 /* ---- document list ---- */
-.hp-portal__main { flex: 1; padding: 44px 32px 80px; max-width: 1080px; margin: 0 auto; width: 100%; }
-
-.hp-portal__title { color: var(--hp-cream); font-size: clamp(30px, 5vw, 46px); }
-
-.hp-portal__company {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #4a8fd6;
-  margin: 0 0 6px;
-}
-
-.hp-portal__hint { color: rgba(243, 241, 236, 0.6); font-size: 15px; margin: 10px 0 30px; }
-
-.hp-doc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-
-.hp-doc {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-.hp-doc:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.16); }
-
-.hp-doc__name { color: var(--hp-cream); font-weight: 600; font-size: 15px; }
-
-.hp-doc__meta {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
-  color: rgba(243, 241, 236, 0.5);
-  font-family: "JetBrains Mono", monospace;
-}
-
-.hp-portal__empty {
-  padding: 44px 24px;
-  text-align: center;
-  color: rgba(243, 241, 236, 0.6);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px dashed rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
 @media (max-width: 640px) {
-  .hp-portal__bar { padding: 14px 18px; }
-  .hp-portal__main { padding: 30px 18px 60px; }
+  .hp-portal__center { padding: 90px 20px 60px; }
   .hp-portal-card { padding: 30px 22px; }
-  .hp-doc { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .hp-doc .hp-btn { align-self: stretch; justify-content: center; }
 }
 
 /* ---- admin form controls ---- */
-.hp-portal-form--admin { max-width: 560px; margin-bottom: 52px; }
-
 .hp-portal-form select,
 .hp-portal-form input[type="file"] {
   width: 100%;
@@ -234,7 +166,7 @@
 
 /* The document rows carry their own dark surface, so a select sitting inside
    one needs the compact treatment rather than the full-width form style. */
-.hp-doc select {
+.hp-person select {
   width: auto;
   min-width: 180px;
   margin-top: 0;
@@ -247,14 +179,402 @@
 }
 
 .hp-portal-form select:focus,
-.hp-doc select:focus {
+.hp-person select:focus {
   outline: none;
   border-color: var(--hp-accent);
   box-shadow: 0 0 0 3px rgba(var(--hp-accent-rgb), 0.25);
 }
 
-.hp-portal__subtitle {
+
+/* ---- page ---------------------------------------------------------------
+   One page. Documents, then Profile, then Settings, as sections down a single
+   column — no section nav, nothing to click through. */
+
+.hp-portal__main {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 180px 32px 90px;
+}
+
+.hp-portal__company {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4a8fd6;
+  margin: 0 0 6px;
+}
+
+.hp-portal__title { margin: 0; color: var(--hp-cream); font-size: clamp(30px, 5vw, 46px); }
+
+.hp-portal__hint { color: rgba(243, 241, 236, 0.6); font-size: 15px; margin: 10px 0 0; }
+
+/* ---- panels -------------------------------------------------------------
+   Side by side where there is room, so a short form does not leave half the
+   page empty; stacked once the column is too narrow to read two. */
+.hp-panels--spaced { margin-top: 34px; }
+
+.hp-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.hp-panel {
+  padding: 26px 28px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.hp-panel h2 {
+  margin: 0;
+  font-size: 19px;
   color: var(--hp-cream);
-  font-size: 26px;
-  margin: 52px 0 0;
+}
+
+.hp-panel__note {
+  margin: 7px 0 20px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(243, 241, 236, 0.55);
+}
+
+.hp-panel__note strong {
+  color: var(--hp-cream);
+  font-weight: 600;
+}
+
+/* A closing note under a panel's content rather than an intro above it, so it
+   needs the gap on top instead of underneath. */
+.hp-panel__note--foot {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.hp-panel a,
+.hp-field-note a {
+  color: #6aa9dc;
+  font-weight: 600;
+}
+
+.hp-panel a:hover,
+.hp-field-note a:hover { text-decoration: underline; }
+
+/* 0.45 alpha measured 4.05:1 — fine for large text, short of the 4.5 this
+   12px note needs. 0.58 measures 5.85:1. */
+.hp-field-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: rgba(243, 241, 236, 0.58);
+}
+
+/* ---- dark form ----------------------------------------------------------
+   .hp-portal-form is styled navy-on-white for the signed-out auth card. Every
+   signed-in panel sits on the dark ground instead, so this restates only the
+   colours — same structure, same sizing, same focus ring. */
+.hp-portal-form--dark label { color: rgba(243, 241, 236, 0.6); }
+
+.hp-portal-form--dark input,
+.hp-portal-form--dark select {
+  color: var(--hp-cream);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* 0.35 alpha measured 2.99:1 against the dark ground — below the 4.5 WCAG AA
+   needs for body text. 0.55 measures 5.4:1 and still reads as placeholder
+   rather than as a filled value. */
+.hp-portal-form--dark input::placeholder { color: rgba(243, 241, 236, 0.55); }
+
+.hp-portal-form--dark input:focus,
+.hp-portal-form--dark select:focus {
+  border-color: var(--hp-accent);
+  box-shadow: 0 0 0 3px rgba(var(--hp-accent-rgb), 0.25);
+}
+
+/* Read-only fields (the email on Profile) read as display values, not as a
+   box someone should try to type in. */
+.hp-portal-form--dark input[readonly] {
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(243, 241, 236, 0.5);
+  cursor: default;
+}
+
+.hp-portal-form--dark input[type="file"] {
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+/* ---- documents ---------------------------------------------------------- */
+.hp-doc-list {
+  list-style: none;
+  /* Clears the page intro above it — same gap the panel grids use. */
+  margin: 34px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hp-doc {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.hp-doc:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* The file extension as the row's mark. It is the one thing that says what
+   you are about to open, and it is already in the title. */
+.hp-doc__file {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: rgba(var(--hp-accent-rgb), 0.22);
+  color: #8dbde6;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.hp-doc__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.hp-doc__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--hp-cream);
+  overflow-wrap: anywhere;
+}
+
+.hp-doc__meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11.5px;
+  color: rgba(243, 241, 236, 0.5);
+}
+
+.hp-doc__open {
+  flex-shrink: 0;
+}
+
+.hp-portal__empty {
+  margin-top: 34px;
+  padding: 46px 28px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+}
+
+.hp-portal__empty p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: rgba(243, 241, 236, 0.6);
+}
+
+.hp-portal__empty p + p {
+  margin-top: 6px;
+}
+
+.hp-portal__empty strong {
+  color: var(--hp-cream);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ---- facts + badge ------------------------------------------------------ */
+.hp-facts {
+  margin: 0;
+  display: grid;
+  gap: 0;
+}
+
+.hp-facts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.hp-facts > div:first-child {
+  padding-top: 0;
+}
+
+.hp-facts > div:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.hp-facts dt {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(243, 241, 236, 0.5);
+}
+
+.hp-facts dd {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--hp-cream);
+  text-align: right;
+}
+
+.hp-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(243, 241, 236, 0.8);
+}
+
+.hp-badge--admin {
+  background: rgba(var(--hp-accent-rgb), 0.28);
+  color: #a6cdec;
+}
+
+/* ---- admin: people ------------------------------------------------------ */
+.hp-people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hp-person {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.hp-person:first-child {
+  padding-top: 0;
+}
+
+.hp-person:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.hp-person__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hp-person__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--hp-cream);
+}
+
+.hp-person__email {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11.5px;
+  color: rgba(243, 241, 236, 0.5);
+  overflow-wrap: anywhere;
+}
+
+/* ---- responsive ---------------------------------------------------------
+   Below this the rail has no room beside the content, so it becomes a
+   horizontal strip above it - still one workspace, just stacked. */
+@media (max-width: 640px) {
+  .hp-portal__main { padding: 96px 18px 60px; }
+
+  .hp-panel {
+    padding: 22px 20px;
+  }
+
+  /* Row wraps and the action goes full width, rather than squeezing the
+     title into a couple of characters. */
+  .hp-doc {
+    flex-wrap: wrap;
+  }
+
+  .hp-doc__open {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hp-person {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .hp-facts > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .hp-facts dd {
+    text-align: left;
+  }
+}
+
+/* ---- portal entrance ====================================================
+   Portal screens are short and fully in view, so there is nothing to observe
+   with an IntersectionObserver the way the long marketing pages do. Content
+   plays in once the loading overlay has gone, keyed on .hp-anim-ready, which
+   PortalShell sets when PageLoader finishes. A class rather than a context
+   because a portal page renders PortalShell as its own child — the page sits
+   above the shell in the tree and could never read a context it provides.
+   The hidden state and 0.65s easing both come from App.css. */
+
+.hp-anim-ready .hp-portal .hp-reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* Rail first, then the heading, then the content beside it. */
+.hp-portal .hp-portal__company.hp-reveal { transition-delay: 0s; }
+.hp-portal .hp-portal__title.hp-reveal { transition-delay: 0.06s; }
+.hp-portal .hp-portal__hint.hp-reveal { transition-delay: 0.1s; }
+.hp-portal .hp-portal-card.hp-reveal,
+.hp-portal .hp-portal__empty.hp-reveal,
+.hp-portal .hp-doc-list.hp-reveal,
+.hp-portal .hp-panel.hp-reveal { transition-delay: 0.14s; }
+.hp-portal .hp-panels > .hp-panel.hp-reveal:nth-child(2) { transition-delay: 0.22s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-portal .hp-reveal { transition-delay: 0s !important; }
 }
