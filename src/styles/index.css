@@ -18,3 +18,80 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+
+/* ===========================================================================
+   The skip link and the crash screen are rendered by App.jsx itself, which is
+   eager — but styles/App.css only arrives with a lazily-loaded page chunk. So
+   these rules live here instead, in the stylesheet main.jsx imports directly.
+
+   Without that, the skip link painted as an unstyled blue link over the
+   loading overlay for as long as the page chunk took to arrive, because its
+   `transform: translateY(-120%)` had not loaded yet to hide it. Same class of
+   problem for the crash screen: an error early in startup would have rendered
+   it with no styling at all.
+   =========================================================================== */
+
+/* ===================== SKIP LINK ===================== */
+/* Off-screen until focused, then pinned top-left. Keyboard and screen-reader
+   users can jump straight past the navbar instead of tabbing through every
+   link on every route. Not display:none — that would take it out of the tab
+   order entirely, which defeats the point. */
+.hp-skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  transform: translateY(-120%);
+  padding: 12px 18px;
+  background: var(--hp-accent);
+  color: var(--hp-cream);
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 0 0 10px 0;
+  transition: transform 0.18s ease;
+}
+
+.hp-skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--hp-cream);
+  outline-offset: -4px;
+}
+
+/* ===================== CRASH SCREEN ===================== */
+/* Shown by ErrorBoundary when a render throws — the alternative React gives
+   us is a blank white page with no way back. */
+.hp-crash {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: var(--hp-dark);
+}
+
+.hp-crash__card {
+  width: 100%;
+  max-width: 440px;
+  padding: 36px 32px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  text-align: center;
+}
+
+.hp-crash__card h1 { margin: 0 0 10px; font-size: 27px; color: var(--hp-cream); }
+
+.hp-crash__card p {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(243, 241, 236, 0.66);
+}
+
+.hp-crash__actions { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+
+.hp-crash__actions .hp-btn { justify-content: center; width: 100%; }
+
+.hp-crash__link { font-size: 14px; font-weight: 600; color: #6aa9dc; }
+.hp-crash__link:hover { text-decoration: underline; }
