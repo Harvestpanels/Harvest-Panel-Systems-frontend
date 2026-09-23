@@ -5,6 +5,7 @@ import { scrollCenter } from "./utils/scroll";
 import ChatWidget from "./components/ChatWidget";
 import RequireAuth from "./components/RequireAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
+import PageLoader from "./components/PageLoader";
 import AuthModalProvider from "./context/AuthModalProvider";
 
 // Route-level code splitting — each page (plus everything it imports:
@@ -92,18 +93,36 @@ function App() {
   return (
     <AuthModalProvider>
       <ScrollToTop />
-      {/* No visible fallback UI — the page's own dark body background
-          (see --hp-dark in App.css) already shows during this brief gap,
-          and each page chunk is small enough on a real connection that a
-          spinner would just flash on and off, reading as more broken than
-          a plain, momentary continuation of the page background. */}
       {/* First thing in the tab order on every page, so a keyboard or screen
           reader user can jump the navbar instead of tabbing through it on
           every route. Visually hidden until focused (see .hp-skip-link). */}
       <a className="hp-skip-link" href="#hp-main">Skip to content</a>
 
       <ErrorBoundary>
-      <Suspense fallback={null}>
+      {/* The loading screen, not `null`.
+
+          This was `null`, reasoning that a chunk loads fast enough that a
+          loader would flash on and off. That holds for the marketing pages,
+          whose chunk is already in flight before anything is on screen. It
+          does not hold for the portal: a portal page only starts fetching its
+          chunk once the session check has passed, well after its loading
+          screen is up. React hides a suspended tree with display:none rather
+          than unmounting it, so the loader vanished and `null` left a bare
+          dark screen for ~300ms before it returned — on the portal only,
+          which is why its loading looked unlike the homepage's.
+
+          Measured, visible loader appears -> disappears:
+            before  /products       401ms -> 1509ms   one continuous run
+                    /portal         404 -> 424, then 747 -> 1835   blank 323ms
+                    /portal/profile 382 -> 408, then 708 -> 1828   blank 326ms
+            after   /products        98ms -> 1512ms
+                    /portal          63ms -> 1788ms   one continuous run
+
+          Navigation is unaffected: the loader is on screen for the same time
+          either way (1287ms vs 1273ms Home->Products, 1271ms vs 1284ms on a
+          cached route), because each page mounts its own PageLoader as soon as
+          it renders regardless. */}
+      <Suspense fallback={<PageLoader ready={false} />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
