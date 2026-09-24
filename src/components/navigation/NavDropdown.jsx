@@ -282,6 +282,7 @@ export default function NavDropdown({
                 <Link
                   key={item.label}
                   to={item.to}
+                  state={item.state}
                   className={`hp-nav__menu-item${item.active ? " is-current" : ""}${extra}`}
                   style={style}
                   tabIndex={open ? 0 : -1}

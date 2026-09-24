@@ -224,6 +224,8 @@
   align-items: start;
 }
 
+.hp-panel--wide { grid-column: 1 / -1; }
+
 .hp-panel {
   padding: 26px 28px;
   background: rgba(255, 255, 255, 0.04);
@@ -380,6 +382,28 @@
 .hp-doc__open {
   flex-shrink: 0;
 }
+
+/* ---- admin document list (AdminDocumentList.jsx) ------------------------ */
+.hp-doc-list--admin { margin-top: 0; }
+
+.hp-doc__delete,
+.hp-doc__actions { flex-shrink: 0; }
+
+.hp-doc__actions { display: flex; gap: 8px; }
+
+/* The row itself turns red while it asks, so there is no doubt which file
+   the Delete button in it is about. */
+.hp-doc.is-confirming {
+  background: rgba(163, 36, 29, 0.14);
+  border-color: rgba(255, 180, 174, 0.35);
+}
+.hp-doc.is-confirming .hp-doc__meta { color: var(--hp-error-light); }
+
+.hp-btn--danger {
+  background: var(--hp-error);
+  color: var(--hp-cream);
+}
+.hp-btn--danger:not(:disabled):hover { transform: translateY(-2px); background: #8e1f19; }
 
 .hp-portal__empty {
   margin-top: 34px;
@@ -543,10 +567,14 @@
     flex-wrap: wrap;
   }
 
-  .hp-doc__open {
+  .hp-doc__open,
+  .hp-doc__delete,
+  .hp-doc__actions {
     width: 100%;
     justify-content: center;
   }
+
+  .hp-doc__actions .hp-btn { flex: 1; justify-content: center; }
 
   .hp-person {
     flex-direction: column;
@@ -588,6 +616,7 @@
 .hp-portal .hp-doc-list.hp-reveal,
 .hp-portal .hp-panel.hp-reveal { transition-delay: 0.14s; }
 .hp-portal .hp-panels > .hp-panel.hp-reveal:nth-child(2) { transition-delay: 0.22s; }
+.hp-portal .hp-panels > .hp-panel.hp-reveal:nth-child(3) { transition-delay: 0.3s; }
 
 @media (prefers-reduced-motion: reduce) {
   .hp-portal .hp-reveal { transition-delay: 0s !important; }

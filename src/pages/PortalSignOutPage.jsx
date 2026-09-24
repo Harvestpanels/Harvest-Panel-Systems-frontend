@@ -48,10 +48,15 @@ export default function PortalSignOutPage() {
 
   useEffect(() => {
     if (!preconfirmed || ran.current) return;
-    ran.current = true;
     // Deferred a tick so the state updates inside run() are not synchronous
-    // in the effect body (react-hooks/set-state-in-effect).
-    const timer = setTimeout(run, 0);
+    // in the effect body (react-hooks/set-state-in-effect). `ran` is set inside
+    // the timer, not before it: StrictMode's mount-cleanup-mount cancels the
+    // first timer, and marking it as run up front made the second mount skip,
+    // so sign-out never started and the page sat on "Signing out".
+    const timer = setTimeout(() => {
+      ran.current = true;
+      run();
+    }, 0);
     return () => clearTimeout(timer);
   }, [preconfirmed, run]);
 

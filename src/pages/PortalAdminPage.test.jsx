@@ -4,7 +4,7 @@ import { expect, it, vi } from "vitest";
 import PortalAdminPage from "./PortalAdminPage";
 
 const upload = vi.hoisted(() => vi.fn());
-vi.mock("../features/documents/api", () => ({ listAdminRows: vi.fn().mockResolvedValue({ rows: [] }), moveProfile: vi.fn(), uploadDocument: upload }));
+vi.mock("../features/documents/api", () => ({ listAdminRows: vi.fn().mockResolvedValue({ rows: [] }), moveProfile: vi.fn(), uploadDocument: upload, getAccount: vi.fn().mockResolvedValue(null), listDocuments: vi.fn().mockResolvedValue({ documents: [], hasMore: false }), deleteDocument: vi.fn() }));
 vi.mock("../hooks/useAuth", () => ({ useAuth: () => ({ profile: { id: "admin" } }) }));
 vi.mock("../components/PortalShell", () => ({ default: ({ children }) => children }));
 vi.mock("../features/documents/AccountPicker", () => ({ default: ({ onChange }) => <button type="button" onClick={() => onChange({ id: "a", company_name: "Acme" })}>Choose account</button> }));

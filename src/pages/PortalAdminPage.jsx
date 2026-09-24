@@ -5,9 +5,11 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { listAdminRows, uploadDocument, moveProfile } from "../features/documents/api";
 import AccountPicker from "../features/documents/AccountPicker";
+import AdminDocumentList from "../features/documents/AdminDocumentList";
 import { usePageMeta } from "../hooks/usePageMeta";
 
-// Admin-only: upload a document and attach it to a customer account, and move
+// Admin-only: upload a document and attach it to a customer account, review or
+// delete what an account already has, and move
 // a person onto an existing account when two colleagues sign up separately.
 //
 // Every write below is also gated by RLS (documents_admin_write,
@@ -24,6 +26,8 @@ export default function PortalAdminPage() {
   const [busy, setBusy] = useState(false);
   const [moving, setMoving] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  // Bumped after each upload so the account's document list refetches.
+  const [docRevision, setDocRevision] = useState(0);
   const key = JSON.stringify([page, search, refreshKey]);
   const current = result?.key === key ? result : null;
   const people = current?.rows ?? [];
@@ -48,7 +52,8 @@ export default function PortalAdminPage() {
       await uploadDocument({ file: form.get("file"), accountId: account?.id,
         title: String(form.get("title") || ""), profileId: profile.id });
       element.reset();
-      setAccount(null);
+      // The account stays selected so the new file shows up in its list below.
+      setDocRevision((n) => n + 1);
       setMsg({ type: "ok", text: "Uploaded and shared." });
     } catch (error) {
       setMsg({ type: "error", text: error.message || "Upload failed. Please try again." });
@@ -137,6 +142,18 @@ export default function PortalAdminPage() {
             ))}
           </ul>
           <PortalPagination label="People pages" page={page} hasMore={!!current?.hasMore} onPage={setPage} />
+        </section>
+
+        <section className="hp-panel hp-panel--wide hp-reveal">
+          <h2>Account documents</h2>
+          {account ? (
+            <>
+              <p className="hp-panel__note">Everything shared with {account.company_name}. Deleting removes it for everyone on the account.</p>
+              <AdminDocumentList key={account.id} account={account} revision={docRevision} onMessage={setMsg} />
+            </>
+          ) : (
+            <p className="hp-panel__note">Choose an account above to see and manage its documents.</p>
+          )}
         </section>
       </div>
       </main>

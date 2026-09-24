@@ -60,12 +60,13 @@ export default function MobileDropdownGroup({
               <Link
                 key={item.label}
                 to={item.to}
+                state={item.state}
                 className={`hp-nav__mobile-group-item${item.active ? " is-current" : ""}${item.danger ? " is-danger" : ""}`}
                 tabIndex={expanded ? tabIndex : -1}
                 onClick={(e) => {
                   e.preventDefault();
                   onNavigate();
-                  setTimeout(() => navigate(item.to), MOBILE_MENU_CLOSE_MS);
+                  setTimeout(() => navigate(item.to, { state: item.state }), MOBILE_MENU_CLOSE_MS);
                 }}
               >
                 {item.label}

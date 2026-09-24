@@ -35,7 +35,7 @@ it("preserves delayed mobile routing and action callbacks", () => {
   expect(onNavigate).toHaveBeenCalledOnce();
   expect(navigate).not.toHaveBeenCalled();
   act(() => vi.advanceTimersByTime(380));
-  expect(navigate).toHaveBeenCalledWith("/products");
+  expect(navigate).toHaveBeenCalledWith("/products", { state: undefined });
   fireEvent.click(screen.getByRole("button", { name: "Contact" }));
   expect(items[1].onClick).toHaveBeenCalledOnce();
 });

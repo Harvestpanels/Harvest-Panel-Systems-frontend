@@ -4,18 +4,11 @@ import { PortalPagination, PortalSearch } from "../components/PortalListControls
 import { useAuth } from "../hooks/useAuth";
 import { getDocumentLink } from "../features/documents/api";
 import { useAccountDocuments } from "../features/documents/useAccountDocuments";
+import { describeDocument } from "../features/documents/format";
 import { usePageMeta } from "../hooks/usePageMeta";
 
 // Documents shared with the signed-in customer's account. Profile and
 // sign-in settings are their own pages, reachable from the nav account menu.
-
-function formatSize(bytes) {
-  if (!bytes) return "";
-  const mb = bytes / 1024 / 1024;
-  return mb >= 1 ? mb.toFixed(1) + " MB" : Math.max(1, Math.round(bytes / 1024)) + " KB";
-}
-
-const DATE = { year: "numeric", month: "short", day: "numeric" };
 
 export default function PortalPage() {
   usePageMeta({
@@ -83,10 +76,7 @@ export default function PortalPage() {
                 </span>
                 <span className="hp-doc__text">
                   <span className="hp-doc__name">{doc.title}</span>
-                  <span className="hp-doc__meta">
-                    {new Date(doc.uploaded_at).toLocaleDateString(undefined, DATE)}
-                    {formatSize(doc.size_bytes) ? " · " + formatSize(doc.size_bytes) : ""}
-                  </span>
+                  <span className="hp-doc__meta">{describeDocument(doc)}</span>
                 </span>
                 <button type="button" className="hp-btn hp-btn--primary hp-doc__open" disabled={opening !== null} onClick={() => openDoc(doc)}>
                   {opening === doc.id ? "Opening..." : "Open"}

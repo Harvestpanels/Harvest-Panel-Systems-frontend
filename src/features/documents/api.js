@@ -51,6 +51,22 @@ export async function uploadDocument({ file, accountId, title, profileId }) {
   }
 }
 
+// Removes a document for everyone on its account. The row goes first: once
+// it is gone the file is unreachable to customers (partner_docs_read only
+// serves files that still have a row), so a failed file removal afterwards
+// leaves an orphan only admins can see, never a broken entry in a customer's
+// list. download history is removed with the row (on delete cascade).
+export async function deleteDocument(doc) {
+  const rows = unwrap(await supabase.from("documents").delete().eq("id", doc.id).select("id"));
+  if (!rows?.length) throw new Error("The document could not be deleted. It may already have been removed.");
+  try {
+    unwrap(await supabase.storage.from("partner-docs").remove([doc.storage_path]));
+    return { fileRemoved: true };
+  } catch {
+    return { fileRemoved: false };
+  }
+}
+
 export async function getDocumentLink(doc) {
   // The RPC verifies access and records a link request using database identity/time.
   // It is not evidence that the recipient read or downloaded the file.
