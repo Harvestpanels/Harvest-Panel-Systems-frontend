@@ -36,7 +36,7 @@ export default function PortalSettingsPage() {
     if (!user?.email) return "We could not confirm who is signed in. Please sign in again.";
     const { error: err } = await authAction(() => supabase.auth.signInWithPassword({ email: user.email, password: current }));
     if (!err) return null;
-    return err.status === 400 || /invalid/i.test(err.message || "")
+    return err.status === 400 || err.code === "invalid_credentials"
       ? "Your current password is incorrect."
       : err.message;
   }
@@ -84,7 +84,7 @@ export default function PortalSettingsPage() {
     const { error: err } = await authAction(() => supabase.auth.updateUser(
       { email },
       { emailRedirectTo: window.location.origin + "/portal" }
-    ));
+    ), "email");
     setEmailBusy(false);
     if (err) return setEmailError(err.message);
     setEmailMsg("Confirmation sent. Your current address stays active until you click the link.");
