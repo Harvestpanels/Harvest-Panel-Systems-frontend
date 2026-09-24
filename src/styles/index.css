@@ -27,6 +27,18 @@
      notification color, not the brand accent, so it stays red regardless
      of what the primary accent color is. */
   --hp-alert: #c8262e;
+  /* Link / focus-ring blues and form-error reds, shared across pages. */
+  --hp-link: #4a8fd6;
+  --hp-link-light: #a6cdec;
+  --hp-link-soft: #6aa9dc;
+  --hp-error: #a3241d;
+  --hp-error-light: #ffb4ae;
+  /* Shared motion tokens — one brand easing curve and a small duration
+     scale, so entrances, exits, and press feedback feel like one system. */
+  --hp-ease-out: cubic-bezier(0.16,1,0.3,1);
+  --hp-dur-fast: 150ms;
+  --hp-dur-normal: 280ms;
+  --hp-dur-reveal: 650ms;
 }
 
 /* Set here as well as in App.css so the page has its background from the very
@@ -127,5 +139,21 @@ body {
 
 .hp-crash__actions .hp-btn { justify-content: center; width: 100%; }
 
-.hp-crash__link { font-size: 14px; font-weight: 600; color: #6aa9dc; }
+.hp-crash__link { font-size: 14px; font-weight: 600; color: var(--hp-link-soft); }
 .hp-crash__link:hover { text-decoration: underline; }
+
+/* Route-change fade (RouteFade in App.jsx). Opacity only — a transform on
+   this wrapper would become the containing block for the pages' own
+   position: fixed nav and background video. No fill mode, so once it ends
+   the wrapper has no opacity/stacking context left over at all. */
+.hp-route-fade {
+  animation: hp-route-fade-in 200ms var(--hp-ease-out);
+}
+
+@keyframes hp-route-fade-in {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-route-fade { animation: none; }
+}

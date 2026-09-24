@@ -121,6 +121,16 @@
 .hp-portal__alt a { color: var(--hp-accent); font-weight: 600; }
 .hp-portal__alt a:hover { text-decoration: underline; }
 
+/* Touch: grow these small text links to a 44px-tall tap area with padding
+   (negative margin cancels it out, so the text sits exactly where it did). */
+@media (hover: none) {
+  .hp-portal__alt a {
+    display: inline-block;
+    padding: 13px 6px;
+    margin: -13px -6px;
+  }
+}
+
 /* ---- feedback ---- */
 .hp-portal-msg {
   margin: 18px 0 0;
@@ -133,7 +143,7 @@
 .hp-portal-msg--error {
   background: rgba(224, 69, 61, 0.1);
   border: 1px solid rgba(224, 69, 61, 0.3);
-  color: #a3241d;
+  color: var(--hp-error);
 }
 
 .hp-portal-msg--ok {
@@ -163,22 +173,7 @@
 }
 
 
-/* The document rows carry their own dark surface, so a select sitting inside
-   one needs the compact treatment rather than the full-width form style. */
-.hp-person select {
-  width: auto;
-  min-width: 180px;
-  margin-top: 0;
-  font-size: 14px;
-  padding: 9px 11px;
-  color: var(--hp-cream);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-}
-
-.hp-portal-form select:focus,
-.hp-person select:focus {
+.hp-portal-form select:focus {
   outline: none;
   border-color: var(--hp-accent);
   box-shadow: 0 0 0 3px rgba(var(--hp-accent-rgb), 0.25);
@@ -202,13 +197,20 @@
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #4a8fd6;
+  color: var(--hp-link);
   margin: 0 0 6px;
 }
 
 .hp-portal__title { margin: 0; color: var(--hp-cream); font-size: clamp(30px, 5vw, 46px); }
 
 .hp-portal__hint { color: rgba(243, 241, 236, 0.6); font-size: 15px; margin: 10px 0 0; }
+
+.hp-account-picker { display: flex; flex-direction: column; gap: 4px; }
+.hp-portal .hp-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.hp-person .hp-btn { font-size: 13px; max-width: 240px; white-space: normal; }
+.hp-portal__main .hp-btn--ghost { color: var(--hp-cream); border-color: rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.04); }
+.hp-portal__main .hp-portal-msg--error { color: var(--hp-error-light); }
+.hp-portal__main .hp-portal-msg--ok { color: var(--hp-link-light); }
 
 /* ---- panels -------------------------------------------------------------
    Side by side where there is room, so a short form does not leave half the
@@ -217,7 +219,7 @@
 
 .hp-panels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(330px, 100%), 1fr));
   gap: 18px;
   align-items: start;
 }
@@ -257,7 +259,7 @@
 
 .hp-panel a,
 .hp-field-note a {
-  color: #6aa9dc;
+  color: var(--hp-link-soft);
   font-weight: 600;
 }
 
@@ -395,6 +397,18 @@
   color: rgba(243, 241, 236, 0.6);
 }
 
+/* One-line "No people match" / "No accounts match" inside a panel. */
+.hp-portal__empty-note {
+  margin: 14px 0 0;
+  padding: 14px 16px;
+  font-size: 14px;
+  text-align: center;
+  color: rgba(243, 241, 236, 0.6);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+}
+
 .hp-portal__empty p + p {
   margin-top: 6px;
 }
@@ -459,7 +473,7 @@
 
 .hp-badge--admin {
   background: rgba(var(--hp-accent-rgb), 0.28);
-  color: #a6cdec;
+  color: var(--hp-link-light);
 }
 
 /* ---- admin: people ------------------------------------------------------ */
@@ -516,7 +530,8 @@
    Below this the rail has no room beside the content, so it becomes a
    horizontal strip above it - still one workspace, just stacked. */
 @media (max-width: 640px) {
-  .hp-portal__main { padding: 96px 18px 60px; }
+  /* Same 90px top as .hp-portal__center and 16px sides as .hp-section__inner. */
+  .hp-portal__main { padding: 90px 16px 60px; }
 
   .hp-panel {
     padding: 22px 20px;
@@ -576,4 +591,169 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hp-portal .hp-reveal { transition-delay: 0s !important; }
+}
+.hp-portal:focus,
+.hp-portal__main:focus {
+  /* Page destinations receive focus after loading and skip navigation.
+     Interactive controls keep their own visible keyboard focus rings. */
+  outline: none;
+}
+
+/* ---- list controls (PortalListControls.jsx) ------------------------------
+   The Products filter bar's pill search and chip-style buttons, recoloured
+   for the dark ground: same 999px radius, icon inset, focus treatment and
+   hp-filter-pop easing as the marketing pages. */
+.hp-portal-search { margin: 28px 0 22px; max-width: 420px; }
+
+.hp-portal-search__label {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(243, 241, 236, 0.6);
+  margin-bottom: 8px;
+}
+
+.hp-portal-search__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: rgba(243, 241, 236, 0.5);
+  transition: color 0.2s ease;
+}
+
+.hp-portal-search__field:focus-within { color: var(--hp-cream); }
+
+.hp-portal-search__field > svg {
+  position: absolute;
+  left: 15px;
+  pointer-events: none;
+  transition: transform 0.3s var(--hp-ease-out);
+}
+
+.hp-portal-search__field:focus-within > svg { transform: scale(1.12) rotate(-8deg); }
+
+.hp-portal-search__field input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  font-family: "Inter", sans-serif;
+  font-size: 16px; /* iOS zooms in on focus below 16px */
+  color: var(--hp-cream);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 11px 42px 11px 44px;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.25s ease;
+}
+
+.hp-portal-search__field input::-webkit-search-cancel-button,
+.hp-portal-search__field input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+
+.hp-portal-search__field input::placeholder { color: rgba(243, 241, 236, 0.55); }
+
+.hp-portal-search__field input:hover { border-color: rgba(255, 255, 255, 0.28); }
+
+.hp-portal-search__field input:focus-visible {
+  outline: none;
+  border-color: var(--hp-accent);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 0 3px rgba(var(--hp-accent-rgb), 0.25);
+}
+
+.hp-portal-search__clear {
+  position: absolute;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  /* 36px is the smallest comfortable touch target; the visible disc stays
+     small via background-clip, the whole square is clickable. */
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  padding: 4px;
+  background-clip: content-box;
+  border: none;
+  border-radius: 999px;
+  color: rgba(243, 241, 236, 0.7);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  animation: hp-portal-pop var(--hp-dur-normal) var(--hp-ease-out) both;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s var(--hp-ease-out);
+}
+
+.hp-portal-search__clear:hover { color: var(--hp-cream); background: rgba(255, 255, 255, 0.16); transform: rotate(90deg); }
+
+.hp-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  animation: hp-portal-rise 0.5s var(--hp-ease-out) both;
+}
+
+.hp-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(243, 241, 236, 0.8);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s var(--hp-ease-out);
+}
+
+.hp-pagination__btn svg { transition: transform 0.25s var(--hp-ease-out); }
+
+.hp-pagination__btn:not(:disabled):hover {
+  color: var(--hp-cream);
+  background: var(--hp-accent);
+  border-color: var(--hp-accent);
+  transform: translateY(-1px);
+}
+
+.hp-pagination__btn--prev:not(:disabled):hover svg { transform: translateX(-3px); }
+.hp-pagination__btn--next:not(:disabled):hover svg { transform: translateX(3px); }
+.hp-pagination__btn:not(:disabled):active { transform: translateY(0) scale(0.97); }
+
+.hp-pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.hp-pagination__count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(243, 241, 236, 0.6);
+  padding: 0 6px;
+  animation: hp-portal-pop var(--hp-dur-normal) var(--hp-ease-out) both;
+}
+
+@keyframes hp-portal-pop {
+  0%   { opacity: 0; transform: scale(0.8); }
+  60%  { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes hp-portal-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hp-portal .hp-portal-search.hp-reveal { transition-delay: 0.12s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-pagination,
+  .hp-pagination__count,
+  .hp-portal-search__clear { animation: none; }
+  .hp-portal-search__field > svg,
+  .hp-pagination__btn,
+  .hp-pagination__btn svg,
+  .hp-portal-search__clear { transition: none; transform: none !important; }
 }

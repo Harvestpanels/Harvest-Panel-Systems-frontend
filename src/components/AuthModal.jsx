@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import "./AuthModal.css";
+import { submitAuthForm } from "../features/auth/actions";
 
 // Drives the focus trap below. Kept up here so the handler reads as logic
 // rather than a wall of selectors.
@@ -19,7 +20,7 @@ const FOCUSABLE =
 // Behaviour deliberately matches Lightbox.jsx, this site's other dialog:
 // Escape closes, clicking the backdrop closes, the page behind is
 // scroll-locked, focus moves in on open and returns to whatever opened it.
-export default function AuthModal({ onClose }) {
+export default function AuthModal({ onClose, closing = false, onExited }) {
   const [view, setView] = useState("signin"); // signin | signup | forgot
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -84,16 +85,17 @@ export default function AuthModal({ onClose }) {
 
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) go();
-    });
+    }).catch(() => { if (!done) setError("We could not check your session. Please try signing in."); });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) go();
     });
 
-    return () => sub?.subscription?.unsubscribe();
+    return () => { done = true; sub?.subscription?.unsubscribe(); };
   }, [onClose, navigate]);
 
   function switchTo(next) {
+    if (busy) return;
     setView(next);
     setError(null);
     setNotice(null);
@@ -102,58 +104,16 @@ export default function AuthModal({ onClose }) {
   async function handleSubmit(e) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const email = String(form.get("email") || "").trim();
-    const password = String(form.get("password") || "");
     setError(null);
     setNotice(null);
     setBusy(true);
-
-    if (view === "signin") {
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-      setBusy(false);
-      // Supabase returns one message for both "no such user" and "wrong
-      // password" on purpose — telling them apart would let anyone probe
-      // which email addresses have accounts. Surfaced as-is.
-      if (err) return setError(err.message);
-      onClose();
-      navigate("/portal");
-      return;
-    }
-
-    if (view === "signup") {
-      if (password.length < 8) {
-        setBusy(false);
-        return setError("Please use a password of at least 8 characters.");
-      }
-      const { error: err } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          // Read by the handle_new_user() trigger. Never carries a role —
-          // that is written server-side and only an admin can change it.
-          data: {
-            full_name: String(form.get("full_name") || "").trim(),
-            company: String(form.get("company") || "").trim(),
-          },
-          // Confirming the email creates a session, so send them straight to
-          // their documents. /portal/login would only bounce them onward,
-          // and landing on a sign-in form after clicking "confirm" reads
-          // as though the confirmation failed.
-          emailRedirectTo: window.location.origin + "/portal",
-        },
-      });
-      setBusy(false);
-      if (err) return setError(err.message);
-      return setNotice("Check your inbox for a confirmation link, then sign in.");
-    }
-
-    // forgot — always reports success, so this cannot be used to discover
-    // which addresses have accounts.
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/portal/reset",
-    });
+    const { data, error: err } = await submitAuthForm(view, form);
     setBusy(false);
-    setNotice("If that email has an account, a reset link is on its way.");
+    if (err) return setError(err.message);
+    // A signup that comes back with a session (email confirmation off) is
+    // already signed in, same as a sign-in.
+    if (view === "signin" || data?.session) { onClose(); navigate("/portal"); }
+    else setNotice(view === "signup" ? "Check your inbox for a confirmation link, then sign in." : "If that email has an account, a reset link is on its way.");
   }
 
   const heading =
@@ -167,7 +127,8 @@ export default function AuthModal({ onClose }) {
 
   return (
     <div
-      className="hp-authmodal"
+      className={`hp-authmodal${closing ? " is-closing" : ""}`}
+      onAnimationEnd={onExited}
       role="dialog"
       aria-modal="true"
       aria-labelledby="hp-authmodal-title"

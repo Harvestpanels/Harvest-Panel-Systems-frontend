@@ -112,10 +112,17 @@ a {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #4a8fd6;
+  outline: 2px solid var(--hp-link);
   outline-offset: 3px;
   border-radius: 2px;
+}
+
+/* The <main> skip-link target is focused programmatically; it isn't a
+   control, so no ring. */
+#hp-main:focus {
+  outline: none;
 }
 
 h1,
@@ -158,7 +165,7 @@ h3 {
   width: auto;
   display: block;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
-  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), filter 0.25s ease;
+  transition: transform 0.25s var(--hp-ease-out), filter 0.25s ease;
 }
 
 /* Same reasoning as .hp-btn above — the logo only moves on hover. */
@@ -185,7 +192,7 @@ h3 {
   border: none;
   cursor: pointer;
   font-family: "Inter", sans-serif;
-  transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.22s ease;
+  transition: transform 0.22s var(--hp-ease-out), opacity 0.22s ease;
 }
 
 /* will-change only while the transform is actually changing. Declared on the
@@ -222,7 +229,8 @@ h3 {
 }
 
 .hp-btn--ghost:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.97);
+  transition-duration: var(--hp-dur-fast);
 }
 
 /* ===================== FIXED BACKGROUND VIDEO ===================== */
@@ -433,24 +441,54 @@ h3 {
    would promote every single one to its own GPU compositing layer for
    the entire page lifetime, not just the ~0.65s each actually spends
    transitioning — real, ongoing GPU memory pressure for no benefit once
-   the reveal is done. useRevealOnScroll.js instead applies will-change
-   via JS right before the transition starts and removes it once the
-   transition ends, so only the handful of elements *currently* animating
-   ever carry the cost. */
+   the reveal is done. The browser manages temporary compositing while
+   useRevealOnScroll.js stops observing each element after its reveal. */
 .hp-reveal,
 .hp-card,
 .hp-section__eyebrow,
 .hp-section h2 {
-  opacity: 0;
-  transform: translateY(32px);
   transition:
-    opacity 0.65s cubic-bezier(0.16,1,0.3,1),
-    transform 0.65s cubic-bezier(0.16,1,0.3,1);
+    opacity var(--hp-dur-reveal) var(--hp-ease-out),
+    transform var(--hp-dur-reveal) var(--hp-ease-out);
 }
 
+/* The hidden starting state only applies while (a) JS is running — main.jsx
+   adds .hp-js to <html> before the first render, so a script failure never
+   leaves content invisible forever — and (b) the element hasn't been
+   revealed yet. Expressing "revealed" as the absence of this rule, instead
+   of an `.is-visible { ... !important }` override, is what lets each card's
+   own :hover lift apply normally after the reveal. :where() keeps the .hp-js
+   part at zero specificity (0,2,1 total) so Portal.css's
+   `.hp-anim-ready .hp-portal .hp-reveal` (0,3,0) still wins to play in the
+   portal's entrance. */
+:where(.hp-js) :is(.hp-reveal, .hp-card, .hp-section__eyebrow, .hp-section h2):not(.is-visible) {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+/* Once revealed, everything holds its resting state — hover transforms on
+   revealed cards stay off by design (their shadow/colour effects still play). */
 .is-visible {
   opacity: 1 !important;
   transform: translateY(0) !important;
+}
+
+/* Shared by ProductsPage.css and SpecsPage.css (.hp-filter-anim) — lives
+   here once since App.css is loaded by both pages. */
+@keyframes hp-filter-pop {
+  0%   { opacity: 0; transform: translateY(26px) scale(0.94); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.015); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* animation-delay is set inline per element (section cascade + per-item
+   stagger combined into one value), so no nth-child delay rules. */
+.hp-filter-anim {
+  animation: hp-filter-pop 0.55s var(--hp-ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-filter-anim { animation: none; }
 }
 
 @media (max-width: 640px) {
@@ -487,15 +525,23 @@ h3 {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
+  /* Reveals keep a short opacity-only fade; the slide (and any press/hover
+     transform) is removed. The keyframe animations above still run at
+     0.01ms, so animationend still fires for clearAnimOnEnd. */
   .hp-reveal,
   .hp-card,
   .hp-section__eyebrow,
   .hp-section h2 {
-    opacity: 1 !important;
     transform: none !important;
+    transition: opacity var(--hp-dur-fast) linear !important;
   }
+  *:active { scale: none !important; }
+  .hp-btn--ghost:active { transform: none; }
 }
 
 /* ===================== TOUCH TAP TARGETS ===================== */

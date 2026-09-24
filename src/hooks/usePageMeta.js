@@ -1,47 +1,58 @@
 import { useEffect } from "react";
 
-// Sets the document title, meta description, and canonical URL for the
-// current page. This is a client-rendered SPA with no server-side
-// rendering, so social-preview crawlers (which only fetch the static
-// index.html) never see these — but the browser tab title and Google's
-// indexer (which does execute JS) both benefit from each route having its
-// own values instead of sharing index.html's single static
-// <title>/description/canonical for every page. `path` is the route's own
-// path (e.g. "/products") — without a per-route canonical tag, every page
-// pointed at the same implicit canonical (the URL last set), which risks
-// Google treating the other routes as duplicate content of whichever page
-// happened to render most recently.
+const SITE_ORIGIN = "https://harvestpanels.com";
+
+// Route metadata for the live browser document only. Static social crawlers
+// still receive index.html; this hook does not provide server-rendered metadata.
 export function usePageMeta({ title, description, path, noindex = false }) {
   useEffect(() => {
-    if (title) document.title = title;
-    if (description) {
-      let meta = document.querySelector('meta[name="description"]');
-      if (!meta) {
-        meta = document.createElement("meta");
-        meta.setAttribute("name", "description");
-        document.head.appendChild(meta);
+    const restore = [];
+    function setTag(selector, tag, identity, attribute, value) {
+      let node = document.head.querySelector(selector);
+      const created = !node;
+      if (created) {
+        node = document.createElement(tag);
+        Object.entries(identity).forEach(([key, val]) => node.setAttribute(key, val));
+        document.head.appendChild(node);
       }
-      meta.setAttribute("content", description);
+      const previous = node.getAttribute(attribute);
+      node.setAttribute(attribute, value);
+      restore.push(() => {
+        if (created) node.remove();
+        else if (previous === null) node.removeAttribute(attribute);
+        else node.setAttribute(attribute, previous);
+      });
+    }
+    function meta(kind, key, value) {
+      setTag(`meta[${kind}="${key}"]`, "meta", { [kind]: key }, "content", value);
+    }
+    if (title) {
+      const previous = document.title;
+      document.title = title;
+      restore.push(() => { document.title = previous; });
+      meta("property", "og:title", title);
+      meta("name", "twitter:title", title);
+    }
+    if (description) {
+      meta("name", "description", description);
+      meta("property", "og:description", description);
+      meta("name", "twitter:description", description);
     }
     if (path) {
-      let link = document.querySelector('link[rel="canonical"]');
-      if (!link) {
-        link = document.createElement("link");
-        link.setAttribute("rel", "canonical");
-        document.head.appendChild(link);
-      }
-      link.setAttribute("href", `https://harvestpanels.com${path}`);
+      // Retain the route pathname but always use the production origin, even
+      // on previews or when callers supply an absolute URL. Drop query/hash.
+      const route = new URL(path, `${SITE_ORIGIN}/`);
+      const url = `${SITE_ORIGIN}${route.pathname}`;
+      setTag('link[rel="canonical"]', "link", { rel: "canonical" }, "href", url);
+      meta("property", "og:url", url);
+      meta("name", "twitter:url", url);
     }
-    // index.html's own <meta name="robots"> defaults every route to
-    // "index, follow" — noindex pages (currently just the 404 catch-all)
-    // override that here rather than by editing the static HTML, and
-    // restore it on unmount so navigating from a noindex page to a real
-    // one doesn't leave the override behind.
-    if (noindex) {
-      const robotsMeta = document.querySelector('meta[name="robots"]');
-      const prevContent = robotsMeta?.getAttribute("content");
-      robotsMeta?.setAttribute("content", "noindex, follow");
-      return () => robotsMeta?.setAttribute("content", prevContent ?? "index, follow");
+    // Resolve the existing shared artwork against the same origin as route URLs.
+    for (const [kind, key] of [["property", "og:image"], ["name", "twitter:image"]]) {
+      const content = document.head.querySelector(`meta[${kind}="${key}"]`)?.getAttribute("content");
+      if (content) meta(kind, key, new URL(content, `${SITE_ORIGIN}/`).href);
     }
+    if (noindex) meta("name", "robots", "noindex, follow");
+    return () => restore.reverse().forEach((undo) => undo());
   }, [title, description, path, noindex]);
 }

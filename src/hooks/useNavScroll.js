@@ -69,9 +69,10 @@ export function useNavScroll(menuOpen) {
     // See vhRef above — only trust a resize that also changed the width,
     // filtering out mobile browsers' toolbar-collapse-driven height noise.
     function onResize() {
-      if (window.innerWidth !== vwRef.current) {
+      if (window.matchMedia("(hover: hover)").matches || window.innerWidth !== vwRef.current) {
         vwRef.current = window.innerWidth;
         vhRef.current = window.innerHeight;
+        onScroll();
       }
     }
     window.addEventListener("resize", onResize);

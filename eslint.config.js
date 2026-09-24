@@ -29,4 +29,8 @@ export default defineConfig([
       globals: { ...globals.browser, ...globals.node },
     },
   },
+  {
+    files: ['e2e/**/*.js', 'playwright.config.js', 'supabase/tests/*.mjs'],
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+  },
 ])

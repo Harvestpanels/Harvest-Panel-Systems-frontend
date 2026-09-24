@@ -7,7 +7,7 @@
   display: flex;
   justify-content: center;
   padding: 0 20px;
-  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  transition: transform 0.4s var(--hp-ease-out);
 }
 
 .hp-nav--hidden {
@@ -32,7 +32,7 @@
   backdrop-filter: blur(24px) saturate(160%);
   overflow: hidden;
   transform: translateY(0) scale(1);
-  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-radius 0.3s ease;
+  transition: transform 0.4s var(--hp-ease-out), border-radius 0.3s ease;
   position: relative;
 }
 
@@ -237,7 +237,7 @@
     0 -1px 1px rgba(0, 0, 0, 0.3) inset,
     0 12px 30px rgba(0, 0, 0, 0.35);
   opacity: 1;
-  transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1);
+  transition: opacity 0.4s var(--hp-ease-out);
   pointer-events: none;
 }
 
@@ -251,7 +251,7 @@
     0 -1px 1px rgba(0, 0, 0, 0.2) inset,
     0 16px 36px rgba(0, 0, 0, 0.5);
   opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1);
+  transition: opacity 0.4s var(--hp-ease-out);
   pointer-events: none;
 }
 
@@ -315,11 +315,11 @@
 
 .hp-nav__links a {
   display: inline-block;
-  transition: color 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+  transition: color 0.2s ease, transform 0.22s var(--hp-ease-out);
 }
 
 .hp-nav__links a:hover {
-  color: #14213a;
+  color: var(--hp-navy);
   transform: translateY(-1px);
 }
 
@@ -344,11 +344,11 @@
   padding: 6px 12px;
   margin: -6px -12px;
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+  transition: color 0.2s ease, background 0.2s ease, transform 0.22s var(--hp-ease-out);
 }
 
 .hp-nav__menu-trigger:hover {
-  color: #14213a;
+  color: var(--hp-navy);
   transform: translateY(-1px);
 }
 
@@ -360,7 +360,7 @@
    the visible panel belongs to — same navy-on-frost tint the rest of the
    nav uses for its own pressed/solid states, not an unrelated color. */
 .hp-nav__menu-trigger.is-active {
-  color: #14213a;
+  color: var(--hp-navy);
   background: rgba(20, 30, 50, 0.1);
 }
 
@@ -374,6 +374,8 @@
    panel just vanishing on the closing click. */
 .hp-nav__menu-panel {
   position: fixed;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translate(-50%, -6px) scale(0.96);
   display: flex;
   flex-direction: column;
@@ -391,7 +393,7 @@
   opacity: 0;
   pointer-events: none;
   transform-origin: top center;
-  transition: opacity 0.16s ease, transform 0.16s cubic-bezier(0.16,1,0.3,1);
+  transition: opacity 0.16s ease, transform 0.16s var(--hp-ease-out);
   z-index: 200;
 }
 
@@ -457,7 +459,7 @@
 /* Same weight as the normal hover fill (0.06), just tinted red, so Sign out
    highlights like every other row instead of reading as a heavier block. */
 .hp-nav__menu-item.is-danger:hover {
-  color: #8a1c1c;
+  color: var(--hp-error);
   background: rgba(150, 30, 30, 0.06);
 }
 
@@ -503,7 +505,7 @@
 }
 
 .hp-nav__menu-item:hover {
-  color: #14213a;
+  color: var(--hp-navy);
   background: rgba(20, 30, 50, 0.06);
 }
 
@@ -546,7 +548,7 @@
    it (exactly what happened once Overview grew past 10 items), where this
    scales to any dropdown length automatically. */
 .hp-nav__menu-panel.is-open .hp-nav__menu-item {
-  animation: hp-nav-menu-item-in 0.22s cubic-bezier(0.16,1,0.3,1) both;
+  animation: hp-nav-menu-item-in 0.22s var(--hp-ease-out) both;
 }
 
 @keyframes hp-nav-menu-item-in {
@@ -576,7 +578,7 @@
   font-size: 17px;
   font-weight: 600;
   color: var(--hp-accent);
-  transition: color 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+  transition: color 0.2s ease, transform 0.22s var(--hp-ease-out);
 }
 
 .hp-nav__quote:hover {
@@ -603,7 +605,7 @@
   flex-shrink: 0;
   border-radius: 50%;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), background 0.2s ease;
+  transition: transform 0.25s var(--hp-ease-out), background 0.2s ease;
 }
 
 /* Closed state: the pill itself scales on hover (see :has() rule in the
@@ -646,10 +648,10 @@
   width: 22px;
   height: 2px;
   border-radius: 2px;
-  background: #14213a;
+  background: var(--hp-navy);
   transition:
-    top 0.28s cubic-bezier(0.16,1,0.3,1),
-    transform 0.28s cubic-bezier(0.16,1,0.3,1),
+    top 0.28s var(--hp-ease-out),
+    transform 0.28s var(--hp-ease-out),
     opacity 0.2s ease;
 }
 
@@ -693,7 +695,7 @@
      Padding still changes instantly between closed/open, it just no
      longer drags the height animation out doing so. */
   transition:
-    max-height 0.38s cubic-bezier(0.16,1,0.3,1),
+    max-height 0.38s var(--hp-ease-out),
     opacity 0.28s ease;
 }
 
@@ -707,7 +709,7 @@
   overflow: hidden;
   /* Bottom padding also read by .hp-nav__mobile-group--account, which cancels
      it so the space under the avatar isn't this padding plus its own. */
-  --hp-menu-pad-b: 18px;
+  --hp-menu-pad-b: 13px; /* 11px top padding + the 1px top border, measured: keeps the space above the first row equal to the space below the last. */
   padding: 11px 20px var(--hp-menu-pad-b);
   border-top: 1px solid rgba(20, 30, 50, 0.1);
 }
@@ -740,7 +742,7 @@
 }
 
 .hp-nav__mobile a:not(.hp-nav__mobile-cta):last-of-type { border-bottom: none; }
-.hp-nav__mobile a:not(.hp-nav__mobile-cta):hover { color: #14213a; }
+.hp-nav__mobile a:not(.hp-nav__mobile-cta):hover { color: var(--hp-navy); }
 
 /* Pinned outside the scrollable link list (see Nav.jsx and its own
    comment on .hp-nav__mobile-cta-wrap) so it's always visible the instant
@@ -776,7 +778,7 @@
     opacity: 0;
     overflow: hidden;
     padding: 0 20px;
-    transition: max-height 0.32s cubic-bezier(0.16,1,0.3,1), opacity 0.24s ease;
+    transition: max-height 0.32s var(--hp-ease-out), opacity 0.24s ease;
   }
 
   .hp-nav__mobile-cta-wrap.is-open {
@@ -829,12 +831,12 @@
 
 .hp-nav__mobile-group-toggle:hover,
 .hp-nav__mobile-group-toggle.is-expanded {
-  color: #14213a;
+  color: var(--hp-navy);
 }
 
 .hp-nav__mobile-group-chevron {
   flex-shrink: 0;
-  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
+  transition: transform 0.28s var(--hp-ease-out);
 }
 
 .hp-nav__mobile-group-toggle.is-expanded .hp-nav__mobile-group-chevron {
@@ -851,7 +853,7 @@
 .hp-nav__mobile-group-panel {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s cubic-bezier(0.16,1,0.3,1);
+  transition: max-height 0.3s var(--hp-ease-out);
 }
 
 .hp-nav__mobile-group-item {
@@ -869,7 +871,7 @@
   transition: color 0.2s ease;
 }
 
-.hp-nav__mobile-group-item:hover { color: #14213a; }
+.hp-nav__mobile-group-item:hover { color: var(--hp-navy); }
 
 /* Same active-section styling as the desktop panel's .hp-nav__menu-item —
    see useScrollSpy. */
@@ -942,10 +944,10 @@
     overflow: hidden;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.85));
     border: 1px solid rgba(20, 30, 50, 0.1);
-    transition: width 0.35s cubic-bezier(0.16,1,0.3,1),
-                height 0.35s cubic-bezier(0.16,1,0.3,1),
-                border-radius 0.35s cubic-bezier(0.16,1,0.3,1),
-                max-width 0.35s cubic-bezier(0.16,1,0.3,1),
+    transition: width 0.35s var(--hp-ease-out),
+                height 0.35s var(--hp-ease-out),
+                border-radius 0.35s var(--hp-ease-out),
+                max-width 0.35s var(--hp-ease-out),
                 background 0.35s ease,
                 box-shadow 0.35s ease;
     /* Desktop gets its own entrance via the fold-in sequence above (which
@@ -1015,6 +1017,8 @@
 }
 
 @media (hover: none) {
+  .hp-nav--hidden { transform: none; }
+
   .hp-nav__pill {
     -webkit-backdrop-filter: blur(16px) saturate(140%);
     backdrop-filter: blur(16px) saturate(140%);
@@ -1089,7 +1093,7 @@
   font-size: 15px;
   font-weight: 700;
   line-height: 1;
-  transition: background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+  transition: background 0.2s ease, transform 0.22s var(--hp-ease-out);
 }
 
 .hp-nav__avatar:hover { background: var(--hp-accent-hover); transform: translateY(-2px); }
@@ -1226,7 +1230,7 @@
 
 .hp-nav__mobile .hp-nav__mobile-group-item.is-danger:hover,
 .hp-nav__mobile a.hp-nav__mobile-group-item.is-danger:hover {
-  color: #8a1c1c;
+  color: var(--hp-error);
 }
 
 
@@ -1237,7 +1241,7 @@
    the panel scrolls (see .is-overflowing) when a viewport genuinely cannot
    hold them, which is the honest answer on a landscape phone. */
 @media (max-height: 560px) {
-  .hp-nav__mobile.is-open { --hp-menu-pad-b: 12px; padding: 8px 20px var(--hp-menu-pad-b); }
+  .hp-nav__mobile.is-open { --hp-menu-pad-b: 10px; padding: 8px 20px var(--hp-menu-pad-b); }
 
   .hp-nav__mobile a:not(.hp-nav__mobile-cta),
   .hp-nav__mobile-group-toggle {
@@ -1254,4 +1258,31 @@
   .hp-nav__mobile-group-item { padding-top: 9px; padding-bottom: 9px; }
 
   .hp-nav--open .hp-nav__inner { padding: 9px 16px; }
+}
+
+/* Phones: menu button tucks up out of the way while scrolling down and
+   returns on scroll up (toggled by the scroll effect in Nav.jsx). The
+   .hp-nav prefix outranks the `.hp-nav--hidden { transform: none }` pin
+   above. Reduced motion keeps only the fade. */
+@media (max-width: 640px) {
+  .hp-nav {
+    transition:
+      transform var(--hp-dur-normal) var(--hp-ease-out),
+      opacity var(--hp-dur-normal) var(--hp-ease-out);
+  }
+
+  .hp-nav.hp-nav--tucked {
+    transform: translateY(-140%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Open-menu header: the same logo the desktop nav uses, back at a
+     readable size instead of the 28px thumbnail. */
+  .hp-nav--open .hp-logo__img { height: 40px; }
+}
+
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .hp-nav { transition: opacity var(--hp-dur-fast) linear; }
+  .hp-nav.hp-nav--tucked { transform: none; }
 }

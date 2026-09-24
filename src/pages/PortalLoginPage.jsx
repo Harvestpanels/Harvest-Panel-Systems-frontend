@@ -1,8 +1,9 @@
+import { submitAuthForm } from "../features/auth/actions";
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import PortalShell from "../components/PortalShell";
 import { useAuth } from "../hooks/useAuth";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { usePageMeta } from "../hooks/usePageMeta";
 
 export default function PortalLoginPage() {
@@ -15,45 +16,36 @@ export default function PortalLoginPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const from = location.state?.from;
+  const destination = typeof from === "string" && (from === "/portal" || from.startsWith("/portal/")) ? from : "/portal";
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
   // Already signed in (opened from a bookmark, say) — go straight through
   // rather than showing a form that would be a no-op.
-  if (!loading && session) return <Navigate to="/portal" replace />;
+  if (!loading && session) return <Navigate to={destination} replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     setBusy(true);
     setError(null);
-
-    const { error: err } = await supabase.auth.signInWithPassword({
-      email: String(form.get("email")).trim(),
-      password: String(form.get("password")),
-    });
-
-    if (err) {
-      // Supabase returns one message for both "no such user" and "wrong
-      // password" on purpose: telling them apart would let anyone probe which
-      // email addresses have accounts. Shown as-is rather than "improved".
-      setError(err.message);
-      setBusy(false);
-      return;
-    }
-    navigate(location.state?.from || "/portal", { replace: true });
+    const { error: err } = await submitAuthForm("signin", form);
+    setBusy(false);
+    if (err) return setError(err.message);
+    navigate(destination, { replace: true });
   }
 
   return (
     <PortalShell>
-      <div className="hp-portal__center">
+      <main className="hp-portal__center">
         <div className="hp-portal-card hp-reveal">
           <h1>Sign in</h1>
           <p className="hp-portal-card__sub">Access documents shared with your account.</p>
 
           {!isSupabaseConfigured ? (
             <p className="hp-portal-msg hp-portal-msg--error">
-              The portal is not configured yet. Add the Supabase environment variables and redeploy.
+              The portal is temporarily unavailable. Please contact us for assistance.
             </p>
           ) : (
             <form className="hp-portal-form" onSubmit={handleSubmit} noValidate>
@@ -74,7 +66,7 @@ export default function PortalLoginPage() {
           <p className="hp-portal__alt"><Link to="/portal/forgot">Forgot your password?</Link></p>
           <p className="hp-portal__alt">No account yet? <Link to="/portal/signup">Create one</Link></p>
         </div>
-      </div>
+      </main>
     </PortalShell>
   );
 }

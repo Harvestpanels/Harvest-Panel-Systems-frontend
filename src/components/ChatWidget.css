@@ -1,12 +1,11 @@
 /* ===================== FLOATING CHAT WIDGET ===================== */
-/* Fixed lower-right on every page (mounted once in App.jsx). z-index sits
-   above normal page content and the fixed nav pill, but below the
-   fullscreen Lightbox (z 1000+) so an open image viewer still covers it. */
+/* Above page content, below navigation (100), menus/dialogs (200),
+   and the loading overlay (1000). */
 .hp-chat {
   position: fixed;
   right: 28px;
   bottom: 28px;
-  z-index: 900;
+  z-index: 90;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -67,7 +66,7 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 10px 30px -8px rgba(var(--hp-navy-rgb), 0.55);
-  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease;
+  transition: transform 0.25s var(--hp-ease-out), box-shadow 0.25s ease;
   animation: hp-chat-launch-in 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s backwards;
   /* Without this, a click-drag over the button (easy to do by accident
      right next to page text) selects it like text/an image, and the
@@ -227,7 +226,7 @@
   gap: 8px;
   box-shadow: 0 10px 24px -8px rgba(var(--hp-navy-rgb), 0.35);
   transform-origin: bottom right;
-  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease;
+  transition: transform 0.25s var(--hp-ease-out), box-shadow 0.25s ease;
   /* Timed to land just after the launcher's own entrance animation settles
      (0.9s delay + 0.65s duration) — surfacing at the same instant as the
      icon would compete for attention; waiting a beat reads as the icon
@@ -245,6 +244,16 @@
    already fixed on .hp-chat__nudge--online). */
 .hp-chat__nudge--instant {
   animation: hp-chat-nudge-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+/* Phone-only auto-hide of the first-visit teaser (see TEASER_AUTOHIDE_MS in
+   ChatWidget.jsx) — quieter and shorter than the entrance. */
+.hp-chat__nudge--fading {
+  animation: hp-chat-nudge-out 0.35s var(--hp-ease-out) forwards;
+}
+
+@keyframes hp-chat-nudge-out {
+  to { opacity: 0; transform: translateX(6px); }
 }
 
 @keyframes hp-chat-nudge-in {
@@ -313,6 +322,7 @@
   max-width: calc(100vw - 40px);
   height: 540px;
   max-height: calc(100vh - 140px);
+  max-height: calc(100dvh - 140px);
   background: #fff;
   border-radius: 20px;
   overflow: hidden;
@@ -320,8 +330,15 @@
   flex-direction: column;
   box-shadow: 0 24px 60px -16px rgba(var(--hp-navy-rgb), 0.5);
   border: 1px solid rgba(var(--hp-navy-rgb), 0.1);
-  animation: hp-chat-in 0.28s cubic-bezier(0.16,1,0.3,1) both;
+  animation: hp-chat-in var(--hp-dur-normal) var(--hp-ease-out) both;
   transform-origin: bottom right;
+}
+
+/* Exit — the entrance reversed, shorter. ChatWidget.jsx unmounts the panel
+   on this animation's end (with a timeout fallback). */
+.hp-chat__panel.is-closing {
+  animation: hp-chat-in var(--hp-dur-fast) var(--hp-ease-out) reverse both;
+  pointer-events: none;
 }
 
 @keyframes hp-chat-in {
@@ -394,6 +411,7 @@
 /* ---------- messages ---------- */
 .hp-chat__messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 18px;
@@ -586,6 +604,8 @@
    narrower, phone-only breakpoint — there's plenty of room for the normal
    fixed-width panel on a tablet, no need to force it full-width there. */
 @media (max-width: 1024px) {
+  .hp-chat__input { font-size: 16px; }
+
   .hp-chat {
     right: 16px;
     bottom: 16px;
@@ -618,7 +638,9 @@
     width: 100%;
     max-width: 100%;
     height: 68vh;
+    height: 68dvh;
     max-height: calc(100vh - 120px);
+    max-height: calc(100dvh - 120px);
   }
 
   /* Sits closer to the launcher and shrinks its font on small screens so a
@@ -626,10 +648,33 @@
      still grows/shrinks horizontally only, never wraps. */
   .hp-chat__nudge {
     right: calc(100% + 2px);
-    bottom: 21px;
+    bottom: 14px;
     font-size: 0.78rem;
     padding: 9px 12px;
   }
+
+  /* A smaller mascot (~64px) so the fixed launcher covers less of the page;
+     the whole image box stays the tap target. */
+  .hp-chat__launcher:has(.hp-chat__launcher-icon) {
+    width: auto;
+    height: 64px;
+  }
+}
+
+/* Landscape phones have ~360-430px of height — shrink further and tuck
+   into the corner so it doesn't sit on top of the hero CTAs. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hp-chat {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .hp-chat__launcher:has(.hp-chat__launcher-icon) {
+    width: auto;
+    height: 52px;
+  }
+
+  .hp-chat__nudge { bottom: 10px; }
 }
 
 /* Below ~360-400px (small phones — iPhone SE 1st-gen width, older/budget
@@ -642,11 +687,6 @@
    bubble vertically relative to the icon, which the base rule's own
    comment explicitly avoids). */
 @media (max-width: 400px) {
-  .hp-chat__launcher:has(.hp-chat__launcher-icon) {
-    width: auto;
-    height: 72px;
-  }
-
   .hp-chat__nudge {
     font-size: 0.72rem;
     padding: 8px 10px;
@@ -657,8 +697,11 @@
   .hp-chat__launcher,
   .hp-chat__launcher-icon,
   .hp-chat__panel,
+  .hp-chat__panel.is-closing,
   .hp-chat__status-dot,
   .hp-chat__nudge,
   .hp-chat__nudge-text,
   .hp-chat__bubble--typing span { animation: none; }
+
+  .hp-chat__nudge--fading { opacity: 0; }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import PageLoader from "./PageLoader";
@@ -13,9 +13,10 @@ const PROFILE_GRACE_MS = 6000;
 // in Postgres, which refuses to return another account's rows no matter what
 // this component does.
 export default function RequireAuth({ children, adminOnly = false }) {
-  const { session, profile, loading, isAdmin, refreshProfile, signOut } = useAuth();
+  const { session, profile, loading, isAdmin, refreshProfile, signOut, error } = useAuth();
   const location = useLocation();
   const [graceOver, setGraceOver] = useState(false);
+  const [actionError, setActionError] = useState(null);
   const [retrying, setRetrying] = useState(false);
 
   // Only runs while we are actually waiting — a signed-in visitor with a
@@ -24,10 +25,8 @@ export default function RequireAuth({ children, adminOnly = false }) {
 
   // Same shape as PageLoader's own timers: an early return rather than
   // resetting state here, since a synchronous setState in an effect body is
-  // what react-hooks/set-state-in-effect exists to catch. No reset is needed —
-  // once a profile arrives this flag is never read again, and if loading it
-  // fails a second time, going straight to the recovery screen instead of
-  // waiting out another six seconds is the better behaviour anyway.
+  // what react-hooks/set-state-in-effect exists to catch. The reset lives in
+  // the "Try again" handler instead, which starts a fresh grace period.
   useEffect(() => {
     if (!waitingForProfile) return undefined;
     const timer = setTimeout(() => setGraceOver(true), PROFILE_GRACE_MS);
@@ -39,19 +38,23 @@ export default function RequireAuth({ children, adminOnly = false }) {
   // The site's own loading overlay, not a bare line of text: PortalShell shows
   // the same one a moment later, so using anything else here means the visitor
   // watches two different loading screens on the way to one page.
-  if (loading) return <PageLoader ready={false} />;
+  // A retry from the recovery screen below also flips `loading`; keep that
+  // screen up with its busy button instead of swapping to the overlay.
+  if (loading && !retrying) return <PageLoader ready={false} />;
+
+  if (error && !session) return <div className="hp-portal"><div className="hp-portal__center"><div className="hp-portal-card" role="alert"><h1>Could not check your session</h1><p className="hp-portal-card__sub">{error}</p><button type="button" className="hp-btn hp-btn--primary" onClick={() => window.location.reload()}>Reload</button></div></div></div>;
 
   if (!session) {
     // Remember where they were headed so login can return them there.
     return <Navigate to="/portal/login" replace state={{ from: location.pathname }} />;
   }
 
-  if (adminOnly && !isAdmin) return <Navigate to="/portal" replace />;
+
 
   if (!profile) {
     // Signed in, but the signup trigger has not finished writing the profile
     // row yet — normal for the first second of a brand new account.
-    if (!graceOver) return <PageLoader ready={false} />;
+    if (!graceOver && !error && !retrying) return <PageLoader ready={false} />;
 
     // Past the grace period this is a failure, not slowness: the row is
     // missing, RLS refused it, or the request never came back. Without this
@@ -67,6 +70,7 @@ export default function RequireAuth({ children, adminOnly = false }) {
               temporary connection problem.
             </p>
 
+            {actionError && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{actionError}</p>}
             <div className="hp-portal-card__actions">
               <button
                 type="button"
@@ -74,17 +78,17 @@ export default function RequireAuth({ children, adminOnly = false }) {
                 disabled={retrying}
                 onClick={async () => {
                   setRetrying(true);
-                  await refreshProfile();
-                  // If it worked, this component unmounts on the next render.
-                  // If it did not, drop back to the same screen rather than
-                  // leaving the button stuck on "Trying again...".
-                  setRetrying(false);
+                  setActionError(null);
+                  // A fresh grace period: if the row simply has not landed yet,
+                  // wait for it again rather than bouncing straight back here.
+                  setGraceOver(false);
+                  try { await refreshProfile(); } finally { setRetrying(false); }
                 }}
               >
                 {retrying ? "Trying again..." : "Try again"}
               </button>
 
-              <button type="button" className="hp-portal__linkbtn" onClick={() => signOut()}>
+              <button type="button" className="hp-portal__linkbtn" onClick={() => signOut().catch(() => setActionError("Sign out failed. Please try again."))}>
                 Sign out
               </button>
             </div>
@@ -98,5 +102,6 @@ export default function RequireAuth({ children, adminOnly = false }) {
     );
   }
 
-  return children;
+  if (adminOnly && !isAdmin) return <Navigate to="/portal" replace />;
+  return <Fragment key={`${profile.id}:${profile.account_id}`}>{children}</Fragment>;
 }

@@ -102,6 +102,11 @@ function SocialCard({ name, handle, url, icon, brandColor, registerReveal, flipp
           <span className="hp-social-badge__icon" style={{ background: brandColor }}>
             {icon}
           </span>
+          {/* Touch-only (hidden by default in SocialMedia.css): with no hover
+              to preview the back face, the front has to say what it is on
+              its own, plus a hint that a tap reveals more. */}
+          <span className="hp-social-badge__label">{name}</span>
+          <span className="hp-social-badge__hint" aria-hidden="true">Tap to flip</span>
         </div>
         <div className="hp-social-badge__face hp-social-badge__face--back">
           <h3>{name}</h3>

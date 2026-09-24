@@ -68,6 +68,21 @@ describe("RequireAuth", () => {
     expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument();
   });
 
+  it("shows the retrying state until the profile refetch settles", async () => {
+    let settle;
+    const refreshProfile = vi.fn(() => new Promise((resolve) => { settle = resolve; }));
+    mockAuth.mockReturnValue({
+      session: SESSION, profile: null, loading: false, isAdmin: false,
+      error: "We could not load your account details.", refreshProfile, signOut: vi.fn(),
+    });
+    renderGuard();
+    await act(async () => { screen.getByRole("button", { name: /try again/i }).click(); });
+    expect(refreshProfile).toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /trying again/i })).toBeDisabled();
+    await act(async () => { settle(); });
+    expect(screen.getByRole("button", { name: /^try again$/i })).toBeEnabled();
+  });
+
   it("keeps a non-admin out of an admin-only route", () => {
     mockAuth.mockReturnValue({ session: SESSION, profile: PROFILE, loading: false, isAdmin: false });
     renderGuard({ adminOnly: true });

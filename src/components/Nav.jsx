@@ -1,16 +1,14 @@
-import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AuthModalContext } from "../context/authModalContext";
 import { useSessionHint } from "../hooks/useSessionHint";
-import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import "./Nav.css";
 import { navClick, scrollToTop } from "../utils/scroll";
 import { announcePanelOpened, onOtherPanelOpened } from "../utils/floatingPanels";
 
-// Matches the mobile dropdown's own max-height collapse duration (see
-// .hp-nav__mobile in Nav.css) — the same delay navClick already uses for
-// anchor links from the mobile menu.
-const MOBILE_MENU_CLOSE_MS = 380;
+import NavDropdown from "./navigation/NavDropdown";
+import MobileDropdownGroup from "./navigation/MobileDropdownGroup";
+import { MOBILE_MENU_CLOSE_MS } from "./navigation/constants";
 
 // Total length of the hp-nav-fold-in animation (see Nav.css) plus a small
 // buffer.
@@ -27,368 +25,6 @@ const HOME_NAV_LINKS = [
   { id: "contact", label: "Contact Us" },
 ];
 
-// Matches the panel's own transition duration in Nav.css — the panel stays
-// mounted this long after `open` goes false so its fade/slide-out can
-// actually play instead of just vanishing on the closing click.
-const PANEL_CLOSE_MS = 160;
-
-// Smallest gap a dropdown panel keeps from the viewport edge when clamped.
-const EDGE_GAP = 12;
-
-function NavDropdown({
-  label,
-  items,
-  onOpenChange,
-  // Optional custom trigger. Without these it renders the plain text
-  // trigger the Menu/FAQs dropdowns use.
-  triggerClassName,
-  triggerContent,
-  triggerLabel,
-  // Extra class on the popover itself. It is portaled to <body>, so it cannot
-  // be reached with a descendant selector from the trigger.
-  panelClassName,
-  // Optional non-interactive block pinned above the items, e.g. the signed-in
-  // email address on the account menu.
-  header,
-}) {
-  const [open, setOpen] = useState(false);
-  const [prevOpen, setPrevOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  // Trails `open` by one frame on the way in (and matches it instantly on
-  // the way out) — this is what the panel's `.is-open` class is actually
-  // keyed off. Mounting straight into `.is-open` would mean its very first
-  // paint already has the open transform/opacity, so the CSS transition
-  // would have nothing to animate from; painting one frame in the closed
-  // state first, then flipping this on (via rAF below), gives it something
-  // to transition.
-  const [visualOpen, setVisualOpen] = useState(false);
-  // True from the moment the entrance animation starts through the whole
-  // closing transition — only reset at the very start of the *next* open.
-  // Without this, items snapped to invisible the instant closing began: the
-  // staggered entrance (.hp-nav__menu-item-in) only applies while the panel
-  // has .is-open, so the moment that class is removed the animation stops
-  // matching and the item's opacity falls back to its base rule — and CSS
-  // transitions do not smoothly animate away from a value that was being
-  // driven by a now-inapplicable animation (verified empirically: it's an
-  // instant jump in Chromium, not a transition), so a plain `transition:
-  // opacity` on the base rule didn't fix it. Instead, once an item has
-  // actually entered, its CSS fallback becomes opacity: 1 instead of 0 (see
-  // .hp-nav__menu-panel.has-entered in Nav.css) — closing then just relies
-  // on the panel's own opacity fading out to visually take the items with
-  // it (nested opacity is multiplicative), rather than each item needing
-  // its own independent, and in practice unreliable, exit transition.
-  const [hasEntered, setHasEntered] = useState(false);
-  const [panelPos, setPanelPos] = useState(null);
-  // The panel node as state, not just a ref, so the clamping pass below can be
-  // keyed on it actually attaching. A ref alone cannot do that: it never
-  // triggers a render, and the rAF pass runs before React has committed the
-  // panel, so it would measure null.
-  const [panelEl, setPanelEl] = useState(null);
-  const wrapRef = useRef(null);
-  const triggerRef = useRef(null);
-  const panelRef = useRef(null);
-  // useCallback so the identity is stable — an inline ref would be torn down
-  // and re-attached on every render, re-firing the effect endlessly.
-  const setPanelRef = useCallback((node) => {
-    panelRef.current = node;
-    setPanelEl(node);
-  }, []);
-  // Set by the trigger's own ArrowDown/ArrowUp handler (below) when the
-  // menu isn't open yet — read once the panel finishes mounting so opening
-  // via the keyboard lands focus on the first (or last) item, same as any
-  // native <select>/ARIA menu.
-  const pendingFocusRef = useRef(null);
-
-  function focusItem(position) {
-    const els = Array.from(panelRef.current?.querySelectorAll(".hp-nav__menu-item") ?? []);
-    if (!els.length) return;
-    els[position === "last" ? els.length - 1 : 0].focus();
-  }
-
-  // React-Compiler-compliant "adjust state during render" alternative to a
-  // setState-on-mount effect (see react-hooks/set-state-in-effect):
-  // mounting and starting the close-transition both need to happen the
-  // instant `open` changes, not after an effect pass, so they're derived
-  // here rather than in a useEffect body.
-  if (open !== prevOpen) {
-    setPrevOpen(open);
-    if (open) {
-      setMounted(true);
-      setHasEntered(false);
-    } else {
-      setVisualOpen(false);
-    }
-  }
-
-  useEffect(() => {
-    onOpenChange?.(open);
-  }, [open, onOpenChange]);
-
-  // Centred under its trigger, then clamped to stay fully on screen.
-  //
-  // The clamp matters for the account menu: it is wider than the Menu/FAQs
-  // panels and hangs off an avatar at the pill's right edge, so between
-  // 1025px and ~1150px a purely centred panel ran past the right edge.
-  // Clamping rather than right-anchoring keeps it centred wherever there is
-  // room, which is how the Menu and FAQs panels behave.
-  //
-  // The width is read from the mounted panel, so the very first pass (before
-  // it exists) is unclamped; the layout effect below re-runs this as soon as
-  // the panel attaches, while it is still transparent.
-  const updatePos = useCallback(() => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const centre = rect.left + rect.width / 2;
-    const half = (panelRef.current?.offsetWidth ?? 0) / 2;
-    const viewport = document.documentElement.clientWidth;
-    const left = half
-      ? Math.min(Math.max(centre, half + EDGE_GAP), viewport - half - EDGE_GAP)
-      : centre;
-    setPanelPos({ top: rect.bottom + 14, left });
-  }, []);
-
-  // Flips the panel into its visible state one frame after mounting, so
-  // the CSS transition has a closed starting point to animate from.
-  useEffect(() => {
-    if (!open) return;
-    const raf = requestAnimationFrame(() => {
-      setVisualOpen(true);
-      setHasEntered(true);
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [open]);
-
-  // Re-runs the moment the panel attaches, which is the first point its width
-  // can be measured and therefore the first point it can be clamped. A layout
-  // effect so the correction lands before the browser paints — and the panel is
-  // still transparent at this point either way, so it is never visible.
-  useLayoutEffect(() => {
-    if (panelEl) updatePos();
-  }, [panelEl, updatePos]);
-
-  // Lands focus on the first/last item after a keyboard-triggered open
-  // (ArrowDown/ArrowUp on the trigger — see pendingFocusRef below). Keyed
-  // on `panelPos` rather than `open`/`mounted`: the portal's items don't
-  // actually exist in the DOM until the position effect below has measured
-  // the trigger and set panelPos (mounting the panel is otherwise gated on
-  // `mounted && panelPos` together) — focusing any earlier just finds
-  // nothing to focus.
-  useEffect(() => {
-    if (!panelPos || !pendingFocusRef.current) return;
-    focusItem(pendingFocusRef.current);
-    pendingFocusRef.current = null;
-  }, [panelPos]);
-
-  // Keeps the panel in the DOM for a beat after `open` flips false, so the
-  // CSS close transition (see .hp-nav__menu-panel losing .is-open) can run
-  // instead of the panel just disappearing on the closing click.
-  useEffect(() => {
-    if (open || !mounted) return;
-    const timer = setTimeout(() => setMounted(false), PANEL_CLOSE_MS);
-    return () => clearTimeout(timer);
-  }, [open, mounted]);
-
-  useEffect(() => {
-    if (!open) return;
-    updatePos();
-    const handleOutside = (e) => {
-      if (wrapRef.current?.contains(e.target) || panelRef.current?.contains(e.target)) return;
-      setOpen(false);
-    };
-    const handleKey = (e) => {
-      if (e.key !== "Escape") return;
-      setOpen(false);
-      // Native <select>/ARIA-menu convention: closing via Escape returns
-      // focus to what opened the menu, rather than leaving it stranded on
-      // an item that's about to unmount.
-      triggerRef.current?.focus();
-    };
-    document.addEventListener("mousedown", handleOutside);
-    document.addEventListener("keydown", handleKey);
-    window.addEventListener("resize", updatePos);
-    window.addEventListener("scroll", updatePos, true);
-    return () => {
-      document.removeEventListener("mousedown", handleOutside);
-      document.removeEventListener("keydown", handleKey);
-      window.removeEventListener("resize", updatePos);
-      window.removeEventListener("scroll", updatePos, true);
-    };
-  }, [open, updatePos]);
-
-  return (
-    <div className="hp-nav__menu-dropdown" ref={wrapRef}>
-      <button
-        ref={triggerRef}
-        type="button"
-        className={`${triggerClassName || "hp-nav__menu-trigger"}${open ? " is-active" : ""}`}
-        aria-haspopup="true"
-        aria-expanded={open}
-        aria-label={triggerLabel}
-        title={triggerLabel}
-        onClick={() => setOpen((o) => !o)}
-        onKeyDown={(e) => {
-          if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-          e.preventDefault();
-          const position = e.key === "ArrowDown" ? "first" : "last";
-          if (open) focusItem(position);
-          else {
-            pendingFocusRef.current = position;
-            setOpen(true);
-          }
-        }}
-      >
-        {triggerContent ?? label}
-      </button>
-      {mounted && panelPos &&
-        createPortal(
-          <div
-            ref={setPanelRef}
-            className={`hp-nav__menu-panel${panelClassName ? " " + panelClassName : ""}${visualOpen ? " is-open" : ""}${hasEntered ? " has-entered" : ""}`}
-            style={{ top: panelPos.top, left: panelPos.left }}
-            onKeyDown={(e) => {
-              const els = Array.from(panelRef.current?.querySelectorAll(".hp-nav__menu-item") ?? []);
-              if (!els.length) return;
-              const idx = els.indexOf(document.activeElement);
-              if (e.key === "ArrowDown") {
-                e.preventDefault();
-                els[(idx + 1) % els.length].focus();
-              } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                els[(idx - 1 + els.length) % els.length].focus();
-              } else if (e.key === "Home") {
-                e.preventDefault();
-                els[0].focus();
-              } else if (e.key === "End") {
-                e.preventDefault();
-                els[els.length - 1].focus();
-              }
-            }}
-          >
-            {header && <div className="hp-nav__menu-header">{header}</div>}
-            {items.map((item, i) => {
-              // Computed here instead of a fixed set of :nth-child CSS
-              // rules — that only covered up to the 10th item, so any
-              // dropdown grown past that (Overview, once Memberships was
-              // added) had its later items snap in instantly instead of
-              // continuing the cascade. Same 0.02s base + 0.03s-per-item
-              // progression the old rules used, just uncapped.
-              const style = { animationDelay: `${(0.02 + i * 0.03).toFixed(2)}s` };
-              // `separated` draws a hairline above the item (used to set Sign
-              // out apart from the navigation entries); `danger` tints it.
-              const extra = `${item.separated ? " is-separated" : ""}${item.danger ? " is-danger" : ""}`;
-              return item.to ? (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  className={`hp-nav__menu-item${item.active ? " is-current" : ""}${extra}`}
-                  style={style}
-                  onClick={() => setOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <button
-                  key={item.label}
-                  type="button"
-                  className={`hp-nav__menu-item${item.active ? " is-current" : ""}${extra}`}
-                  style={style}
-                  onClick={() => { item.onClick(); setOpen(false); }}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>,
-          document.body
-        )}
-    </div>
-  );
-}
-
-// Mobile equivalent of NavDropdown: instead of a floating popover (there's
-// nowhere sensible to float one on a narrow screen), each group is an
-// inline accordion — tap the label, its items expand right underneath it
-// within the mobile panel. Independent open state per group (not
-// accordion-exclusive), each with its own measured max-height (via
-// ResizeObserver on its content) so the expand/collapse transition tracks
-// that group's real item count rather than a guessed constant.
-function MobileDropdownGroup({
-  label, items, navigate, onNavigate, tabIndex, onExpandedChange,
-  // Optional replacement for the plain text label — the account group shows
-  // the visitor's avatar and email here instead of a word.
-  trigger,
-  // Extra class on the group wrapper, for a variant that needs its own
-  // spacing or divider (see .hp-nav__mobile-group--account).
-  className = "",
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const innerRef = useRef(null);
-  const [height, setHeight] = useState(0);
-
-  useEffect(() => {
-    const el = innerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setHeight(el.scrollHeight));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  return (
-    <div className={`hp-nav__mobile-group${className ? " " + className : ""}`}>
-      <button
-        type="button"
-        className={`hp-nav__mobile-group-toggle${expanded ? " is-expanded" : ""}`}
-        aria-expanded={expanded}
-        tabIndex={tabIndex}
-        onClick={() => {
-          const next = !expanded;
-          setExpanded(next);
-          onExpandedChange?.(next);
-        }}
-      >
-        {trigger ?? label}
-        <svg className="hp-nav__mobile-group-chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-          <path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      <div
-        className={`hp-nav__mobile-group-panel${expanded ? " is-open" : ""}`}
-        style={{ maxHeight: expanded ? height : 0 }}
-      >
-        <div className="hp-nav__mobile-group-panel-inner" ref={innerRef}>
-          {items.map((item) =>
-            item.to ? (
-              <Link
-                key={item.label}
-                to={item.to}
-                className={`hp-nav__mobile-group-item${item.active ? " is-current" : ""}${item.danger ? " is-danger" : ""}`}
-                tabIndex={tabIndex}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onNavigate();
-                  setTimeout(() => navigate(item.to), MOBILE_MENU_CLOSE_MS);
-                }}
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <button
-                key={item.label}
-                type="button"
-                className={`hp-nav__mobile-group-item${item.active ? " is-current" : ""}${item.danger ? " is-danger" : ""}`}
-                tabIndex={tabIndex}
-                onClick={() => { item.onClick(); onNavigate(); }}
-              >
-                {item.label}
-              </button>
-            )
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // The account menu behind the nav avatar. Plain `to` links, deliberately:
 // <Nav> renders on every marketing page, where AuthProvider is NOT mounted
 // (it is lazy-loaded with the portal — see PortalLayout), so nothing here may
@@ -398,7 +34,9 @@ const ACCOUNT_ITEMS = [
   { to: "/portal", label: "Your documents" },
   { to: "/portal/profile", label: "Profile" },
   { to: "/portal/settings", label: "Settings" },
-  { to: "/portal/signout", label: "Sign out", separated: true, danger: true },
+  // state.confirmed: choosing it from this menu is the confirmation, so the
+  // page signs out at once; a bare visit to the URL asks first.
+  { to: "/portal/signout", label: "Sign out", separated: true, danger: true, state: { confirmed: true } },
 ];
 
 export default function Nav({
@@ -532,7 +170,7 @@ export default function Nav({
     const panel = mobilePanelRef.current;
     if (!panel) return;
     function blockScrollThrough(e) {
-      if (!panel.classList.contains("has-expanded-group")) e.preventDefault();
+      if (panel.scrollHeight <= panel.clientHeight + 2) e.preventDefault();
     }
     panel.addEventListener("wheel", blockScrollThrough, { passive: false });
     panel.addEventListener("touchmove", blockScrollThrough, { passive: false });
@@ -634,11 +272,52 @@ export default function Nav({
     };
     const ro = new ResizeObserver(measure);
     ro.observe(el);
+    window.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("resize", measure);
     measure();
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("resize", measure);
+    };
     // Re-measured on menuOpen too: the header row's own height/padding
     // changes between closed and open (see .hp-nav--open .hp-nav__inner in
     // Nav.css), which shifts how much room is actually left for the panel.
+  }, [navRef, menuOpen]);
+
+  // Phones only: the fixed round menu button tucks away while scrolling
+  // down (it was sitting on top of form fields mid-scroll) and comes back
+  // the moment the visitor scrolls up. Separate from the page hooks'
+  // hp-nav--hidden, which is pinned off below 1024px because it relies on
+  // hovering near the top to reveal. Small moves are ignored so a jittery
+  // thumb doesn't make it flicker.
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || menuOpen) return;
+    const phone = window.matchMedia("(max-width: 640px)");
+    let lastY = window.scrollY;
+    let raf = null;
+    function onScroll() {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        const y = window.scrollY;
+        const delta = y - lastY;
+        if (!phone.matches || y < 120) {
+          nav.classList.remove("hp-nav--tucked");
+          lastY = y;
+        } else if (Math.abs(delta) > 8) {
+          nav.classList.toggle("hp-nav--tucked", delta > 0);
+          lastY = y;
+        }
+      });
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+      nav.classList.remove("hp-nav--tucked");
+    };
   }, [navRef, menuOpen]);
 
   // Both the mobile menu and the chat widget are fixed-position overlays
@@ -761,11 +440,11 @@ export default function Nav({
 
   const logoEl = logoTo ? (
     <Link to={logoTo} className="hp-logo" aria-label="Harvest Panel Systems, home">
-      <img src={logo} alt="Harvest Panel Systems" className="hp-logo__img" />
+      <img src={logo} alt="Harvest Panel Systems" className="hp-logo__img" width="500" height="415" />
     </Link>
   ) : (
     <button className="hp-logo" onClick={scrollToTop} aria-label="Harvest Panel Systems, scroll to top">
-      <img src={logo} alt="Harvest Panel Systems" className="hp-logo__img" />
+      <img src={logo} alt="Harvest Panel Systems" className="hp-logo__img" width="500" height="415" />
     </button>
   );
 
@@ -782,11 +461,11 @@ export default function Nav({
         ? (e) => {
             e.preventDefault();
             onNavigate();
-            setTimeout(() => navigate(link.to), MOBILE_MENU_CLOSE_MS);
+            setTimeout(() => navigate(link.to, { state: link.state }), MOBILE_MENU_CLOSE_MS);
           }
         : undefined;
       return (
-        <Link key={link.to} to={link.to} onClick={handleClick} {...extraProps}>
+        <Link key={link.to} to={link.to} state={link.state} onClick={handleClick} {...extraProps}>
           {link.label}
         </Link>
       );
@@ -927,7 +606,7 @@ export default function Nav({
           aria-hidden="true"
           style={foldSlideX !== null ? { "--fold-slide-x": `${foldSlideX}px` } : undefined}
         >
-          <img src={logo} alt="" />
+          <img src={logo} alt="" width="500" height="415" />
         </div>
       )}
       <div

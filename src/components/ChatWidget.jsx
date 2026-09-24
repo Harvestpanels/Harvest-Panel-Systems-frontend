@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import "./ChatWidget.css";
 import { getBotResponse } from "../utils/chatbot";
-import { SUGGESTED_QUESTIONS } from "../data/botKnowledge";
+import ChatTranscript from "../features/chat/ChatTranscript";
+import { isPointOnVisiblePixel } from "../features/chat/mascotHitTest";
 import { announcePanelOpened, onOtherPanelOpened } from "../utils/floatingPanels";
 import { onAppReady } from "../utils/appReady";
+import { usePresence } from "../hooks/usePresence";
 import { mascotIconDefault, mascotIconOpened, mascotIconNewMessage } from "../data/chatIcons";
 // WebP, not PNG — same 240x180 artwork, but ~4-5x smaller (WebP's
 // compression beats PNG considerably even at a high, visually-lossless
@@ -17,33 +19,6 @@ import { mascotIconDefault, mascotIconOpened, mascotIconNewMessage } from "../da
 // computed synchronously.
 const REPLY_DELAY_MS = 3000;
 
-// Reused for every click on the closed-state mascot image (see
-// isPointOnVisiblePixel below) — one shared offscreen canvas rather than
-// allocating a new one per click.
-const hitTestCanvas = document.createElement("canvas");
-
-// The mascot PNGs are supplied with a transparent background around an
-// irregularly-shaped character, but an <img>/<button> is always a plain
-// rectangle to the browser — clicking, hovering, or showing a pointer
-// cursor over the transparent padding around the character would
-// otherwise still read/act as if it were part of the button. This checks
-// the actual pixel at a given point: draws the already-loaded <img> onto a
-// canvas and reads that one pixel's alpha, so only genuinely visible
-// artwork counts, for every interaction (click, hover-lift, cursor).
-function isPointOnVisiblePixel(imgEl, clientX, clientY) {
-  if (!imgEl.naturalWidth) return true; // image not loaded yet — don't block the click
-  const rect = imgEl.getBoundingClientRect();
-  const x = Math.floor((clientX - rect.left) * (imgEl.naturalWidth / rect.width));
-  const y = Math.floor((clientY - rect.top) * (imgEl.naturalHeight / rect.height));
-  if (x < 0 || y < 0 || x >= imgEl.naturalWidth || y >= imgEl.naturalHeight) return false;
-  hitTestCanvas.width = imgEl.naturalWidth;
-  hitTestCanvas.height = imgEl.naturalHeight;
-  const ctx = hitTestCanvas.getContext("2d");
-  ctx.clearRect(0, 0, hitTestCanvas.width, hitTestCanvas.height);
-  ctx.drawImage(imgEl, 0, 0);
-  return ctx.getImageData(x, y, 1, 1).data[3] > 10;
-}
-
 // The resting "online" pill (shown once the visitor has read/dismissed the
 // unread nudge) cycles through these rather than sitting on one static
 // line forever — reads as a little more alive/attentive while idle,
@@ -51,13 +26,27 @@ function isPointOnVisiblePixel(imgEl, clientX, clientY) {
 const RESTING_MESSAGES = ["Ask me anything!", "Let me know your concerns.", "Feel free to reach out!"];
 const RESTING_MESSAGE_INTERVAL_MS = 4000;
 
-// Knowledge-base links to "/#contact" are written generically (the intent
-// doesn't know what page it'll be answered from), but every page (Home,
-// Products, Specs) renders its own Contact section at the same #contact
-// anchor. Swapping in the visitor's current path here sends them to the
-// contact form on *this* page instead of always bouncing to Home's.
-function resolveLink(href, pathname) {
-  return href === "/#contact" ? `${pathname}#contact` : href;
+// Phones only: the "You have a new message!" teaser fades itself out after
+// this long on screen (on top of its own 1.7s entrance delay) and then
+// stays gone for the rest of the tab session — on a 375px screen a
+// permanent bubble next to the mascot covers real page content.
+const TEASER_AUTOHIDE_MS = 1700 + 6000;
+const TEASER_FADE_MS = 350;
+const TEASER_SEEN_KEY = "hp-chat-teaser-seen";
+const PHONE_QUERY = "(max-width: 640px)";
+
+function isPhone() {
+  return typeof window !== "undefined" && window.matchMedia(PHONE_QUERY).matches;
+}
+
+// sessionStorage can throw (private mode, blocked storage) — every access
+// is wrapped so the teaser simply falls back to showing again.
+function readTeaserSeen() {
+  try {
+    return isPhone() && window.sessionStorage.getItem(TEASER_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 const GREETING = {
@@ -114,6 +103,8 @@ export default function ChatWidget() {
   useEffect(() => onAppReady(() => setEntranceReady(true)), []);
 
   const [open, setOpen] = useState(false);
+  // Keeps the panel mounted through its exit animation (see usePresence).
+  const panel = usePresence(open);
   const [messages, setMessages] = useState([GREETING]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
@@ -146,6 +137,9 @@ export default function ChatWidget() {
   // actual visible pixel of the icon (never by hovering the popup
   // directly, which stays pointer-events:none, or any other trigger).
   const [iconHovered, setIconHovered] = useState(false);
+  // Phone-only teaser auto-hide (see TEASER_AUTOHIDE_MS): "shown" ->
+  // "fading" (CSS fade-out) -> "hidden" for the rest of the session.
+  const [teaserState, setTeaserState] = useState(() => (readTeaserSeen() ? "hidden" : "shown"));
 
   const listRef = useRef(null);
   const inputRef = useRef(null);
@@ -300,6 +294,27 @@ export default function ChatWidget() {
   // no fresher reply waiting) — no point ticking a hidden timer the rest
   // of the time.
   const restingPillShowing = !open && !unread && !hasNewReply;
+
+  const teaserShowing = !open && unread && !hasNewReply && teaserState !== "hidden";
+  useEffect(() => {
+    if (!teaserShowing || teaserState !== "shown" || !isPhone()) return;
+    let fadeTimer;
+    const showTimer = setTimeout(() => {
+      setTeaserState("fading");
+      fadeTimer = setTimeout(() => {
+        setTeaserState("hidden");
+        try {
+          window.sessionStorage.setItem(TEASER_SEEN_KEY, "1");
+        } catch {
+          // Storage unavailable — the teaser just shows again next page.
+        }
+      }, TEASER_FADE_MS);
+    }, TEASER_AUTOHIDE_MS);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(fadeTimer);
+    };
+  }, [teaserShowing, teaserState]);
   useEffect(() => {
     if (!restingPillShowing) return;
     const interval = setInterval(() => {
@@ -381,8 +396,8 @@ export default function ChatWidget() {
 
   return (
     <div className={`hp-chat${entranceReady ? "" : " hp-chat--anim-hold"}`}>
-      {open && (
-        <div className="hp-chat__panel" role="dialog" aria-label="Harvest Panel Systems assistant" aria-modal="false">
+      {panel.mounted && (
+        <div className={`hp-chat__panel${panel.closing ? " is-closing" : ""}`} onAnimationEnd={panel.onExited} role="dialog" aria-label="Harvest Panel Systems assistant" aria-modal="false">
           <header className="hp-chat__header">
             <div className="hp-chat__header-title">
               <span className="hp-chat__status-dot" aria-hidden="true" />
@@ -399,57 +414,8 @@ export default function ChatWidget() {
           </header>
 
           <div className="hp-chat__messages" ref={listRef}>
-            {messages.map((msg, i) => (
-              <div key={i} className={`hp-chat__msg hp-chat__msg--${msg.role}`}>
-                <div className="hp-chat__bubble">
-                  {msg.text.split("\n").map((line, j) => (
-                    <span key={j} className="hp-chat__line">{line}</span>
-                  ))}
-                  {msg.links && (
-                    <div className="hp-chat__links">
-                      {msg.links.map((link) => (
-                        <Link
-                          key={link.href}
-                          to={resolveLink(link.href, location.pathname)}
-                          className="hp-chat__link"
-                          onClick={() => setOpen(false)}
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {/* Only the most recent bot message ever shows its suggestion
-                    chips — without this, every past fallback ("I'm not sure
-                    I have an answer...") kept its own chip row forever, so a
-                    conversation with a few unanswered questions stacked the
-                    exact same "What products do you offer?" / "How much do
-                    panels cost?" chips over and over down the transcript. */}
-                {msg.showSuggestions && i === messages.length - 1 && !typing && (
-                  <div className="hp-chat__suggestions">
-                    {SUGGESTED_QUESTIONS.map((q) => (
-                      <button
-                        key={q}
-                        type="button"
-                        className="hp-chat__chip"
-                        onClick={() => send(q)}
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {typing && (
-              <div className="hp-chat__msg hp-chat__msg--bot">
-                <div className="hp-chat__bubble hp-chat__bubble--typing" aria-label="Assistant is typing">
-                  <span /><span /><span />
-                </div>
-              </div>
-            )}
+            <ChatTranscript messages={messages} typing={typing} pathname={location.pathname}
+              send={send} onLinkClick={() => setOpen(false)} />
           </div>
 
           <form className="hp-chat__input-row" onSubmit={handleSubmit}>
@@ -484,8 +450,13 @@ export default function ChatWidget() {
         className={`hp-chat__launcher-wrap${!open && iconHovered ? " hp-chat__launcher-wrap--icon-hover" : ""}`}
         key={location.pathname}
       >
-        {!open && (unread || hasNewReply) && (
-          <div className={`hp-chat__nudge${hasNewReply ? " hp-chat__nudge--instant" : ""}`} role="status">
+        {!open && (hasNewReply || (unread && teaserState !== "hidden")) && (
+          <div
+            className={`hp-chat__nudge${hasNewReply ? " hp-chat__nudge--instant" : ""}${
+              !hasNewReply && teaserState === "fading" ? " hp-chat__nudge--fading" : ""
+            }`}
+            role="status"
+          >
             <span className="hp-chat__nudge-dot" aria-hidden="true" />
             {hasNewReply
               ? unreadCount >= 2

@@ -25,7 +25,7 @@
   background: rgba(10, 12, 16, 0.92);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
-  animation: hp-lightbox-in 0.25s ease both;
+  animation: hp-lightbox-in var(--hp-dur-normal) var(--hp-ease-out) both;
 }
 
 .hp-lightbox__figure {
@@ -45,7 +45,16 @@
   width: min(92vw, 1100px);
   height: 78vh;
   display: block;
-  animation: hp-lightbox-figure-in 0.3s cubic-bezier(0.16,1,0.3,1) both;
+  animation: hp-lightbox-figure-in var(--hp-dur-normal) var(--hp-ease-out) both;
+}
+
+/* Exit — the entrance reversed, shorter. Lightbox.jsx unmounts on the
+   backdrop's animationend (with a timeout fallback). */
+.hp-lightbox.is-closing {
+  animation: hp-lightbox-in var(--hp-dur-fast) var(--hp-ease-out) reverse both;
+}
+.hp-lightbox.is-closing .hp-lightbox__figure {
+  animation: hp-lightbox-figure-in var(--hp-dur-fast) var(--hp-ease-out) reverse both;
 }
 
 /* Clips to rounded corners here, on an unscaled wrapper — see the comment
@@ -98,6 +107,11 @@
   right: 0;
   bottom: 0;
   padding: 20px 132px 20px 22px;
+  max-height: max(0px, calc(100% - 44px));
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  overscroll-behavior: contain;
+  pointer-events: auto;
   /* No border-radius here — the overlay (and this caption inside it) is
      now nested inside .hp-lightbox__img-clip, which already clips
      everything to rounded corners in one shared pass. A second,
@@ -115,7 +129,7 @@
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #4a8fd6;
+  color: var(--hp-link);
   margin-bottom: 4px;
 }
 
@@ -161,7 +175,7 @@
   background: rgba(255, 255, 255, 0.08);
   color: var(--hp-cream);
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+  transition: background 0.2s ease, transform 0.22s var(--hp-ease-out);
 }
 
 /* (hover: hover) scopes this to devices with a real pointer — touch
@@ -211,7 +225,7 @@
   background: rgba(255, 255, 255, 0.08);
   color: var(--hp-cream);
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.2s ease;
+  transition: background 0.2s ease, transform 0.22s var(--hp-ease-out), opacity 0.2s ease;
 }
 
 @media (hover: hover) {
@@ -240,10 +254,30 @@
   .hp-lightbox__desc { font-size: 12px; }
 }
 
+/* Use the measured photo bounds, not viewport width: a portrait can be
+   narrow even on a wide landscape screen. Keep the existing large layout. */
+.hp-lightbox__photo-overlay--compact figcaption {
+  bottom: 64px;
+  max-height: max(0px, calc(100% - 108px));
+  padding: 12px 16px;
+}
+
+.hp-lightbox__photo-overlay--compact .hp-lightbox__nav-group {
+  bottom: 12px;
+  right: 16px;
+}
+
+.hp-lightbox__photo-overlay figcaption:focus-visible {
+  outline: 2px solid var(--hp-cream);
+  outline-offset: -2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hp-lightbox,
   .hp-lightbox__figure,
-  .hp-lightbox__img {
+  .hp-lightbox__img,
+  .hp-lightbox.is-closing,
+  .hp-lightbox.is-closing .hp-lightbox__figure {
     animation: none;
     opacity: 1;
     transform: none;

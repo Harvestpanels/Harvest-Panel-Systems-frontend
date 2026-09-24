@@ -1,5 +1,7 @@
 import { Suspense, lazy, useCallback, useMemo, useState } from "react";
 import { AuthModalContext } from "./authModalContext";
+import { announcePanelOpened } from "../utils/floatingPanels";
+import { usePresence } from "../hooks/usePresence";
 
 // The modal — and the Supabase client it pulls in — is a separate chunk that
 // only downloads when someone actually clicks "Log in". Importing it eagerly
@@ -10,8 +12,13 @@ const AuthModal = lazy(() => import("../components/AuthModal"));
 export default function AuthModalProvider({ children }) {
   const [open, setOpen] = useState(false);
 
-  const openAuthModal = useCallback(() => setOpen(true), []);
+  const openAuthModal = useCallback(() => {
+    announcePanelOpened("auth");
+    setOpen(true);
+  }, []);
   const closeAuthModal = useCallback(() => setOpen(false), []);
+  // Stays mounted through its exit animation after `open` goes false.
+  const presence = usePresence(open);
 
   const value = useMemo(
     () => ({ open, openAuthModal, closeAuthModal }),
@@ -23,9 +30,9 @@ export default function AuthModalProvider({ children }) {
       {children}
       {/* No fallback: the chunk is small and a flash of a spinner over the
           page reads worse than the dialog simply appearing a moment later. */}
-      {open && (
+      {presence.mounted && (
         <Suspense fallback={null}>
-          <AuthModal onClose={closeAuthModal} />
+          <AuthModal onClose={closeAuthModal} closing={presence.closing} onExited={presence.onExited} />
         </Suspense>
       )}
     </AuthModalContext.Provider>

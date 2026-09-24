@@ -79,68 +79,6 @@ export default function Gallery({ images, registerReveal, onSelect }) {
     else if (dx >= SWIPE_THRESHOLD_PX) galleryPrev();
   }
 
-  // CSS `:hover` only gets re-evaluated on an actual pointer-movement
-  // event — it doesn't know or care that a card just slid out from under
-  // an otherwise-still cursor. Sliding the track (via the CSS transition
-  // below) means the card visually under the mouse changes throughout that
-  // ~0.5s animation while the mouse itself never moves, so without this,
-  // whatever card happened to be hovered when the step started stays stuck
-  // showing the hover state (its zoom/dim-siblings effect) for the whole
-  // transition, while the card sliding into place under the cursor shows
-  // nothing until the user physically twitches the mouse. Tracking the
-  // last real pointer position and re-dispatching a synthetic mousemove at
-  // those same coordinates on every animated frame forces the browser to
-  // redo its hit-test against the *current* layout, keeping :hover
-  // accurate to what's really under the cursor throughout the slide.
-  const pointerRef = useRef({ x: 0, y: 0, inside: false });
-  // Snapshot of where the cursor was sitting when a wheel-driven step
-  // suppressed the dim/blur effect (see the wheel effect below). Cleared
-  // only once the cursor genuinely moves away from that spot — a fixed
-  // timeout instead would lift the suppression the instant it expires
-  // regardless of whether the mouse has actually moved, and since it's
-  // completely ordinary for a user to stop scrolling with the cursor still
-  // resting on whatever card ended up centered, that would immediately
-  // re-trigger the exact dim-siblings/blur look on the neighbors the
-  // suppression exists to prevent — right as the suppression window ends,
-  // with no mouse movement involved at all.
-  const scrollAnchorRef = useRef(null);
-  function handleMouseMove(e) {
-    pointerRef.current = { x: e.clientX, y: e.clientY, inside: true };
-    const anchor = scrollAnchorRef.current;
-    if (anchor && (Math.abs(e.clientX - anchor.x) > 2 || Math.abs(e.clientY - anchor.y) > 2)) {
-      scrollAnchorRef.current = null;
-      galleryViewportRef.current?.classList.remove("is-scrolling");
-    }
-  }
-  function handleMouseLeave() {
-    pointerRef.current.inside = false;
-  }
-
-  const hoverRafRef = useRef(null);
-  function startHoverRefresh() {
-    if (hoverRafRef.current != null) return;
-    function tick() {
-      const pointer = pointerRef.current;
-      if (pointer.inside) {
-        window.dispatchEvent(new MouseEvent("mousemove", {
-          clientX: pointer.x,
-          clientY: pointer.y,
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        }));
-      }
-      hoverRafRef.current = requestAnimationFrame(tick);
-    }
-    hoverRafRef.current = requestAnimationFrame(tick);
-  }
-  function stopHoverRefresh() {
-    if (hoverRafRef.current == null) return;
-    cancelAnimationFrame(hoverRafRef.current);
-    hoverRafRef.current = null;
-  }
-  useEffect(() => stopHoverRefresh, []);
-
   // Desktop only (hover-capable, fine-pointer devices) — mobile already has
   // touch swipe above, and touchscreens report `hover: none` here so this
   // never double-handles the same gesture. Lets a mouse wheel or a
@@ -186,23 +124,8 @@ export default function Gallery({ images, registerReveal, onSelect }) {
       else galleryPrev();
       state.accum = 0;
       state.locked = true;
-      startHoverRefresh();
-      // Suppresses the sibling-dim-on-hover effect (see .hp-gallery-track
-      // in Gallery.css): that effect scales non-hovered cards down to
-      // 0.97, and scaling a raster image by a non-integer factor forces
-      // the browser to resample it — visually reading as a slight blur.
-      // That's a fine deliberate-hover cue when a user is genuinely
-      // comparing cards, but scrolling drags the cursor across cards
-      // incidentally, so it read as a stray blur stuck on whichever card
-      // the cursor passed over. Lifted on genuine mouse movement (see
-      // handleMouseMove/scrollAnchorRef above), not on a timer — see that
-      // comment for why a timer alone re-triggers the exact thing this is
-      // meant to prevent.
-      viewport.classList.add("is-scrolling");
-      scrollAnchorRef.current = { x: pointerRef.current.x, y: pointerRef.current.y };
       setTimeout(() => {
         state.locked = false;
-        stopHoverRefresh();
       }, WHEEL_LOCK_MS);
     }
 
@@ -252,8 +175,6 @@ export default function Gallery({ images, registerReveal, onSelect }) {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
           >
             <div
               className="hp-gallery-track"

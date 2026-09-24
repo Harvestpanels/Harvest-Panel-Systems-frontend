@@ -28,6 +28,7 @@ import { useLightbox } from "../hooks/useLightbox";
 import { useScrubbedVideo } from "../hooks/useScrubbedVideo";
 import { useNavScroll } from "../hooks/useNavScroll";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { ROUTE_META } from "../seo/routes";
 import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
@@ -41,18 +42,8 @@ import SocialMedia from "../components/SocialMedia";
 import Footer from "../components/Footer";
 import Lightbox from "../components/Lightbox";
 
-// Every photo actually used on this page (see usePageReady) — not just the
-// hero's own poster/logo, but every colour swatch and panel profile photo
-// too, so nothing on the page is still loading once a visitor is let in.
-// Module-level constants, not recreated per render, since usePageReady's
-// effect depends on these arrays by reference.
-const SPECS_CRITICAL_IMAGES = [
-  bgVideoPoster,
-  logo,
-  ...COLOR_PALETTE.map((c) => c.img),
-  ...PANEL_PROFILES.map((p) => p.img),
-];
-const SPECS_CRITICAL_VIDEOS = [bgVideoSrc, productionVideoSrc];
+// Only first-view assets block the shared loader. Keep this reference stable.
+const SPECS_CRITICAL_IMAGES = [bgVideoPoster, logo];
 
 const specsLinks = [
   { to: "/", label: "Home" },
@@ -156,11 +147,7 @@ function CertItem({ cert, isOpen, onToggle }) {
 }
 
 export default function SpecsPage() {
-  usePageMeta({
-    title: "Panel Specs | Harvest Panel Systems",
-    description: "PIR foam core details, color options, certifications, fire rating tolerances, and construction efficiency for Harvest Panel Systems insulated metal panels.",
-    path: "/specs",
-  });
+  usePageMeta(ROUTE_META["/specs"]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [loaderDone, setLoaderDone] = useState(false);
@@ -169,7 +156,7 @@ export default function SpecsPage() {
   // call for why.
   const { registerReveal } = useRevealOnScroll(loaderDone);
   const activeSectionId = useScrollSpy(SPECS_SCROLL_SPY_IDS);
-  const pageReady = usePageReady(SPECS_CRITICAL_IMAGES, SPECS_CRITICAL_VIDEOS);
+  const pageReady = usePageReady(SPECS_CRITICAL_IMAGES);
   const [selectedProfileIndex, setSelectedProfileIndex] = useState(0);
   const profileLightbox = useLightbox(PANEL_PROFILES.length);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
@@ -206,7 +193,8 @@ export default function SpecsPage() {
     sections.forEach((section, sectionIndex) => {
       const items = Array.from(section.querySelectorAll(".hp-anim-item"));
       items.forEach((el, itemIndex) => {
-        const sectionDelay = sectionIndex * 0.16;
+        // Capped so sections far down the page don't wait over a second.
+        const sectionDelay = Math.min(sectionIndex, 3) * 0.16;
         const itemDelay = Math.min(itemIndex, 8) * 0.045;
         el.style.animationDelay = `${(sectionDelay + itemDelay).toFixed(3)}s`;
         el.classList.remove("hp-filter-anim", "hp-anim-done");
@@ -257,9 +245,9 @@ export default function SpecsPage() {
         entranceReady={loaderDone}
       />
 
-      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
-          focusable programmatically without adding a tab stop. */}
-      <span id="hp-main" tabIndex={-1} />
+      {/* Main landmark and target for the skip link in App.jsx. tabIndex -1
+          makes it focusable programmatically without adding a tab stop. */}
+      <main id="hp-main" tabIndex={-1}>
 
       <div className="hp-bgvideo-layer" aria-hidden="true">
         <video
@@ -343,6 +331,7 @@ export default function SpecsPage() {
                   alt={`${profile.name} panel face profile`}
                   className={`hp-specs-color-preview__img${i === selectedProfileIndex ? " is-active" : ""}`}
                   loading={i === 0 ? "eager" : "lazy"}
+                  decoding="async"
                 />
               ))}
               <span className="hp-specs-color-preview__label">{PANEL_PROFILES[selectedProfileIndex].name}</span>
@@ -397,6 +386,7 @@ export default function SpecsPage() {
                     alt={`${color.name} panel finish`}
                     className={`hp-specs-color-preview__img${i === selectedColorIndex ? " is-active" : ""}`}
                     loading={i === 0 ? "eager" : "lazy"}
+                  decoding="async"
                   />
                 ))}
                 <span className="hp-specs-color-preview__label">{COLOR_PALETTE[selectedColorIndex].name}</span>
@@ -515,9 +505,14 @@ export default function SpecsPage() {
                   onClick={() =>
                     setTappedFaceProfile((cur) => (cur === profile.name ? null : profile.name))
                   }
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter" && e.key !== " ") return;
+                    e.preventDefault();
+                    setTappedFaceProfile((cur) => (cur === profile.name ? null : profile.name));
+                  }}
                 >
                   <div className={tappedFaceProfile === profile.name ? "is-active" : undefined}>
-                    <h4>{profile.name}</h4>
+                    <h3>{profile.name}</h3>
                     <p>{profile.desc}</p>
                   </div>
                 </div>
@@ -632,10 +627,11 @@ export default function SpecsPage() {
       <Contact registerReveal={registerReveal} />
 
       <SocialMedia registerReveal={registerReveal} />
+      </main>
 
       <Footer logo={logo} />
 
-      {colorLightbox.lightboxOpen && (
+      {colorLightbox.lightboxMounted && (
         <Lightbox
           images={COLOR_PALETTE.map((color) => ({
             src: color.img,
@@ -647,10 +643,12 @@ export default function SpecsPage() {
           onClose={colorLightbox.closeLightbox}
           onNext={colorLightbox.lightboxNext}
           onPrev={colorLightbox.lightboxPrev}
+          closing={colorLightbox.lightboxClosing}
+          onExited={colorLightbox.onLightboxExited}
         />
       )}
 
-      {profileLightbox.lightboxOpen && (
+      {profileLightbox.lightboxMounted && (
         <Lightbox
           images={PANEL_PROFILES.map((profile) => ({
             src: profile.img,
@@ -662,6 +660,8 @@ export default function SpecsPage() {
           onClose={profileLightbox.closeLightbox}
           onNext={profileLightbox.lightboxNext}
           onPrev={profileLightbox.lightboxPrev}
+          closing={profileLightbox.lightboxClosing}
+          onExited={profileLightbox.onLightboxExited}
         />
       )}
     </div>

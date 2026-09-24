@@ -40,9 +40,11 @@ export function useSessionHint() {
     const update = () => setHint(readHint());
     window.addEventListener("storage", update);
     window.addEventListener("focus", update);
+    window.addEventListener("hps:session-change", update);
     return () => {
       window.removeEventListener("storage", update);
       window.removeEventListener("focus", update);
+      window.removeEventListener("hps:session-change", update);
     };
   }, []);
 

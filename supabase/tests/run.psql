@@ -1,0 +1,8 @@
+\set ON_ERROR_STOP on
+\ir scaffolding.sql
+\ir ../migrations/20260924000100_baseline.sql
+\ir legacy.sql
+\ir ../migrations/20260924000200_hardening.sql
+\ir upgrade.sql
+\ir security.sql
+\echo SQL security tests passed

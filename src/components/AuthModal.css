@@ -6,7 +6,7 @@
 .hp-authmodal {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,7 +14,7 @@
   background: rgba(10, 14, 22, 0.66);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
-  animation: hp-authmodal-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: hp-authmodal-in var(--hp-dur-normal) var(--hp-ease-out);
 }
 
 .hp-authmodal__card {
@@ -22,13 +22,14 @@
   width: 100%;
   max-width: 420px;
   max-height: 92vh;
+  max-height: calc(100dvh - 48px);
   overflow-y: auto;
   padding: 38px 34px 30px;
   border-radius: 20px;
   border: 1px solid rgba(var(--hp-navy-rgb), 0.1);
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.92));
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
-  animation: hp-authmodal-card-in 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: hp-authmodal-card-in var(--hp-dur-normal) var(--hp-ease-out);
 }
 
 @keyframes hp-authmodal-in { from { opacity: 0; } }
@@ -38,8 +39,18 @@
 
 /* The site sets a global reduced-motion rule for its scroll reveals; the
    dialog honours the same preference rather than animating regardless. */
+/* Exit — the entrance reversed, shorter. AuthModal unmounts on the
+   backdrop's animationend (with a timeout fallback). */
+.hp-authmodal.is-closing {
+  animation: hp-authmodal-in var(--hp-dur-fast) var(--hp-ease-out) reverse both;
+}
+.hp-authmodal.is-closing .hp-authmodal__card {
+  animation: hp-authmodal-card-in var(--hp-dur-fast) var(--hp-ease-out) reverse both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hp-authmodal, .hp-authmodal__card { animation: none; }
+  .hp-authmodal, .hp-authmodal__card,
+  .hp-authmodal.is-closing, .hp-authmodal.is-closing .hp-authmodal__card { animation: none; }
 }
 
 .hp-authmodal__close {

@@ -25,17 +25,12 @@ const FRAME_SEC = 1 / 24;
 // pans slowly enough that a half-rate scrub still reads as continuous.
 const TOUCH_QUANTUM_SEC = FRAME_SEC * 2;
 
-// A fast flick can jump the raw scroll-mapped target across several seconds
-// of footage in one tick, and snapping straight there reads as the
-// background suddenly zooming/lurching (the footage itself pans/zooms over
-// time, so a big time-jump looks like a big visual jump). Chasing the
-// target with a capped per-tick step instead means the video always
-// advances smoothly through the footage in between, same as a real desktop
-// scroll-scrub, no matter how fast the flick was.
-const MAX_TOUCH_STEP_SEC = 0.06;
+// Time-based easing settles within 350ms of the latest target change,
+// regardless of clip length or refresh rate, avoiding prolonged decoding.
+const TOUCH_SETTLE_MS = 350;
 
 export function createVideoScrubber(video) {
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const isTouch = window.matchMedia("(hover: none)").matches;
   const quantum = isTouch ? TOUCH_QUANTUM_SEC : FRAME_SEC;
 
@@ -43,12 +38,50 @@ export function createVideoScrubber(video) {
   let pending = null;
   let unlocked = false;
   let lastFrame = -1;
-  let smoothedTouchTime = null;
+  let destroyed = false;
+  let settleRaf = null;
+  let targetTime = null;
+  let startTime = 0;
+  let fromTime = 0;
+
+  function cancelSettling() {
+    if (settleRaf !== null) cancelAnimationFrame(settleRaf);
+    settleRaf = null;
+    targetTime = null;
+    pending = null;
+    lastFrame = -1;
+  }
+
+  function onMotionChange() {
+    if (motionQuery.matches) cancelSettling();
+  }
+
+  function interpolatedTime(now) {
+    const progress = Math.min(1, Math.max(0, (now - startTime) / TOUCH_SETTLE_MS));
+    return fromTime + (targetTime - fromTime) * (1 - (1 - progress) ** 3);
+  }
+
+  function requestSeek(time) {
+    const frame = Math.round(time / quantum);
+    if (frame === lastFrame) return;
+    lastFrame = frame;
+    seek(Math.min(video.duration, frame * quantum));
+  }
+
+  function settle(now) {
+    settleRaf = null;
+    if (destroyed || motionQuery.matches) return;
+    requestSeek(interpolatedTime(now));
+    if (now - startTime < TOUCH_SETTLE_MS) {
+      settleRaf = requestAnimationFrame(settle);
+    }
+  }
 
   // Only ever one seek in flight — piling further seeks onto a decoder that
   // hasn't finished the last one stalls it. The newest target supersedes any
   // earlier queued one, so the video always lands where the scroll actually is.
   function seek(target) {
+    if (destroyed || motionQuery.matches) return;
     if (seeking) {
       pending = target;
       return;
@@ -70,7 +103,7 @@ export function createVideoScrubber(video) {
   // allowed. We play it silently then pause immediately to "unlock" it —
   // same on touch and desktop, scroll drives which frame shows either way.
   function unlock() {
-    if (unlocked) return;
+    if (destroyed || motionQuery.matches || unlocked) return;
     unlocked = true;
     video.muted = true;
     const p = video.play();
@@ -83,8 +116,9 @@ export function createVideoScrubber(video) {
     video.pause();
     if (p && typeof p.then === "function") {
       p.then(() => {
+        if (destroyed) return;
         video.pause();
-        video.currentTime = 0;
+        if (targetTime === null && lastFrame === -1 && !motionQuery.matches) video.currentTime = 0;
       }).catch(() => {});
     } else {
       video.pause();
@@ -94,6 +128,8 @@ export function createVideoScrubber(video) {
 
   return {
     attach() {
+      if (destroyed) return;
+      motionQuery.addEventListener("change", onMotionChange);
       video.addEventListener("seeked", onSeeked);
       video.load();
       video.addEventListener("canplay", unlock, { once: true });
@@ -102,28 +138,27 @@ export function createVideoScrubber(video) {
 
     // `progress` is 0..1 through the scrollable range.
     update(progress) {
-      if (reducedMotion || !unlocked) return;
-      if (!video.duration || !isFinite(video.duration)) return;
+      if (destroyed || motionQuery.matches || !unlocked) return;
+      if (!Number.isFinite(progress) || !video.duration || !isFinite(video.duration)) return;
 
-      const raw = Math.max(0, Math.min(1, progress)) * video.duration;
-      let target = raw;
-      if (isTouch) {
-        // Seeded from the video's actual current time, not the raw target —
-        // seeding it at the target would let the very first scroll tick (if
-        // it happens to already be a big flick) skip the clamp entirely.
-        if (smoothedTouchTime === null) smoothedTouchTime = video.currentTime || 0;
-        const diff = raw - smoothedTouchTime;
-        smoothedTouchTime += Math.max(-MAX_TOUCH_STEP_SEC, Math.min(MAX_TOUCH_STEP_SEC, diff));
-        target = smoothedTouchTime;
+      const target = Math.max(0, Math.min(1, progress)) * video.duration;
+      if (!isTouch) {
+        requestSeek(target);
+        return;
       }
-
-      const frame = Math.round(target / quantum);
-      if (frame === lastFrame) return; // same frame — nothing new to show
-      lastFrame = frame;
-      seek(frame * quantum);
+      // Duplicate events must not keep extending the settling deadline.
+      if (target === targetTime) return;
+      const now = performance.now();
+      fromTime = targetTime === null ? video.currentTime || 0 : interpolatedTime(now);
+      targetTime = target;
+      startTime = now;
+      if (settleRaf === null) settleRaf = requestAnimationFrame(settle);
     },
 
     destroy() {
+      destroyed = true;
+      cancelSettling();
+      motionQuery.removeEventListener("change", onMotionChange);
       video.removeEventListener("seeked", onSeeked);
       video.removeEventListener("canplay", unlock);
       window.removeEventListener("touchstart", unlock);
@@ -148,8 +183,8 @@ export function useScrubbedVideo() {
     // scrolls, changing innerHeight mid-gesture independent of the user
     // resizing anything, which would otherwise make the same scroll position
     // map to a different point in the video from one tick to the next.
-    // Updated only on a genuine resize (width also changes), not on that
-    // toolbar-driven noise.
+    // Touch height-only changes retain the baseline; desktop height-only
+    // resizes must update it.
     let vh = window.innerHeight;
     let vw = window.innerWidth;
     let raf = null;
@@ -164,9 +199,10 @@ export function useScrubbedVideo() {
     }
 
     function onResize() {
-      if (window.innerWidth !== vw) {
+      if (window.innerWidth !== vw || !window.matchMedia("(hover: none)").matches) {
         vw = window.innerWidth;
         vh = window.innerHeight;
+        onScroll();
       }
     }
 

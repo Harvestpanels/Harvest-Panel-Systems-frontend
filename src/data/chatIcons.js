@@ -12,9 +12,3 @@ import mascotIconOpened from "../assets/images/Harvest Panels Mascot Sticker/Har
 import mascotIconNewMessage from "../assets/images/Harvest Panels Mascot Sticker/Harvest Panels Mascot Sticker 2.webp";
 
 export { mascotIconDefault, mascotIconOpened, mascotIconNewMessage };
-
-// Only one pose is ever mounted at a time (ChatWidget picks between them by
-// state), so a DOM sweep can only ever see the current one. usePageReady
-// waits on this whole list instead, so the other two are already cached and
-// cannot pop in the first time the widget opens or a reply lands.
-export const CHAT_ICONS = [mascotIconDefault, mascotIconOpened, mascotIconNewMessage];

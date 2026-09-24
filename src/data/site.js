@@ -1,9 +1,7 @@
 import pharmaceuticalVideo from "../assets/videos/AI Video - Pharmaceutical BG1 - 1.mp4";
-import facilityImg from "../assets/images/General/Harvest Panel Systems Facility.webp";
 import facilityInteriorImg from "../assets/images/General/Harvest Panel Systems Interior.webp";
 
 export const VIDEO_URL = pharmaceuticalVideo;
-export const PARALLAX_BG_URL = facilityImg;
 export const CURTAIN_BG_URL = facilityInteriorImg;
 
 export const CONTACT = {

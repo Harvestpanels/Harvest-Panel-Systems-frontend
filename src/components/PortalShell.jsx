@@ -65,17 +65,14 @@ const PORTAL_NAV_DROPDOWNS = [
 // Nav.jsx), and repeating them under the navbar was just saying the same thing
 // twice on every portal page.
 //
-// No critical images or videos to declare: usePageReady still waits for fonts
-// and for the chat widget's icons (which it always includes), which is what
-// stops the portal painting in a fallback font for a frame.
-const PORTAL_IMAGES = [];
-const PORTAL_VIDEOS = [];
+// Only the visible navigation logo blocks readiness.
+const PORTAL_IMAGES = [logo];
 
 export default function PortalShell({ children, ready = true }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loaderDone, setLoaderDone] = useState(false);
   const navRef = useNavScroll(menuOpen);
-  const pageReady = usePageReady(PORTAL_IMAGES, PORTAL_VIDEOS);
+  const pageReady = usePageReady(PORTAL_IMAGES);
 
   return (
     <div className={loaderDone ? "hp-anim-ready" : undefined}>
@@ -95,16 +92,12 @@ export default function PortalShell({ children, ready = true }) {
         entranceReady={loaderDone}
       />
 
-      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
-          focusable programmatically without adding a tab stop. */}
-      <span id="hp-main" tabIndex={-1} />
-
       {/* `hp-anim-ready` above is what plays the content's entrance — see
           "portal entrance" in Portal.css. It is a class rather than a context
           because a portal page renders THIS component as its child, so the
           page sits above the shell in the tree and could never read a context
           the shell provides. */}
-      <div className="hp-portal">{children}</div>
+      <div id="hp-main" tabIndex={-1} className="hp-portal">{children}</div>
     </div>
   );
 }

@@ -150,19 +150,19 @@
 }
 
 .hp-anim-ready .hp-hero .hp-eyebrow {
-  animation: hp-hero-in 0.7s cubic-bezier(0.16,1,0.3,1) both;
+  animation: hp-hero-in 0.7s var(--hp-ease-out) both;
 }
 
 .hp-anim-ready .hp-hero h1 {
-  animation: hp-hero-in 0.8s cubic-bezier(0.16,1,0.3,1) 0.08s both;
+  animation: hp-hero-in 0.8s var(--hp-ease-out) 0.08s both;
 }
 
 .hp-anim-ready .hp-hero__sub {
-  animation: hp-hero-in 0.8s cubic-bezier(0.16,1,0.3,1) 0.16s both;
+  animation: hp-hero-in 0.8s var(--hp-ease-out) 0.16s both;
 }
 
 .hp-anim-ready .hp-hero__ctas {
-  animation: hp-hero-in 0.8s cubic-bezier(0.16,1,0.3,1) 0.24s both;
+  animation: hp-hero-in 0.8s var(--hp-ease-out) 0.24s both;
 }
 
 /* Hero ghost button sits over the video background, so it needs light text */
@@ -179,9 +179,25 @@
   .hp-hero__ctas .hp-btn { justify-content: center; }
 }
 
+/* Landscape phones (~360-430px tall): a fixed 100svh hero is shorter than
+   its own content, so centering pushed the eyebrow up against the top
+   edge under the menu button. Let it grow instead, with top padding that
+   clears the 52px button at top: 16px. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hp-hero {
+    height: auto;
+    min-height: 100svh;
+    padding: 84px 0 32px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .hp-parallax-layer {
+    z-index: 1;
+    pointer-events: none !important;
+  }
   /* Freeze curtain and hero parallax — JS skips these too */
-  .hp-parallax { transform: none !important; }
+  .hp-parallax { transform: none !important; will-change: auto; }
   .hp-hero__content { transform: none !important; opacity: 1 !important; }
   /* The entrance animations above are skipped entirely under reduced
      motion (no ".hp-anim-ready" rule ever needs to match), so their own

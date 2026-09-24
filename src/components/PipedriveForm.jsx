@@ -1,54 +1,65 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { reportError } from "../utils/errorReporting.js";
 
-// The live Pipedrive web form. Submissions land directly in Pipedrive as
-// leads rather than going through this site's own /api/contact + Resend
-// path, so there is no request for us to validate, send, or report on here.
-const PIPEDRIVE_FORM_URL =
-  "https://webforms.pipedrive.com/f/2TX2SJAqKiipmv075m9ytYMz49Art5mJqNLHQfSDU8qG0dKRMoIgTh7VMysU28GwH";
+const FORM_URL = "https://webforms.pipedrive.com/f/2TX2SJAqKiipmv075m9ytYMz49Art5mJqNLHQfSDU8qG0dKRMoIgTh7VMysU28GwH";
+const LOADER_SRC = "https://webforms.pipedrive.com/f/loader";
 
-const PIPEDRIVE_LOADER_SRC = "https://webforms.pipedrive.com/f/loader";
-
-// Pipedrive publishes this embed as a plain HTML snippet: a
-// .pipedriveWebForms div with a <script> inside it. That snippet cannot be
-// dropped into JSX as-is — React never executes a <script> tag it renders,
-// so the form would silently never appear.
-//
-// The loader also only scans the document for containers at the moment it
-// executes, and this is a single-page app where <Contact> mounts and
-// unmounts on every route change. A script loaded once on the first page
-// would not pick up the container rendered on the next one. So the whole
-// snippet is built imperatively here, per mount: a fresh <script> element
-// re-executes the loader (the file itself is served from cache) and it finds
-// this instance's container.
-//
-// The host div stays empty in JSX and React never owns anything inside it —
-// the container and script are created and torn down here. Letting React
-// render children that the third-party loader then replaces with its iframe
-// would leave React trying to remove nodes that are no longer its own.
 export default function PipedriveForm({ className }) {
   const hostRef = useRef(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const host = hostRef.current;
-    if (!host) return undefined;
-
-    const container = document.createElement("div");
-    container.className = "pipedriveWebForms";
-    container.dataset.pdWebforms = PIPEDRIVE_FORM_URL;
-
-    const script = document.createElement("script");
-    script.src = PIPEDRIVE_LOADER_SRC;
+    const container = document.createElement('div');
+    container.className = 'pipedriveWebForms';
+    container.dataset.pdWebforms = FORM_URL;
+    const script = document.createElement('script');
+    script.src = LOADER_SRC;
     script.async = true;
-
+    let active = true;
+    let frame;
+    const fail = code => {
+      if (!active) return;
+      setFailed(true);
+      reportError(code);
+    };
+    const timer = window.setTimeout(() => fail('pipedrive_timeout'), 15000);
+    const onLoad = () => {
+      if (!active) return;
+      window.clearTimeout(timer);
+      setFailed(false);
+    };
+    const observeFrame = () => {
+      const next = container.querySelector('iframe');
+      if (!next || next === frame) return;
+      frame?.removeEventListener('load', onLoad);
+      frame = next;
+      frame.addEventListener('load', onLoad);
+    };
+    const observer = new MutationObserver(observeFrame);
+    observer.observe(container, { childList: true, subtree: true });
+    script.onerror = () => {
+      window.clearTimeout(timer);
+      fail('pipedrive_load_error');
+    };
     container.appendChild(script);
     host.appendChild(container);
-
-    // Clear on unmount so the next mount's loader sees exactly one
-    // unprocessed container and cannot render the form twice.
     return () => {
+      active = false;
+      window.clearTimeout(timer);
+      observer.disconnect();
+      frame?.removeEventListener('load', onLoad);
+      script.onerror = null;
       host.replaceChildren();
     };
   }, []);
 
-  return <div className={className} ref={hostRef} />;
+  return (
+    <div className={className}>
+      <div ref={hostRef} />
+      {failed && <p role="status">The contact form is taking too long or could not load. Please email us instead.</p>}
+      {/* Always available: iframe load cannot prove a cross-origin form is usable. */}
+      <p>You can also email <a href="mailto:Sales@harvestpanels.com">Sales@harvestpanels.com</a>.</p>
+    </div>
+  );
 }

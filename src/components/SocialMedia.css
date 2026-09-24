@@ -24,7 +24,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  transition: transform 0.6s var(--hp-ease-out);
   transform-style: preserve-3d;
 }
 
@@ -85,7 +85,7 @@
   height: 64px;
   border-radius: 50%;
   color: var(--hp-cream);
-  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  transition: transform 0.3s var(--hp-ease-out);
 }
 
 .hp-social-badge:hover .hp-social-badge__icon {
@@ -130,4 +130,41 @@
 @media (max-width: 640px) {
   .hp-social-badge__face--back { padding: 16px; }
   .hp-social-badge__face--back p { font-size: 12px; }
+}
+
+/* Front-face label + hint — hidden on hover devices (desktop look is
+   unchanged, the hover flip previews the back), shown on touch so the
+   front face identifies itself without a tap. */
+.hp-social-badge__label,
+.hp-social-badge__hint { display: none; }
+
+@media (hover: none) {
+  .hp-social-badge__face--front { flex-direction: column; gap: 10px; }
+
+  .hp-social-badge__label {
+    display: block;
+    font-family: "Big Shoulders Display", sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+    color: var(--hp-navy);
+  }
+
+  .hp-social-badge__hint {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(var(--hp-navy-rgb), 0.08);
+    color: var(--hp-navy);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+/* Phones: a full square card is ~340px of mostly empty space around one
+   icon — a wider ratio keeps the flip but cuts the dead height. */
+@media (max-width: 640px) {
+  .hp-social-badge { aspect-ratio: 16 / 9; }
 }

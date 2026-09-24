@@ -6,13 +6,15 @@
   align-items: center;
   justify-content: center;
   background: var(--hp-dark);
+  /* This programmatic focus target is a status, not an interactive control. */
+  outline: none;
   opacity: 1;
   transition: opacity 0.45s ease;
 }
 
 .hp-page-loader.is-ready {
   opacity: 0;
-  pointer-events: none;
+
 }
 
 .hp-page-loader__logo {
@@ -28,4 +30,17 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hp-page-loader__logo { animation: none; }
+  .hp-page-loader { transition: none; }
+}
+
+.hp-page-loader__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

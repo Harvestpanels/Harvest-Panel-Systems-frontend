@@ -45,7 +45,7 @@
 
 .hp-footer__social a {
   display: inline-flex;
-  transition: color 0.2s ease, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+  transition: color 0.2s ease, transform 0.2s var(--hp-ease-out);
 }
 
 .hp-footer__social a:hover,
@@ -61,6 +61,21 @@
 .hp-footer__social a[aria-label="TikTok"]:hover { color: #000000; }
 .hp-footer__social a[aria-label="X (formerly Twitter)"]:hover { color: #5cc3f7; }
 
+/* Page links row — same size/colour/hover as the footer's contact links. */
+.hp-footer__pages {
+  max-width: 1180px;
+  margin: 20px auto 0;
+  padding: 0 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  font-size: 14px;
+  color: rgba(var(--hp-navy-rgb), 0.65);
+}
+
+.hp-footer__pages a { transition: color 0.2s ease; }
+.hp-footer__pages a:hover { color: var(--hp-accent); }
+
 .hp-footer__legal {
   max-width: 1180px;
   margin: 24px auto 0;
@@ -68,7 +83,9 @@
   border-top: 1px solid rgba(var(--hp-navy-rgb), 0.12);
   font-size: 12px;
   line-height: 1.7;
-  color: rgba(var(--hp-navy-rgb), 0.45);
+  /* 0.72, up from 0.45 (~3:1) — clears 4.5:1 against the light frosted
+     footer for this small text. */
+  color: rgba(var(--hp-navy-rgb), 0.72);
 }
 
 .hp-footer__legal p {
@@ -85,11 +102,15 @@
 @media (max-width: 1024px) {
   .hp-footer__inner { padding: 0 24px; gap: 20px; }
   .hp-footer__legal { padding: 20px 24px 0; }
+  .hp-footer__pages { padding: 0 24px; }
 }
 
 @media (max-width: 640px) {
   .hp-footer__inner { padding: 0 16px; flex-direction: column; align-items: flex-start; gap: 20px; }
   .hp-footer__legal { padding: 20px 16px 0; font-size: 11px; }
+  .hp-footer__pages { padding: 0 16px; gap: 0 18px; }
+  /* 44px-tall tap rows on phones without changing the text itself. */
+  .hp-footer__pages a { display: inline-flex; align-items: center; min-height: 44px; }
   .hp-footer__social { flex-wrap: wrap; gap: 14px; }
   /* Bottom padding absorbs the chat widget's clearance (used to be a bare
      `body` padding-bottom — see App.css) directly into the footer's own

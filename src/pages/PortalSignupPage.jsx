@@ -1,7 +1,9 @@
+import { submitAuthForm } from "../features/auth/actions";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import PortalShell from "../components/PortalShell";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { usePageMeta } from "../hooks/usePageMeta";
 
 export default function PortalSignupPage() {
@@ -14,51 +16,29 @@ export default function PortalSignupPage() {
   const [error, setError] = useState(null);
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Same as the login page: a signed-in visitor has nothing to do here.
+  if (!loading && session && !busy) return <Navigate to="/portal" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const password = String(form.get("password"));
-
-    if (password.length < 8) {
-      setError("Please use a password of at least 8 characters.");
-      return;
-    }
-
     setBusy(true);
     setError(null);
-
-    const { error: err } = await supabase.auth.signUp({
-      email: String(form.get("email")).trim(),
-      password,
-      options: {
-        // Read by the handle_new_user() trigger to name the new account and
-        // profile. Deliberately never carries a role: that is written
-        // server-side as 'customer' and only an admin can change it.
-        data: {
-          full_name: String(form.get("full_name")).trim(),
-          company: String(form.get("company")).trim(),
-        },
-        // Confirming the email creates a session, so send them straight to
-          // their documents. /portal/login would only bounce them onward,
-          // and landing on a sign-in form after clicking "confirm" reads
-          // as though the confirmation failed.
-          emailRedirectTo: window.location.origin + "/portal",
-      },
-    });
-
-    if (err) {
-      setError(err.message);
-      setBusy(false);
-      return;
-    }
-    setSent(true);
+    const { data, error: err } = await submitAuthForm("signup", form);
     setBusy(false);
+    if (err) return setError(err.message);
+    // With email confirmation turned off, signUp signs the visitor straight
+    // in. "Check your inbox" would then be a lie — go to the portal instead.
+    if (data?.session) return navigate("/portal", { replace: true });
+    setSent(true);
   }
 
   return (
     <PortalShell>
-      <div className="hp-portal__center">
+      <main className="hp-portal__center">
         <div className="hp-portal-card hp-reveal">
           <h1>Create an account</h1>
           <p className="hp-portal-card__sub">
@@ -68,7 +48,7 @@ export default function PortalSignupPage() {
 
           {!isSupabaseConfigured ? (
             <p className="hp-portal-msg hp-portal-msg--error">
-              The portal is not configured yet. Add the Supabase environment variables and redeploy.
+              The portal is temporarily unavailable. Please contact us for assistance.
             </p>
           ) : sent ? (
             <p className="hp-portal-msg hp-portal-msg--ok" role="status">
@@ -98,7 +78,7 @@ export default function PortalSignupPage() {
 
           <p className="hp-portal__alt">Already have an account? <Link to="/portal/login">Sign in</Link></p>
         </div>
-      </div>
+      </main>
     </PortalShell>
   );
 }

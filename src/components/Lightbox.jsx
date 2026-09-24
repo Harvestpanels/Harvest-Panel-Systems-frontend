@@ -1,5 +1,5 @@
 import "./Lightbox.css";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const SWIPE_THRESHOLD_PX = 40;
 
@@ -71,11 +71,15 @@ function ZoomableImage({ src, alt, onNext, onPrev, onNaturalSize }) {
   );
 }
 
-export default function Lightbox({ images, index, onClose, onNext, onPrev }) {
+export default function Lightbox({ images, index, onClose, onNext, onPrev, closing = false, onExited }) {
   const item = images[index];
   const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
   const frameRef = useRef(null);
+  const captionRef = useRef(null);
+  const previousButtonRef = useRef(null);
+  const nextButtonRef = useRef(null);
+  const navigationFocusRef = useRef(null);
 
   // The frame (.hp-lightbox__figure) is now a fixed, large size (see
   // Lightbox.css) so portrait and landscape photos both occupy a similarly
@@ -99,6 +103,30 @@ export default function Lightbox({ images, index, onClose, onNext, onPrev }) {
     setNaturalSize(null);
   }
   const visibleBox = computeContainBox(frameSize, naturalSize);
+  // Keep controls mounted and usable while the next image loads (or fails).
+  const overlayBox = visibleBox ?? (frameSize && { x: 0, y: 0, ...frameSize });
+  const compactCaption = overlayBox && (overlayBox.width < 360 || overlayBox.height < 220);
+
+  const movePhoto = useCallback((direction) => {
+    if ((direction < 0 && index === 0) || (direction > 0 && index >= images.length - 1)) return;
+    navigationFocusRef.current = [previousButtonRef.current, nextButtonRef.current]
+      .includes(document.activeElement) ? document.activeElement : null;
+    if (direction > 0) onNext();
+    else onPrev();
+  }, [index, images.length, onNext, onPrev]);
+
+  useLayoutEffect(() => {
+    const focused = navigationFocusRef.current ?? document.activeElement;
+    navigationFocusRef.current = null;
+    // A native disabled button cannot retain usable keyboard focus. Move to
+    // the other direction at an endpoint, or Close for a single-photo album.
+    if (focused === previousButtonRef.current && index === 0) {
+      (images.length > 1 ? nextButtonRef.current : closeButtonRef.current)?.focus();
+    } else if (focused === nextButtonRef.current && index >= images.length - 1) {
+      (index > 0 ? previousButtonRef.current : closeButtonRef.current)?.focus();
+    }
+    if (captionRef.current) captionRef.current.scrollTop = 0;
+  }, [index, images.length]);
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -118,13 +146,24 @@ export default function Lightbox({ images, index, onClose, onNext, onPrev }) {
     const previouslyFocused = document.activeElement;
     closeButtonRef.current?.focus();
 
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, []);
+
+  useEffect(() => {
     function onKeyDown(e) {
       if (e.key === "Escape") {
         onClose();
         return;
       }
-      if (e.key === "ArrowRight") onNext();
-      else if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        movePhoto(e.key === "ArrowRight" ? 1 : -1);
+      }
       else if (e.key === "Tab") {
         const focusable = dialogRef.current?.querySelectorAll(
           'button:not(:disabled), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -132,7 +171,12 @@ export default function Lightbox({ images, index, onClose, onNext, onPrev }) {
         if (!focusable || focusable.length === 0) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
+        // Focus escaped the dialog (e.g. a click on the page behind it):
+        // pull it back in rather than letting Tab walk the page.
+        if (!dialogRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+        } else if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
           last.focus();
         } else if (!e.shiftKey && document.activeElement === last) {
@@ -142,24 +186,21 @@ export default function Lightbox({ images, index, onClose, onNext, onPrev }) {
       }
     }
 
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", onKeyDown);
-      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
     };
-  }, [onClose, onNext, onPrev]);
+  }, [onClose, movePhoto]);
 
   return (
     <div
       ref={dialogRef}
-      className="hp-lightbox"
+      className={`hp-lightbox${closing ? " is-closing" : ""}`}
       role="dialog"
       aria-modal="true"
       aria-label={item.title}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onAnimationEnd={onExited}
     >
       <button ref={closeButtonRef} type="button" className="hp-lightbox__close" onClick={onClose} aria-label="Close">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></svg>
@@ -181,35 +222,36 @@ export default function Lightbox({ images, index, onClose, onNext, onPrev }) {
             key={index}
             src={item.src}
             alt={item.title}
-            onNext={onNext}
-            onPrev={onPrev}
+            onNext={() => movePhoto(1)}
+            onPrev={() => movePhoto(-1)}
             onNaturalSize={(w, h) => setNaturalSize({ width: w, height: h })}
           />
-          {visibleBox && (
             <div
-              className="hp-lightbox__photo-overlay"
-              style={{ left: visibleBox.x, top: visibleBox.y, width: visibleBox.width, height: visibleBox.height }}
+              className={`hp-lightbox__photo-overlay${compactCaption ? " hp-lightbox__photo-overlay--compact" : ""}`}
+              style={overlayBox ? { left: overlayBox.x, top: overlayBox.y, width: overlayBox.width, height: overlayBox.height } : { inset: 0 }}
             >
               <span className="hp-lightbox__count">{index + 1} / {images.length}</span>
-              <figcaption>
+              <figcaption ref={captionRef} tabIndex={0} role="region" aria-label="Photo caption">
                 <span className="hp-lightbox__use">{item.category}</span>
                 <span className="hp-lightbox__title">{item.title}</span>
                 <span className="hp-lightbox__desc">{item.desc}</span>
               </figcaption>
               <div className="hp-lightbox__nav-group">
                 <button
+                  ref={previousButtonRef}
                   type="button"
                   className="hp-lightbox__nav"
-                  onClick={onPrev}
+                  onClick={() => movePhoto(-1)}
                   disabled={index === 0}
                   aria-label="Previous photo"
                 >
                   <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
                 <button
+                  ref={nextButtonRef}
                   type="button"
                   className="hp-lightbox__nav"
-                  onClick={onNext}
+                  onClick={() => movePhoto(1)}
                   disabled={index >= images.length - 1}
                   aria-label="Next photo"
                 >
@@ -217,7 +259,6 @@ export default function Lightbox({ images, index, onClose, onNext, onPrev }) {
                 </button>
               </div>
             </div>
-          )}
         </div>
       </figure>
     </div>

@@ -158,9 +158,10 @@ export function useHeroParallax() {
     // cached height when width has actually changed filters out the
     // toolbar-collapse noise while still tracking real viewport changes.
     function onResize() {
-      if (window.innerWidth !== vwRef.current) {
+      if (!isTouch || window.innerWidth !== vwRef.current) {
         vwRef.current = window.innerWidth;
         vhRef.current = window.innerHeight;
+        onScroll();
       }
     }
     window.addEventListener("resize", onResize);

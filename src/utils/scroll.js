@@ -1,5 +1,9 @@
 export function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: scrollBehavior() });
+}
+
+function scrollBehavior() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth";
 }
 
 // Matches the breakpoint the nav itself switches layouts at (see the
@@ -29,7 +33,7 @@ export function scrollCenter(id) {
   window.scrollTo({
     top: Math.max(0, target),
     left: 0,
-    behavior: "smooth",
+    behavior: scrollBehavior(),
   });
 }
 

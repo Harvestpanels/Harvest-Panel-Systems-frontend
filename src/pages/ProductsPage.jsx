@@ -10,6 +10,7 @@ import { useScrubbedVideo } from "../hooks/useScrubbedVideo";
 import { useLightbox } from "../hooks/useLightbox";
 import { useNavScroll } from "../hooks/useNavScroll";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { ROUTE_META } from "../seo/routes";
 import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
@@ -23,17 +24,8 @@ import Contact from "../components/Contact";
 import PageLoader from "../components/PageLoader";
 import SocialMedia from "../components/SocialMedia";
 
-// Every photo actually used on this page (see usePageReady) — not just the
-// hero's own poster/logo, but every product card's photo too,
-// so nothing on the page is still loading once a visitor is let in.
-// Module-level constant, not recreated per render, since usePageReady's
-// effect depends on this array by reference.
-const PRODUCTS_CRITICAL_IMAGES = [
-  hangarsVideoPoster,
-  logo,
-  ...PRODUCT_CATEGORIES.flatMap((category) => category.products.map((p) => p.img)),
-];
-const PRODUCTS_CRITICAL_VIDEOS = [hangarsVideo];
+// Only first-view assets block the shared loader. Keep this reference stable.
+const PRODUCTS_CRITICAL_IMAGES = [hangarsVideoPoster, logo];
 
 // Maps a product into the { src, title, category, desc } shape Lightbox
 // expects (the same shape the photo gallery already feeds it).
@@ -154,11 +146,7 @@ function ProductCard({ product, hidden, showCategory, onOpen }) {
 }
 
 export default function ProductsPage() {
-  usePageMeta({
-    title: "Products | Harvest Panel Systems",
-    description: "Browse our complete line of insulated wall panels, roof panels, fire-rated panels, cold storage panels, doors, and trim & hardware.",
-    path: "/products",
-  });
+  usePageMeta(ROUTE_META["/products"]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useNavScroll(menuOpen);
@@ -174,7 +162,7 @@ export default function ProductsPage() {
   const [activeCategoryId, setActiveCategoryId] = useState("all");
   const [pendingScrollId, setPendingScrollId] = useState(null);
   const [loaderDone, setLoaderDone] = useState(false);
-  const pageReady = usePageReady(PRODUCTS_CRITICAL_IMAGES, PRODUCTS_CRITICAL_VIDEOS);
+  const pageReady = usePageReady(PRODUCTS_CRITICAL_IMAGES);
   // Gated on `loaderDone` — see HomePage.jsx's own comment on this same
   // hook for why.
   const { registerReveal } = useRevealOnScroll(loaderDone);
@@ -332,7 +320,7 @@ export default function ProductsPage() {
           // settles (filter bar starts at 0.6s, runs 0.7s), so the category
           // cascade begins only once the hero block is completely done
           // rather than overlapping with its tail end.
-          const sectionDelay = cascade ? 1.35 + sectionIndex * 0.16 : 0;
+          const sectionDelay = cascade ? 1.35 + Math.min(sectionIndex, 3) * 0.16 : 0;
           const itemDelay = Math.min(itemIndex, 8) * 0.045;
           el.style.animationDelay = `${(sectionDelay + itemDelay).toFixed(3)}s`;
           el.classList.remove("hp-filter-anim", "hp-anim-done");
@@ -359,9 +347,9 @@ export default function ProductsPage() {
         entranceReady={loaderDone}
       />
 
-      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
-          focusable programmatically without adding a tab stop. */}
-      <span id="hp-main" tabIndex={-1} />
+      {/* Main landmark and target for the skip link in App.jsx. tabIndex -1
+          makes it focusable programmatically without adding a tab stop. */}
+      <main id="hp-main" tabIndex={-1}>
 
       <div className="hp-bgvideo-layer" aria-hidden="true">
         <video
@@ -443,7 +431,7 @@ export default function ProductsPage() {
         <div className="hp-products-category__inner">
           <div className="hp-products-panel">
             <h2 className="hp-anim-item" onAnimationEnd={clearAnimOnEnd}>
-              {animatedTotalResults} result{animatedTotalResults === 1 ? "" : "s"} for "{query}"
+              <span className="hp-products-count">{animatedTotalResults}</span> result{animatedTotalResults === 1 ? "" : "s"} for "{query}"
             </h2>
             <div className="hp-products-grid">
               {ALL_PRODUCTS.map((product) => (
@@ -498,16 +486,19 @@ export default function ProductsPage() {
       <Contact registerReveal={registerReveal} />
 
       <SocialMedia registerReveal={registerReveal} />
+      </main>
 
       <Footer logo={logo} />
 
-      {albumLightbox.lightboxOpen && (
+      {albumLightbox.lightboxMounted && (
         <Lightbox
           images={albumImages}
           index={albumLightbox.lightboxIndex}
           onClose={albumLightbox.closeLightbox}
           onNext={albumLightbox.lightboxNext}
           onPrev={albumLightbox.lightboxPrev}
+          closing={albumLightbox.lightboxClosing}
+          onExited={albumLightbox.onLightboxExited}
         />
       )}
     </div>

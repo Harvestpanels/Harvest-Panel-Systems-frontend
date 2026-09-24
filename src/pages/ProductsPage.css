@@ -95,7 +95,7 @@
 }
 
 .hp-anim-ready .hp-hero-word {
-  animation: hp-word-in 0.65s cubic-bezier(0.16,1,0.3,1) both;
+  animation: hp-word-in 0.65s var(--hp-ease-out) both;
 }
 
 @keyframes hp-word-in {
@@ -116,7 +116,7 @@
 }
 
 .hp-anim-ready .hp-hero-fade {
-  animation: hp-fade-in 0.7s cubic-bezier(0.16,1,0.3,1) both;
+  animation: hp-fade-in 0.7s var(--hp-ease-out) both;
 }
 
 @keyframes hp-fade-in {
@@ -136,7 +136,7 @@
 }
 
 .hp-products-hero__sub a {
-  color: #4a8fd6;
+  color: var(--hp-link);
   text-decoration: underline;
 }
 
@@ -189,7 +189,8 @@
 }
 
 .hp-products-filter__search input::placeholder {
-  color: rgba(var(--hp-navy-rgb), 0.4);
+  /* 0.65 keeps the placeholder above 4.5:1 against the light field. */
+  color: rgba(var(--hp-navy-rgb), 0.65);
 }
 
 .hp-products-filter__search input:focus-visible {
@@ -215,7 +216,7 @@
   padding: 8px 16px;
   cursor: pointer;
   white-space: nowrap;
-  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s cubic-bezier(0.16,1,0.3,1);
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s var(--hp-ease-out), scale var(--hp-dur-fast) var(--hp-ease-out);
 }
 
 .hp-products-filter__chip:hover {
@@ -223,6 +224,9 @@
   border-color: rgba(var(--hp-navy-rgb), 0.3);
   transform: translateY(-1px);
 }
+
+/* Press feedback — `scale` composes with the :hover translateY. */
+.hp-products-filter__chip:active { scale: 0.97; }
 
 .hp-products-filter__chip.is-active {
   color: var(--hp-cream);
@@ -298,22 +302,9 @@
   opacity: 1;
 }
 
-@keyframes hp-filter-pop {
-  0%   { opacity: 0; transform: translateY(26px) scale(0.94); }
-  60%  { opacity: 1; transform: translateY(-3px) scale(1.015); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* animation-delay is set inline per element in ProductsPage.jsx (section
-   cascade + per-item stagger combined into one value), so no nth-child
-   delay rules are needed here. */
-.hp-filter-anim {
-  animation: hp-filter-pop 0.55s cubic-bezier(0.16,1,0.3,1) both;
-}
-
+/* .hp-filter-anim and hp-filter-pop live in App.css (shared with SpecsPage). */
 @media (prefers-reduced-motion: reduce) {
   .hp-anim-item { opacity: 1; }
-  .hp-filter-anim { animation: none; }
 }
 
 .hp-product-card {
@@ -330,8 +321,8 @@
   cursor: pointer;
   transform-style: preserve-3d;
   transition:
-    transform 0.25s cubic-bezier(0.16,1,0.3,1),
-    opacity 0.45s cubic-bezier(0.16,1,0.3,1),
+    transform 0.25s var(--hp-ease-out),
+    opacity 0.45s var(--hp-ease-out),
     border-color 0.35s ease;
 }
 
@@ -358,7 +349,7 @@
    a:focus-visible/button:focus-visible rule in App.css doesn't reach them
    — same ring, applied explicitly here for keyboard users. */
 .hp-product-card:focus-visible {
-  outline: 2px solid #4a8fd6;
+  outline: 2px solid var(--hp-link);
   outline-offset: 3px;
 }
 
@@ -403,7 +394,7 @@
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #4a8fd6;
+  color: var(--hp-link);
   margin-bottom: 8px;
 }
 
@@ -447,3 +438,9 @@
    home page — no color overrides needed here at all now: this page uses
    the exact same light theme those components already default to, so
    they render identically to how they look on the home page. */
+
+/* The search results count ticks up via useCountUp — fixed-width digits
+   stop the heading text from jittering sideways as it counts. */
+.hp-products-count {
+  font-variant-numeric: tabular-nums;
+}

@@ -12,8 +12,8 @@
   border: 1px solid rgba(var(--hp-navy-rgb), 0.12);
   cursor: pointer;
   transition:
-    transform 0.45s cubic-bezier(0.16,1,0.3,1),
-    opacity 0.45s cubic-bezier(0.16,1,0.3,1);
+    transform 0.45s var(--hp-ease-out),
+    opacity 0.45s var(--hp-ease-out);
 }
 
 /* will-change scoped to only while actually transforming (hover, or a
@@ -53,7 +53,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
+  transition: transform 0.55s var(--hp-ease-out);
 }
 
 .hp-panel-card:hover .hp-panel-card__img-el {
@@ -77,7 +77,7 @@
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #4a8fd6;
+  color: var(--hp-link);
   margin-bottom: 4px;
 }
 
@@ -96,7 +96,7 @@
   grid-template-rows: 0fr;
   opacity: 0;
   transition:
-    grid-template-rows 0.38s cubic-bezier(0.16,1,0.3,1),
+    grid-template-rows 0.38s var(--hp-ease-out),
     opacity 0.28s ease;
 }
 
@@ -142,4 +142,31 @@
   .hp-panel-card:hover .hp-panel-card__img-el { transform: none; }
   .hp-panel-card__label p { grid-template-rows: 1fr; opacity: 1; }
   .hp-panel-card:hover::after { opacity: 0; }
+}
+
+/* Phones: 9 sections x 3 full-width 4:5 cards stacked was ~1600px per
+   section. A horizontal scroll-snap row keeps every card at full size but
+   costs one card's height; the next card peeks in from the right edge to
+   show there's more. Tablet/desktop untouched. overflow-y is clipped
+   explicitly — overflow-x:auto would otherwise make the reveal's
+   translateY(32px) start state spawn a vertical scrollbar in the row. */
+@media (max-width: 640px) {
+  .hp-panel-grid {
+    display: flex;
+    gap: 12px;
+    max-width: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .hp-panel-grid::-webkit-scrollbar { display: none; }
+
+  .hp-panel-card {
+    flex: 0 0 82%;
+    scroll-snap-align: start;
+  }
 }

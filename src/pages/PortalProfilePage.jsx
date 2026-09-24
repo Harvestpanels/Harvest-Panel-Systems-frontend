@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import PortalShell from "../components/PortalShell";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
+import { getAccount } from "../features/documents/api";
+import { authAction } from "../features/auth/actions";
 import { usePageMeta } from "../hooks/usePageMeta";
 
 // Its own page, reached from the nav account menu.
@@ -19,7 +21,7 @@ export default function PortalProfilePage() {
     path: "/portal/profile",
     noindex: true,
   });
-  const { profile, isAdmin, refreshProfile } = useAuth();
+  const { profile, user, isAdmin, refreshProfile } = useAuth();
   const [company, setCompany] = useState("");
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [seededFor, setSeededFor] = useState(profile?.id ?? null);
@@ -37,29 +39,32 @@ export default function PortalProfilePage() {
   }
 
   useEffect(() => {
-    let cancelled = false;
-    // No account_id filter: RLS already restricts this to the caller's own
-    // account, and filtering here too would imply the security lives in the
-    // browser, which it does not.
-    supabase.from("accounts").select("company_name").maybeSingle().then(({ data }) => {
-      if (!cancelled) setCompany(data?.company_name ?? "");
-    });
-    return () => { cancelled = true; };
-  }, []);
+    const controller = new AbortController();
+    getAccount(profile?.account_id, controller.signal)
+      .then((data) => { if (!controller.signal.aborted) setCompany(data?.company_name ?? ""); })
+      .catch(() => { if (!controller.signal.aborted) setError("Your company details could not be loaded."); });
+    return () => controller.abort();
+  }, [profile?.account_id]);
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (!fullName.trim()) return setError("Please enter your full name.");
     setBusy(true);
     setMsg(null);
     setError(null);
 
-    const { error: err } = await supabase
+    // .select() returns the rows actually written. RLS silently filters an
+    // update it refuses, so zero rows is a failure, not a success.
+    const { data, error: err } = await authAction(() => supabase
       .from("profiles")
       .update({ full_name: fullName.trim() })
-      .eq("id", profile.id);
+      .eq("id", profile.id)
+      .select("id"));
 
     setBusy(false);
     if (err) return setError(err.message);
+    if (!data || data.length === 0) return setError("Your profile could not be saved. Please try again.");
+    setError(null);
     refreshProfile();   // so the name updates everywhere reading it from context
     setMsg("Profile updated.");
   }
@@ -95,7 +100,7 @@ export default function PortalProfilePage() {
               />
 
               <label htmlFor="p-email">Email</label>
-              <input id="p-email" type="email" value={profile?.email ?? ""} readOnly />
+              <input id="p-email" type="email" value={user?.email ?? ""} readOnly />
               <p className="hp-field-note">
                 Change this under <Link to="/portal/settings">Settings</Link>.
               </p>

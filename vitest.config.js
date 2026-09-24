@@ -5,11 +5,6 @@ import react from "@vitejs/plugin-react";
 // tooling. Vitest reads this file by name.
 export default defineConfig({
   plugins: [react()],
-  // Vitest's own esbuild pass transforms JSX before the React plugin sees it,
-  // and defaults to the classic runtime — which emits React.createElement and
-  // then fails with "React is not defined", since nothing imports React by
-  // name. The app's build does not hit this; only the test pipeline does.
-  esbuild: { jsx: "automatic" },
   test: {
     // jsdom, not a real browser: these are unit tests for logic and rendering.
     // Anything depending on real layout, scroll position or video decoding is

@@ -8,6 +8,7 @@ import { BLOG_POSTS, TESTIMONIALS } from "../data/blog";
 import { useNavScroll } from "../hooks/useNavScroll";
 import { useScrubbedVideo } from "../hooks/useScrubbedVideo";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { ROUTE_META } from "../seo/routes";
 import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
@@ -21,13 +22,8 @@ import PageLoader from "../components/PageLoader";
 import SocialMedia from "../components/SocialMedia";
 import Footer from "../components/Footer";
 
-// Every photo actually used on this page (see usePageReady) — not just the
-// hero's own poster/logo, but every post's own photo in the slideshow, so
-// nothing on the page is still loading once a visitor is let in.
-// Module-level constants, not recreated per render, since usePageReady's
-// effect depends on these arrays by reference.
-const BLOG_CRITICAL_IMAGES = [blogBgVideoPoster, logo, ...BLOG_POSTS.map((p) => p.img)];
-const BLOG_CRITICAL_VIDEOS = [blogBgVideo];
+// Only first-view assets block the shared loader. Keep this reference stable.
+const BLOG_CRITICAL_IMAGES = [blogBgVideoPoster, logo];
 
 // This page's own destination links, shown as plain top-level nav items
 // (see desktopLinks below) — matches the pattern every other page's own
@@ -62,16 +58,12 @@ const INQUIRY_SECTIONS = [
 const BLOG_SCROLL_SPY_IDS = [...BLOG_SECTIONS, ...INQUIRY_SECTIONS].map((s) => s.id);
 
 export default function BlogPage() {
-  usePageMeta({
-    title: "Blog & News | Harvest Panel Systems",
-    description: "Company news, industry insights, and project case studies from the Harvest Panel Systems team.",
-    path: "/blog",
-  });
+  usePageMeta(ROUTE_META["/blog"]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [loaderDone, setLoaderDone] = useState(false);
   const navRef = useNavScroll(menuOpen);
-  const pageReady = usePageReady(BLOG_CRITICAL_IMAGES, BLOG_CRITICAL_VIDEOS);
+  const pageReady = usePageReady(BLOG_CRITICAL_IMAGES);
 
   // Scroll-scrubbed background video — the clip stays paused and its
   // currentTime tracks scroll progress through the page. See
@@ -127,9 +119,9 @@ export default function BlogPage() {
         entranceReady={loaderDone}
       />
 
-      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
-          focusable programmatically without adding a tab stop. */}
-      <span id="hp-main" tabIndex={-1} />
+      {/* Main landmark and target for the skip link in App.jsx. tabIndex -1
+          makes it focusable programmatically without adding a tab stop. */}
+      <main id="hp-main" tabIndex={-1}>
 
       <div className="hp-bgvideo-layer" aria-hidden="true">
         <video
@@ -175,6 +167,8 @@ export default function BlogPage() {
       <Faq registerReveal={registerReveal} />
       <Contact registerReveal={registerReveal} />
       <SocialMedia registerReveal={registerReveal} />
+      </main>
+
       <Footer logo={logo} />
     </div>
   );

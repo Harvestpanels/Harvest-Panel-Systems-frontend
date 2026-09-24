@@ -13,10 +13,11 @@ import {
   MODULAR_HOUSING_PANELS,
   TRIM_HARDWARE_PANELS,
 } from "../data/panels";
-import { CURTAIN_BG_URL, PARALLAX_BG_URL, VIDEO_URL } from "../data/site";
+import { CURTAIN_BG_URL, VIDEO_URL } from "../data/site";
 import { useHeroParallax } from "../hooks/useHeroParallax";
 import { useLightbox } from "../hooks/useLightbox";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { ROUTE_META } from "../seo/routes";
 import { usePageReady } from "../hooks/usePageReady";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useScrollSpy } from "../hooks/useScrollSpy";
@@ -78,34 +79,11 @@ const INQUIRY_SECTIONS = [
 
 const SCROLL_SPY_IDS = [...OVERVIEW_SECTIONS, ...INQUIRY_SECTIONS].map((s) => s.id);
 
-// Every photo actually used on this page (see usePageReady) — not just the
-// hero's own poster/logo, but every panel/door/trim photo and every photo
-// gallery shot too, so nothing on the page is still loading once a visitor
-// is let in. Module-level constant, not recreated per render, since
-// usePageReady's effect depends on this array by reference.
-const HOME_CRITICAL_IMAGES = [
-  homeBgPoster,
-  PARALLAX_BG_URL,
-  CURTAIN_BG_URL,
-  logo,
-  ...GALLERY_IMAGES.map((g) => g.src),
-  ...INDOOR_AGRICULTURE_PANELS.map((p) => p.img),
-  ...COLD_STORAGE_PANELS.map((p) => p.img),
-  ...PVC_PANELS.map((p) => p.img),
-  ...LABORATORY_PANELS.map((p) => p.img),
-  ...FLOORING_PANELS.map((p) => p.img),
-  ...MODULAR_HOUSING_PANELS.map((p) => p.img),
-  ...DOOR_PANELS.map((p) => p.img),
-  ...TRIM_HARDWARE_PANELS.map((p) => p.img),
-];
-const HOME_CRITICAL_VIDEOS = [VIDEO_URL];
+// Only first-view assets block the shared loader. Keep this reference stable.
+const HOME_CRITICAL_IMAGES = [homeBgPoster, logo];
 
 function HomePage() {
-  usePageMeta({
-    title: "Harvest Panel Systems | Insulated Metal Panels & Doors",
-    description: "Global distributor of Interior Insulated Metal Panels and Doors for Industrial, Commercial, and Residential projects. Stock inventory ships anywhere in the U.S. within 48 hours from our Oklahoma distribution center.",
-    path: "/",
-  });
+  usePageMeta(ROUTE_META["/"]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [loaderDone, setLoaderDone] = useState(false);
@@ -117,7 +95,7 @@ function HomePage() {
   const { registerReveal } = useRevealOnScroll(loaderDone);
   const { navRef, parallaxLayerRef, videoRef, parallaxRef, heroContentRef } = useHeroParallax();
   const lightbox = useLightbox(GALLERY_IMAGES.length);
-  const pageReady = usePageReady(HOME_CRITICAL_IMAGES, HOME_CRITICAL_VIDEOS);
+  const pageReady = usePageReady(HOME_CRITICAL_IMAGES);
   const activeSectionId = useScrollSpy(SCROLL_SPY_IDS);
 
   const homeNavDropdowns = [
@@ -160,9 +138,9 @@ function HomePage() {
         entranceReady={loaderDone}
       />
 
-      {/* Target for the skip link in App.jsx. tabIndex -1 makes it
-          focusable programmatically without adding a tab stop. */}
-      <span id="hp-main" tabIndex={-1} />
+      {/* Main landmark and target for the skip link in App.jsx. tabIndex -1
+          makes it focusable programmatically without adding a tab stop. */}
+      <main id="hp-main" tabIndex={-1}>
 
       {/* ===== FIXED VIDEO BACKGROUND ===== */}
       <div className="hp-bgvideo-layer" aria-hidden="true">
@@ -261,15 +239,19 @@ function HomePage() {
       <Faq registerReveal={registerReveal} />
       <Contact registerReveal={registerReveal} />
       <SocialMedia registerReveal={registerReveal} />
+      </main>
+
       <Footer logo={logo} />
 
-      {lightbox.lightboxOpen && (
+      {lightbox.lightboxMounted && (
         <Lightbox
           images={galleryLightboxImages}
           index={lightbox.lightboxIndex}
           onClose={lightbox.closeLightbox}
           onNext={lightbox.lightboxNext}
           onPrev={lightbox.lightboxPrev}
+          closing={lightbox.lightboxClosing}
+          onExited={lightbox.onLightboxExited}
         />
       )}
     </div>

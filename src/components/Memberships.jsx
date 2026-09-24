@@ -71,6 +71,9 @@ function MembershipCard({ logo, name, desc, registerReveal, flipped, onToggle })
             loading="lazy"
             decoding="async"
           />
+          {/* Touch-only affordance (hidden by default in Memberships.css) —
+              tells tap users the logo card turns over for details. */}
+          <span className="hp-membership-badge__hint" aria-hidden="true">Tap for details</span>
         </div>
         <div className="hp-membership-badge__face hp-membership-badge__face--back">
           <h3>{name}</h3>

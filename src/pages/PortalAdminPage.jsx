@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import PortalShell from "../components/PortalShell";
+import { PortalPagination, PortalSearch } from "../components/PortalListControls";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { supabase } from "../lib/supabase";
+import { listAdminRows, uploadDocument, moveProfile } from "../features/documents/api";
+import AccountPicker from "../features/documents/AccountPicker";
 import { usePageMeta } from "../hooks/usePageMeta";
 
 // Admin-only: upload a document and attach it to a customer account, and move
@@ -14,92 +16,60 @@ import { usePageMeta } from "../hooks/usePageMeta";
 export default function PortalAdminPage() {
   usePageMeta({ title: "Admin | Harvest Panel Systems", description: "Portal administration.", path: "/portal/admin", noindex: true });
   const { profile } = useAuth();
-  const [accounts, setAccounts] = useState([]);
-  const [people, setPeople] = useState([]);
+  const [account, setAccount] = useState(null);
+  const [result, setResult] = useState(null);
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState("");
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
-
-  // Bumped by handlers to re-read the lists after a change, instead of
-  // calling a setState-ing function straight from the effect body.
+  const [moving, setMoving] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const key = JSON.stringify([page, search, refreshKey]);
+  const current = result?.key === key ? result : null;
+  const people = current?.rows ?? [];
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      const [a, p] = await Promise.all([
-        supabase.from("accounts").select("id, company_name").order("company_name"),
-        supabase.from("profiles").select("id, email, full_name, account_id, role").order("created_at"),
-      ]);
-      if (cancelled) return;
-      setAccounts(a.data ?? []);
-      setPeople(p.data ?? []);
-    }
-
-    load();
-    return () => { cancelled = true; };
-  }, [refreshKey]);
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      listAdminRows("profiles", page, search, controller.signal)
+        .then((data) => { if (!controller.signal.aborted) setResult({ key, ...data }); })
+        .catch(() => { if (!controller.signal.aborted) setResult({ key, error: "People could not be loaded." }); });
+    }, 200);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [page, search, key]);
 
   async function handleUpload(e) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const file = form.get("file");
-    const accountId = String(form.get("account_id"));
-    const title = String(form.get("title")).trim() || file.name;
-
-    if (!file || !file.size) { setMsg({ type: "error", text: "Choose a file first." }); return; }
-    if (!accountId) { setMsg({ type: "error", text: "Choose which customer this is for." }); return; }
-
+    const element = e.currentTarget;
+    const form = new FormData(element);
     setBusy(true);
     setMsg(null);
-
-    // Path shape matters: the storage policy reads the FIRST path segment as
-    // the owning account id, so this is what makes the file visible to that
-    // customer and invisible to everyone else. Date-prefixed so re-uploading
-    // the same filename does not collide.
-    const safeName = file.name.replace(/[^\w.-]+/g, "_");
-    const path = accountId + "/" + Date.now() + "-" + safeName;
-
-    const up = await supabase.storage.from("partner-docs").upload(path, file, {
-      contentType: file.type || "application/octet-stream",
-      upsert: false,
-    });
-
-    if (up.error) {
-      setMsg({ type: "error", text: "Upload failed: " + up.error.message });
+    try {
+      await uploadDocument({ file: form.get("file"), accountId: account?.id,
+        title: String(form.get("title") || ""), profileId: profile.id });
+      element.reset();
+      setAccount(null);
+      setMsg({ type: "ok", text: "Uploaded and shared." });
+    } catch (error) {
+      setMsg({ type: "error", text: error.message || "Upload failed. Please try again." });
+    } finally {
       setBusy(false);
-      return;
     }
-
-    const row = await supabase.from("documents").insert({
-      account_id: accountId,
-      title,
-      storage_path: path,
-      size_bytes: file.size,
-      content_type: file.type || null,
-      uploaded_by: profile.id,
-    });
-
-    if (row.error) {
-      // The object is already in storage; without its row nobody can see it.
-      // Remove it so we do not leave an orphan consuming the storage quota.
-      await supabase.storage.from("partner-docs").remove([path]);
-      setMsg({ type: "error", text: "Could not save the document record: " + row.error.message });
-      setBusy(false);
-      return;
-    }
-
-    e.currentTarget.reset();
-    setMsg({ type: "ok", text: "Uploaded and shared." });
-    setBusy(false);
   }
 
-  async function moveToAccount(profileId, accountId) {
+  async function moveToAccount(profileId) {
+    if (!account) return;
+    setMoving(profileId);
     setMsg(null);
-    const { error } = await supabase.from("profiles").update({ account_id: accountId }).eq("id", profileId);
-    if (error) { setMsg({ type: "error", text: error.message }); return; }
-    setMsg({ type: "ok", text: "Account updated." });
-    setRefreshKey((n) => n + 1);
+    try {
+      await moveProfile(profileId, account.id);
+      setMsg({ type: "ok", text: "Account updated." });
+      setRefreshKey((n) => n + 1);
+    } catch {
+      setMsg({ type: "error", text: "The account could not be updated. Please try again." });
+    } finally {
+      setMoving(null);
+    }
   }
 
   return (
@@ -124,13 +94,7 @@ export default function PortalAdminPage() {
           <p className="hp-panel__note">Upload a file and attach it to a customer account.</p>
 
           <form className="hp-portal-form hp-portal-form--dark" onSubmit={handleUpload}>
-            <label htmlFor="a-account">Customer account</label>
-            <select id="a-account" name="account_id" required defaultValue="">
-              <option value="" disabled>Choose an account</option>
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>{a.company_name}</option>
-              ))}
-            </select>
+            <AccountPicker value={account} onChange={setAccount} />
 
             <label htmlFor="a-title">Document title</label>
             <input id="a-title" name="title" type="text" placeholder="Leave blank to use the file name" />
@@ -151,6 +115,11 @@ export default function PortalAdminPage() {
             see the same documents.
           </p>
 
+          <PortalSearch id="people-search" label="Search people by email" placeholder="name@company.com" value={search} onChange={(v) => { setSearch(v); setPage(0); }} />
+          <p className="hp-panel__note">Choose an account above, then move a person into it.</p>
+          {!current && <p className="hp-panel__note" role="status">Loading people...</p>}
+          {current?.error && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{current.error} <button type="button" className="hp-btn hp-btn--ghost" onClick={() => setRefreshKey((n) => n + 1)}>Try again</button></p>}
+          {current?.rows && people.length === 0 && <p className="hp-portal__empty-note" role="status">No people match.</p>}
           <ul className="hp-people">
             {people.map((p) => (
               <li className="hp-person" key={p.id}>
@@ -161,18 +130,13 @@ export default function PortalAdminPage() {
                   </span>
                   <span className="hp-person__email">{p.email}</span>
                 </span>
-                <select
-                  aria-label={"Account for " + p.email}
-                  value={p.account_id || ""}
-                  onChange={(e) => moveToAccount(p.id, e.target.value)}
-                >
-                  {accounts.map((a) => (
-                    <option key={a.id} value={a.id}>{a.company_name}</option>
-                  ))}
-                </select>
+                <button type="button" className="hp-btn hp-btn--ghost" disabled={!account || moving !== null || p.account_id === account.id} onClick={() => moveToAccount(p.id)}>
+                  {moving === p.id ? "Moving..." : account ? "Move to " + account.company_name : "Select an account above"}
+                </button>
               </li>
             ))}
           </ul>
+          <PortalPagination label="People pages" page={page} hasMore={!!current?.hasMore} onPage={setPage} />
         </section>
       </div>
       </main>

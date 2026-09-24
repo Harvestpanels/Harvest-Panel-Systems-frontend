@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { boundedFetch } from "./request";
 
 // Vite only exposes env vars prefixed VITE_ to the browser bundle. Both names
 // are accepted because Supabase renamed the browser key from "anon" to
@@ -19,6 +20,7 @@ export const isSupabaseConfigured = Boolean(url && key);
 // homepage for every visitor.
 export const supabase = isSupabaseConfigured
   ? createClient(url, key, {
+      global: { fetch: boundedFetch },
       auth: {
         persistSession: true,      // stay signed in across visits
         autoRefreshToken: true,    // renew before expiry, no surprise logouts

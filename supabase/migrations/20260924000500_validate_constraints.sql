@@ -1,0 +1,23 @@
+-- MANUAL STEP — intentionally a no-op as shipped.
+--
+-- documents_storage_path_account_check (20260924000200) and
+-- profiles_full_name_check (20260924000300) were added NOT VALID, so legacy
+-- rows that break them do not block deploys. Once those rows are cleaned up,
+-- uncomment and run the statements below. VALIDATE only scans; it takes a
+-- light lock and fails (changing nothing) if any row still violates, so it is
+-- safe to retry.
+--
+-- Find offenders first:
+--   select id, account_id, storage_path from public.documents
+--   where not (split_part(storage_path, '/', 1) = account_id::text
+--              and length(storage_path) > 37 and right(storage_path, 1) <> '/'
+--              and storage_path !~ '(^|/)[.]{1,2}(/|$)'
+--              and storage_path not like '%//%');
+--   select id, full_name from public.profiles
+--   where full_name is not null
+--     and (full_name <> btrim(full_name) or char_length(full_name) not between 1 and 120);
+-- A bad storage_path means moving the file in Storage too, not just the row.
+
+-- alter table public.documents validate constraint documents_storage_path_account_check;
+-- alter table public.profiles  validate constraint profiles_full_name_check;
+select 1;

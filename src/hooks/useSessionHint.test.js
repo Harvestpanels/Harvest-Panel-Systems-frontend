@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useSessionHint } from "./useSessionHint";
 
 // This hook decides whether the navbar shows "Log in" or the account avatar.
@@ -12,6 +12,12 @@ beforeEach(() => {
 });
 
 describe("useSessionHint", () => {
+  it("updates after a same-tab auth change", () => {
+    const { result } = renderHook(() => useSessionHint());
+    localStorage.setItem("sb-test-auth-token", JSON.stringify({ user: { email: "new@example.com" } }));
+    act(() => window.dispatchEvent(new Event("hps:session-change")));
+    expect(result.current.email).toBe("new@example.com");
+  });
   it("reports signed out when there is no token", () => {
     const { result } = renderHook(() => useSessionHint());
     expect(result.current.signedIn).toBe(false);

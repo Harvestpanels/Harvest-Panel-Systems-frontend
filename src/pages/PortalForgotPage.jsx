@@ -1,7 +1,9 @@
+import { submitAuthForm } from "../features/auth/actions";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import PortalShell from "../components/PortalShell";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { usePageMeta } from "../hooks/usePageMeta";
 
 export default function PortalForgotPage() {
@@ -11,28 +13,28 @@ export default function PortalForgotPage() {
     path: "/portal/forgot",
     noindex: true,
   });
+  const [error, setError] = useState(null);
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const { session, loading } = useAuth();
+
+  // Signed in already: the password is changed under Settings, not by email.
+  if (!loading && session) return <Navigate to="/portal" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const email = String(new FormData(e.currentTarget).get("email")).trim();
+    const form = new FormData(e.currentTarget);
     setBusy(true);
-
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/portal/reset",
-    });
-
-    // Always reports success, even for an address with no account. Saying "no
-    // such user" would turn this form into a way to discover which of your
-    // customers hold portal logins.
-    setSent(true);
+    setError(null);
+    const { error: err } = await submitAuthForm("forgot", form);
     setBusy(false);
+    if (err) return setError(err.message);
+    setSent(true);
   }
 
   return (
     <PortalShell>
-      <div className="hp-portal__center">
+      <main className="hp-portal__center">
         <div className="hp-portal-card hp-reveal">
           <h1>Reset password</h1>
           <p className="hp-portal-card__sub">We will email you a link to choose a new one.</p>
@@ -47,6 +49,7 @@ export default function PortalForgotPage() {
             <form className="hp-portal-form" onSubmit={handleSubmit} noValidate>
               <label htmlFor="f-email">Email</label>
               <input id="f-email" name="email" type="email" autoComplete="email" required />
+              {error && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{error}</p>}
               <button type="submit" className="hp-btn hp-btn--primary" disabled={busy}>
                 {busy ? "Sending..." : "Send reset link"}
               </button>
@@ -55,7 +58,7 @@ export default function PortalForgotPage() {
 
           <p className="hp-portal__alt"><Link to="/portal/login">Back to sign in</Link></p>
         </div>
-      </div>
+      </main>
     </PortalShell>
   );
 }

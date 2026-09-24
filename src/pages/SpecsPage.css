@@ -71,11 +71,11 @@
   overflow: hidden;
   cursor: default;
   transition:
-    opacity 0.65s cubic-bezier(0.16,1,0.3,1),
-    transform 0.4s cubic-bezier(0.16,1,0.3,1),
+    opacity 0.65s var(--hp-ease-out),
+    transform 0.4s var(--hp-ease-out),
     box-shadow 0.4s ease,
     border-color 0.4s ease,
-    background-size 0.45s cubic-bezier(0.16,1,0.3,1);
+    background-size 0.45s var(--hp-ease-out);
   /* Resting state for the navy-fill wipe hover effect below (#foam-core
      .hp-card:hover) — starts at 0% height so the hover can transition it
      up to 100%. Kept in this base rule (not split into its own block)
@@ -203,8 +203,12 @@
   padding: 10px 22px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, scale var(--hp-dur-fast) var(--hp-ease-out);
 }
+
+/* Press feedback, same as the Products filter chips. */
+.hp-specs-profile-pill:active,
+.hp-specs-swatch:active { scale: 0.97; }
 
 .hp-specs-profile-pill[aria-pressed="true"] {
   background: var(--hp-accent);
@@ -315,7 +319,7 @@
   border-radius: 12px;
   border: 1px solid rgba(var(--hp-navy-rgb), 0.15);
   box-shadow: 0 8px 20px -12px rgba(var(--hp-navy-rgb), 0.35);
-  transition: box-shadow 0.3s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  transition: box-shadow 0.3s ease, transform 0.35s var(--hp-ease-out);
 }
 
 .hp-specs-swatch:hover .hp-specs-swatch__chip {
@@ -460,7 +464,7 @@
   object-fit: cover;
   opacity: 0;
   transform: scale(1.03);
-  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+  transition: opacity 0.7s var(--hp-ease-out), transform 0.9s var(--hp-ease-out);
 }
 
 .hp-specs-color-preview__img.is-active {
@@ -613,7 +617,7 @@
   color: var(--hp-accent);
   font-size: 18px;
   flex-shrink: 0;
-  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  transition: transform 0.3s var(--hp-ease-out);
 }
 
 /* One per certification row — same reasoning as the FAQ icon. */
@@ -635,7 +639,7 @@
   grid-template-rows: 0fr;
   opacity: 0;
   transition:
-    grid-template-rows 0.38s cubic-bezier(0.16,1,0.3,1),
+    grid-template-rows 0.38s var(--hp-ease-out),
     opacity 0.28s ease;
 }
 
@@ -766,7 +770,7 @@
   background-repeat: no-repeat;
   background-position: bottom center;
   background-size: 100% 0%;
-  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-color 0.4s ease, background-size 0.45s cubic-bezier(0.16,1,0.3,1);
+  transition: transform 0.4s var(--hp-ease-out), border-color 0.4s ease, background-size 0.45s var(--hp-ease-out);
 }
 
 .hp-specs-profile:hover {
@@ -774,7 +778,13 @@
   background-size: 100% 100%;
 }
 
-.hp-specs-profile h4 {
+/* An h3 (it follows the section's h2) styled to look exactly like the h4 it
+   used to be — undoing the global h1,h2,h3 display-font rule in App.css. */
+.hp-specs-profile h3 {
+  font-family: inherit;
+  font-weight: bold;
+  letter-spacing: normal;
+  line-height: inherit;
   font-size: 15px;
   text-transform: none;
   color: var(--hp-navy);
@@ -790,7 +800,7 @@
   transition: color 0.3s ease;
 }
 
-.hp-specs-profile:hover h4 { color: var(--hp-cream); }
+.hp-specs-profile:hover h3 { color: var(--hp-cream); }
 .hp-specs-profile:hover p { color: rgba(243, 241, 236, 0.8); }
 
 /* Also matched by max-width, not just hover: none — a desktop browser
@@ -802,7 +812,7 @@
     border-color: rgba(var(--hp-navy-rgb), 0.12);
     background-size: 100% 0%;
   }
-  .hp-specs-profile:hover h4 { color: var(--hp-navy); }
+  .hp-specs-profile:hover h3 { color: var(--hp-navy); }
   .hp-specs-profile:hover p { color: rgba(var(--hp-navy-rgb), 0.68); }
 }
 
@@ -816,7 +826,7 @@
     border-color: var(--hp-navy);
     background-size: 100% 100%;
   }
-  .hp-specs-profile:has(.is-active) h4 { color: var(--hp-cream); }
+  .hp-specs-profile:has(.is-active) h3 { color: var(--hp-cream); }
   .hp-specs-profile:has(.is-active) p { color: rgba(243, 241, 236, 0.8); }
   .hp-specs-profile { cursor: pointer; }
 }
@@ -1035,20 +1045,7 @@
   transform: none;
 }
 
-@keyframes hp-filter-pop {
-  0%   { opacity: 0; transform: translateY(26px) scale(0.94); }
-  60%  { opacity: 1; transform: translateY(-3px) scale(1.015); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* animation-delay is set inline per element in SpecsPage.jsx (section
-   cascade + per-item stagger combined into one value), so no nth-child
-   delay rules are needed here — same approach ProductsPage.css uses. */
-.hp-filter-anim {
-  animation: hp-filter-pop 0.55s cubic-bezier(0.16,1,0.3,1) both;
-}
-
+/* .hp-filter-anim and hp-filter-pop live in App.css (shared with ProductsPage). */
 @media (prefers-reduced-motion: reduce) {
   .hp-anim-item { opacity: 1; }
-  .hp-filter-anim { animation: none; }
 }
