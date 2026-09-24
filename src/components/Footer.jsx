@@ -1,18 +1,6 @@
-import { Link } from "react-router-dom";
 import "./Footer.css";
 import { CONTACT } from "../data/site";
 import { scrollToTop } from "../utils/scroll";
-
-// Compact site map — mainly for phones, where the nav collapses behind the
-// menu button and the footer is where a visitor lands after scrolling.
-const PAGE_LINKS = [
-  { label: "Home", to: "/" },
-  { label: "Products", to: "/products" },
-  { label: "Specs", to: "/specs" },
-  { label: "Blog", to: "/blog" },
-  { label: "Customer portal", to: "/portal/login" },
-  { label: "Contact", to: "/#contact" },
-];
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -45,16 +33,11 @@ export default function Footer({ logo }) {
           </a>
         </div>
       </div>
-      <nav className="hp-footer__pages" aria-label="Footer">
-        {PAGE_LINKS.map((l) => (
-          <Link key={l.to} to={l.to}>{l.label}</Link>
-        ))}
-      </nav>
       <div className="hp-footer__legal">
         <p>
           Harvest Panel Systems is a global distributor of interior insulated metal panels and doors, including PIR, EPS, PVC, and mineral wool core options, for industrial, commercial, and residential projects, based in Piedmont, Oklahoma.
         </p>
-        <p>&copy; {CURRENT_YEAR} Harvest Panel Systems - All Rights Reserved.</p>
+        <p>&copy; {CURRENT_YEAR} Harvest Panel Systems - All Rights Reserved. A Globus Ventures Company.</p>
       </div>
     </footer>
   );
