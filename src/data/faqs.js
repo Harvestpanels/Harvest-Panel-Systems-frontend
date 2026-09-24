@@ -17,7 +17,7 @@ export const FAQS = [
   },
   {
     question: "Who uses Insulated Metal Panels?",
-    answer: "Industrial and commercial builders, general contractors, and residential developers all rely on insulated metal panels for a fast, energy-efficient building envelope.",
+    answer: "Industrial and commercial builders, general contractors, and residential developers all rely on insulated metal panels for fast, energy-efficient interior spaces.",
   },
   {
     question: "How are Panels constructed?",

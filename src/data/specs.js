@@ -33,24 +33,24 @@ export const COLOR_PALETTE = [
 
 // "Save time, save money" — the construction-efficiency pitch from the
 // reference Harvest Panels page (harvestpanels.com/pir-panels): insulated
-// metal panels collapse a typical multi-trade wall/roof buildup into one
+// metal panels collapse a typical multi-trade wall/ceiling buildup into one
 // installed layer.
 export const CONSTRUCTION_EFFICIENCY = {
-  intro: "Insulated metal panels compress a typical seven-step wall or roof buildup into a single installed layer, replacing:",
+  intro: "Insulated metal panels compress a typical six-step wall or ceiling buildup into a single installed layer, replacing:",
   replaces: [
     "Framing",
     "Insulation",
-    "Weather wrap",
+    "Vapor barrier",
     "Drywall / sheathing",
-    "Exterior facade",
+    "Paint & wall coverings",
     "Finishing materials",
   ],
-  note: "The result is a tighter building envelope that substantially reduces HVAC load and electricity consumption compared to built-up construction.",
+  note: "The result is a tighter, better-sealed space that substantially reduces HVAC load and electricity consumption compared to built-up construction.",
 };
 
 export const FOAM_INFO = {
   title: "PIR core, engineered for performance",
-  intro: "Our panels use PIR (polyisocyanurate) foam, sometimes called \"Class 1\" foam, a mixture of polyol, isocyanate, and cyclopentane engineered specifically for insulated building envelopes.",
+  intro: "Our panels use PIR (polyisocyanurate) foam, sometimes called \"Class 1\" foam, a mixture of polyol, isocyanate, and cyclopentane engineered specifically for insulated panel systems.",
   traits: [
     {
       name: "High structural strength",

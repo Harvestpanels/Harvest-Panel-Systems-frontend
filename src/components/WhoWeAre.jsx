@@ -65,7 +65,7 @@ export default function WhoWeAre({ registerReveal }) {
           <p className="hp-section__eyebrow hp-reveal" ref={registerReveal}>About us</p>
           <h2 className="hp-reveal" ref={registerReveal}>Insulated Panels, Doors, and Buildings from One Source</h2>
           <p className="hp-panel-section__desc hp-reveal" ref={registerReveal}>
-            A global distributor of interior and exterior insulated metal panels and doors,
+            A global distributor of interior insulated metal panels and doors,
             built to make every project faster, more efficient, and easier to manage
             from first estimate to final delivery.
           </p>

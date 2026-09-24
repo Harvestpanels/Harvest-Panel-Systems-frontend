@@ -52,7 +52,7 @@ export default function Footer({ logo }) {
       </nav>
       <div className="hp-footer__legal">
         <p>
-          Harvest Panel Systems is a global distributor of insulated metal wall and roof panels and doors, including PIR, EPS, PVC, and mineral wool core options, for industrial, commercial, and residential building envelopes, based in Piedmont, Oklahoma.
+          Harvest Panel Systems is a global distributor of interior insulated metal panels and doors, including PIR, EPS, PVC, and mineral wool core options, for industrial, commercial, and residential projects, based in Piedmont, Oklahoma.
         </p>
         <p>&copy; {CURRENT_YEAR} Harvest Panel Systems - All Rights Reserved.</p>
       </div>

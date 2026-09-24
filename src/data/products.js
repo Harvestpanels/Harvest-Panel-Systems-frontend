@@ -48,12 +48,12 @@ export const PRODUCT_CATEGORIES = [
     id: "foam-panels",
     name: "Insulated Wall & Roof Panels",
     blurb:
-      "Double-steel-sheet panels insulated with rigid polyurethane (PUR) or polyisocyanurate (PIR) foam core, our highest-volume product line for industrial, commercial, and residential building envelopes.",
+      "Double-steel-sheet panels insulated with rigid polyurethane (PUR) or polyisocyanurate (PIR) foam core, our highest-volume product line for industrial, commercial, and residential interiors.",
     products: [
       {
         name: "HPS Fortis Wall Panel",
         spec: "PIR/PUR core · concealed double-joint",
-        desc: "A flagship wall panel with an advanced concealed double-joint system and reinforced mechanical seals for high load capacity and a clean exterior finish.",
+        desc: "A flagship wall panel with an advanced concealed double-joint system and reinforced mechanical seals for high load capacity and a clean, flush finish.",
         img: fortisWallImg,
       },
       {

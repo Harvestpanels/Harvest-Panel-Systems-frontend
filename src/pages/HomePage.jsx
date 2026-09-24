@@ -229,7 +229,7 @@ function HomePage() {
         id="flooring"
         eyebrow="Flooring"
         heading="Flooring systems to match your panel envelope"
-        description="Epoxy coatings, grind and seal finishes, and combined material and install packages that round out the building envelope from wall to floor."
+        description="Epoxy coatings, grind and seal finishes, and combined material and install packages that round out the space from wall to floor."
         panels={FLOORING_PANELS}
         registerReveal={registerReveal}
       />
