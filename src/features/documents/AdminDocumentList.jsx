@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { PortalPagination, PortalSearch } from "../../components/PortalListControls";
 import { deleteDocument } from "./api";
-import { describeDocument } from "./format";
+import { describeDocument, fileExtension } from "./format";
 import { useAccountDocuments } from "./useAccountDocuments";
+import Notify from "../../components/toast/Notify";
 
 // The documents already shared with one account, with a two-step delete: the
 // first click asks, the second (on the same row) removes it for everyone on
@@ -42,11 +43,7 @@ export default function AdminDocumentList({ account, revision, onMessage }) {
       <PortalSearch id="admin-doc-search" label="Search this account's documents" placeholder="Search by document name"
         value={search} onChange={(v) => { setSearch(v); setPage(0); setConfirming(null); }} />
       {docs === null && <p className="hp-panel__note" role="status">Loading documents...</p>}
-      {result?.error && (
-        <p className="hp-portal-msg hp-portal-msg--error" role="alert">
-          {result.error} <button type="button" className="hp-btn hp-btn--ghost" onClick={() => setLocalRevision((n) => n + 1)}>Try again</button>
-        </p>
-      )}
+      <Notify text={result?.error} action={{ label: "Try again", onClick: () => setLocalRevision((n) => n + 1) }} />
       {docs && !result.error && docs.length === 0 && (
         <p className="hp-portal__empty-note" role="status">
           {search.trim() ? "No documents match." : "No documents shared with this account yet."}
@@ -57,7 +54,7 @@ export default function AdminDocumentList({ account, revision, onMessage }) {
           {docs.map((doc) => (
             <li className={"hp-doc" + (confirming === doc.id ? " is-confirming" : "")} key={doc.id}>
               <span className="hp-doc__file" aria-hidden="true">
-                {(doc.title.split(".").pop() || "doc").slice(0, 4).toUpperCase()}
+                {(fileExtension(doc) || "file").slice(0, 4).toUpperCase()}
               </span>
               <span className="hp-doc__text">
                 <span className="hp-doc__name">{doc.title}</span>

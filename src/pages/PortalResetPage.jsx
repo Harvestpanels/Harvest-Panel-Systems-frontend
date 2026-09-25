@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import PortalShell from "../components/PortalShell";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { usePageMeta } from "../hooks/usePageMeta";
+import Notify from "../components/toast/Notify";
 
 // Landing page for the emailed reset link. The client is created with
 // detectSessionInUrl, so by the time this renders Supabase has already traded
@@ -81,7 +82,7 @@ export default function PortalResetPage() {
             <form className="hp-portal-form" onSubmit={handleSubmit} noValidate>
               <label htmlFor="r-password">New password</label>
               <input id="r-password" name="password" type="password" autoComplete="new-password" required minLength={8} />
-              {error && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{error}</p>}
+              <Notify text={error} />
               <button type="submit" className="hp-btn hp-btn--primary" disabled={busy}>
                 {busy ? "Saving..." : "Save password"}
               </button>

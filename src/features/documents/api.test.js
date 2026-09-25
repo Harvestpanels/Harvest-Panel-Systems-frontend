@@ -39,6 +39,16 @@ describe("document operations", () => {
     mock.bucket.createSignedUrl.mockResolvedValue({ data: { signedUrl: "https://example.test/file" } });
     expect(await getDocumentLink({ id: "doc", storage_path: "a/doc" })).toBe("https://example.test/file");
   });
+  it("asks Storage for an attachment named after the title when downloading", async () => {
+    mock.rpc.mockResolvedValue({ data: 1 });
+    mock.bucket.createSignedUrl.mockResolvedValue({ data: { signedUrl: "https://example.test/file" } });
+    const doc = { id: "doc", title: "1st upload", storage_path: "a/uuid-quote.pdf" };
+    await getDocumentLink(doc);
+    expect(mock.bucket.createSignedUrl).toHaveBeenLastCalledWith("a/uuid-quote.pdf", 60, undefined);
+    await getDocumentLink(doc, { download: true });
+    expect(mock.bucket.createSignedUrl).toHaveBeenLastCalledWith("a/uuid-quote.pdf", 60, { download: "1st upload.pdf" });
+    expect(mock.rpc).toHaveBeenCalledTimes(2);
+  });
   it("scopes account and document queries even for an admin and bounds page size", async () => {
     const query = { select: vi.fn(), eq: vi.fn(), order: vi.fn(), range: vi.fn(), abortSignal: vi.fn(), maybeSingle: vi.fn() };
     for (const key of Object.keys(query)) query[key].mockReturnValue(query);

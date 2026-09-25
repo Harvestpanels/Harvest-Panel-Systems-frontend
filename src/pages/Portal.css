@@ -205,9 +205,8 @@
 
 .hp-portal__hint { color: rgba(243, 241, 236, 0.6); font-size: 15px; margin: 10px 0 0; }
 
-.hp-account-picker { display: flex; flex-direction: column; gap: 4px; }
 .hp-portal .hp-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.hp-person .hp-btn { font-size: 13px; max-width: 240px; white-space: normal; }
+.hp-person .hp-btn { font-size: 13px; }
 .hp-portal__main .hp-btn--ghost { color: var(--hp-cream); border-color: rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.04); }
 .hp-portal__main .hp-portal-msg--error { color: var(--hp-error-light); }
 .hp-portal__main .hp-portal-msg--ok { color: var(--hp-link-light); }
@@ -223,8 +222,6 @@
   gap: 18px;
   align-items: start;
 }
-
-.hp-panel--wide { grid-column: 1 / -1; }
 
 .hp-panel {
   padding: 26px 28px;
@@ -379,17 +376,13 @@
   color: rgba(243, 241, 236, 0.5);
 }
 
-.hp-doc__open {
-  flex-shrink: 0;
-}
+/* Row buttons: View + Download for customers, Delete / confirm for admins. */
+.hp-doc__delete { flex-shrink: 0; }
+.hp-doc__actions { flex-shrink: 0; display: flex; gap: 8px; }
+.hp-doc__actions .hp-btn { display: inline-flex; align-items: center; gap: 6px; }
 
 /* ---- admin document list (AdminDocumentList.jsx) ------------------------ */
 .hp-doc-list--admin { margin-top: 0; }
-
-.hp-doc__delete,
-.hp-doc__actions { flex-shrink: 0; }
-
-.hp-doc__actions { display: flex; gap: 8px; }
 
 /* The row itself turns red while it asks, so there is no doubt which file
    the Delete button in it is about. */
@@ -500,6 +493,169 @@
   color: var(--hp-link-light);
 }
 
+/* ---- admin layout (PortalAdminPage) -------------------------------------
+   Tabs (Companies / People). Companies lists every company with its counts;
+   opening one shows its documents (upload beside the list), its people, and
+   rename / delete. */
+.hp-admin { display: flex; flex-direction: column; gap: 18px; margin-top: 22px; }
+.hp-admin .hp-panel h2 { margin: 0 0 6px; }
+.hp-admin .hp-portal-form label:first-of-type { margin-top: 16px; }
+.hp-admin .hp-portal__empty-note { margin-top: 14px; }
+.hp-admin__row {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.hp-admin-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 28px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.hp-admin-tab {
+  padding: 9px 20px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(243, 241, 236, 0.7);
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color var(--hp-dur-fast) ease, background var(--hp-dur-fast) ease;
+}
+.hp-admin-tab:hover { color: var(--hp-cream); }
+.hp-admin-tab.is-active { color: var(--hp-cream); background: var(--hp-accent); }
+
+.hp-admin__section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.hp-admin__section-head .hp-btn { flex-shrink: 0; }
+.hp-admin__add {
+  margin: 16px 0 22px;
+  padding: 4px 18px 18px;
+  border-radius: 14px;
+  background: rgba(var(--hp-accent-rgb), 0.1);
+  border: 1px solid rgba(var(--hp-accent-rgb), 0.35);
+  animation: hp-portal-rise var(--hp-dur-normal) var(--hp-ease-out) both;
+}
+.hp-admin__add .hp-panel__note { margin-top: 14px; }
+
+/* Company list: one row per company, the whole row opens it. */
+.hp-company-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+.hp-company {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  font-family: "Inter", sans-serif;
+  text-align: left;
+  color: var(--hp-cream);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background var(--hp-dur-fast) ease, border-color var(--hp-dur-fast) ease, transform var(--hp-dur-fast) var(--hp-ease-out);
+}
+.hp-company:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.22); transform: translateY(-1px); }
+.hp-company:active { transform: translateY(0) scale(0.99); }
+.hp-company.is-empty { border-style: dashed; }
+.hp-company.is-empty .hp-company__meta { color: #f2c27b; }
+.hp-company__mark {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(var(--hp-accent-rgb), 0.25);
+  color: var(--hp-link-light);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 15px;
+}
+.hp-company__mark--lg { width: 48px; height: 48px; font-size: 19px; border-radius: 12px; }
+.hp-company__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.hp-company__name { font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+.hp-company__meta { font-size: 12.5px; color: rgba(243, 241, 236, 0.55); }
+.hp-company__open { color: rgba(243, 241, 236, 0.45); transition: transform var(--hp-dur-fast) var(--hp-ease-out), color var(--hp-dur-fast) ease; }
+.hp-company:hover .hp-company__open { color: var(--hp-cream); transform: translateX(3px); }
+
+/* Company page header: back link, then the name with Rename. */
+.hp-company-head { margin-top: 22px; }
+.hp-admin__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(243, 241, 236, 0.75);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color var(--hp-dur-fast) ease, background var(--hp-dur-fast) ease;
+}
+.hp-admin__back:hover { color: var(--hp-cream); background: rgba(255, 255, 255, 0.1); }
+.hp-company-head__title { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+.hp-company-head__title h2 { margin: 0; color: var(--hp-cream); font-size: clamp(24px, 3.5vw, 32px); overflow-wrap: anywhere; }
+.hp-company-rename { margin-top: 16px; max-width: 560px; }
+.hp-company-rename__row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.hp-company-rename__row input { margin-top: 0; }
+.hp-company-rename__row .hp-btn { margin-top: 0; flex-shrink: 0; }
+
+.hp-panel--danger { border-color: rgba(255, 180, 174, 0.22); }
+.hp-panel--danger .hp-doc__actions,
+.hp-panel--danger > .hp-btn { margin-top: 14px; }
+
+/* Company name shown in the People list; a link-style button when openable. */
+.hp-person__company {
+  padding: 0;
+  font: inherit;
+  color: var(--hp-link-light);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Any native <select> in the dark forms: make the OS popup dark too, so
+   options are not cream text on a white menu. */
+.hp-portal-form--dark select { color-scheme: dark; }
+.hp-portal-form--dark select option { background: #1b1d22; color: var(--hp-cream); }
+
+.hp-portal__hint a { color: var(--hp-link); text-decoration: underline; text-underline-offset: 3px; }
+.hp-portal__hint a:hover { color: var(--hp-link-light); }
+
+@media (max-width: 900px) {
+  .hp-admin__row { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .hp-admin-tabs { display: flex; }
+  .hp-admin-tab { flex: 1; }
+  .hp-admin__section-head { flex-direction: column; }
+  .hp-admin__section-head .hp-btn { width: 100%; justify-content: center; }
+  .hp-company-rename__row { flex-wrap: wrap; }
+  .hp-company-rename__row input { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hp-admin__add { animation: none; }
+  .hp-company, .hp-company:hover, .hp-company:active, .hp-company:hover .hp-company__open { transform: none; }
+}
+
 /* ---- admin: people ------------------------------------------------------ */
 .hp-people {
   list-style: none;
@@ -512,7 +668,6 @@
 .hp-person {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 14px;
   padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
@@ -527,7 +682,21 @@
   padding-bottom: 0;
 }
 
+.hp-person__avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--hp-cream);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .hp-person__text {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -544,11 +713,15 @@
 }
 
 .hp-person__email {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 11.5px;
-  color: rgba(243, 241, 236, 0.5);
-  overflow-wrap: anywhere;
+  font-size: 13px;
+  color: rgba(243, 241, 236, 0.55);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.hp-person > .hp-btn,
+.hp-person > .hp-badge { flex-shrink: 0; }
 
 /* ---- responsive ---------------------------------------------------------
    Below this the rail has no room beside the content, so it becomes a
@@ -567,7 +740,6 @@
     flex-wrap: wrap;
   }
 
-  .hp-doc__open,
   .hp-doc__delete,
   .hp-doc__actions {
     width: 100%;
@@ -576,11 +748,8 @@
 
   .hp-doc__actions .hp-btn { flex: 1; justify-content: center; }
 
-  .hp-person {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
+  .hp-person { flex-wrap: wrap; gap: 10px 12px; }
+  .hp-person > .hp-btn { width: 100%; justify-content: center; }
 
   .hp-facts > div {
     flex-direction: column;

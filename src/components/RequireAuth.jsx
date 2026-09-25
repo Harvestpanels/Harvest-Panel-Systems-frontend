@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import PageLoader from "./PageLoader";
+import Notify from "./toast/Notify";
 
 // How long to keep waiting for a profile row before treating its absence as a
 // failure rather than as the signup trigger still running. That trigger takes a
@@ -70,7 +71,7 @@ export default function RequireAuth({ children, adminOnly = false }) {
               temporary connection problem.
             </p>
 
-            {actionError && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{actionError}</p>}
+            <Notify text={actionError} />
             <div className="hp-portal-card__actions">
               <button
                 type="button"

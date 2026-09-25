@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { getAccount } from "../features/documents/api";
 import { authAction } from "../features/auth/actions";
 import { usePageMeta } from "../hooks/usePageMeta";
+import Notify from "../components/toast/Notify";
 
 // Its own page, reached from the nav account menu.
 //
@@ -105,8 +106,8 @@ export default function PortalProfilePage() {
                 Change this under <Link to="/portal/settings">Settings</Link>.
               </p>
 
-              {error && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{error}</p>}
-              {msg && <p className="hp-portal-msg hp-portal-msg--ok" role="status">{msg}</p>}
+              <Notify text={error} />
+              <Notify type="ok" text={msg} />
 
               <button
                 type="submit"

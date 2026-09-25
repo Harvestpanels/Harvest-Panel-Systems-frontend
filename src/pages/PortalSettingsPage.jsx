@@ -5,6 +5,7 @@ import PortalShell from "../components/PortalShell";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 import { usePageMeta } from "../hooks/usePageMeta";
+import Notify from "../components/toast/Notify";
 
 // Its own page, reached from the nav account menu. The two things that belong
 // to the auth user rather than the profile row — password and sign-in email.
@@ -113,8 +114,8 @@ export default function PortalSettingsPage() {
               <label htmlFor="s-confirm">Confirm new password</label>
               <input id="s-confirm" name="confirm" type="password" autoComplete="new-password" minLength={8} required />
 
-              {pwError && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{pwError}</p>}
-              {pwMsg && <p className="hp-portal-msg hp-portal-msg--ok" role="status">{pwMsg}</p>}
+              <Notify text={pwError} />
+              <Notify type="ok" text={pwMsg} />
 
               <button type="submit" className="hp-btn hp-btn--primary" disabled={pwBusy}>
                 {pwBusy ? "Saving..." : "Update password"}
@@ -136,8 +137,8 @@ export default function PortalSettingsPage() {
               <label htmlFor="s-email-current">Current password</label>
               <input id="s-email-current" name="current" type="password" autoComplete="current-password" required />
 
-              {emailError && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{emailError}</p>}
-              {emailMsg && <p className="hp-portal-msg hp-portal-msg--ok" role="status">{emailMsg}</p>}
+              <Notify text={emailError} />
+              <Notify type="ok" text={emailMsg} />
 
               <button type="submit" className="hp-btn hp-btn--primary" disabled={emailBusy}>
                 {emailBusy ? "Sending..." : "Send confirmation"}

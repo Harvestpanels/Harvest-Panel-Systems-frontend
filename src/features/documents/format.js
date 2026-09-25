@@ -14,3 +14,19 @@ export function describeDocument(doc) {
   const size = formatSize(doc.size_bytes);
   return new Date(doc.uploaded_at).toLocaleDateString(undefined, DATE) + (size ? " · " + size : "");
 }
+
+// The stored file's real extension ("pdf"), from storage_path rather than the
+// title: titles are free text ("1st upload") and often have no extension.
+export function fileExtension(doc) {
+  const name = String(doc.storage_path || doc.title || "").split("/").pop();
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(dot + 1).toLowerCase() : "";
+}
+
+// Name the browser saves a download as: the title, with the file's extension
+// added when the title doesn't already end in it.
+export function downloadName(doc) {
+  const ext = fileExtension(doc);
+  const title = String(doc.title || "document").trim().replace(/[\\/:*?"<>|]+/g, "-");
+  return ext && !title.toLowerCase().endsWith("." + ext) ? `${title}.${ext}` : title;
+}

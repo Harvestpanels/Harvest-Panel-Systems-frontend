@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import PortalShell from "../components/PortalShell";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { usePageMeta } from "../hooks/usePageMeta";
+import Notify from "../components/toast/Notify";
 
 export default function PortalForgotPage() {
   usePageMeta({
@@ -49,7 +50,7 @@ export default function PortalForgotPage() {
             <form className="hp-portal-form" onSubmit={handleSubmit} noValidate>
               <label htmlFor="f-email">Email</label>
               <input id="f-email" name="email" type="email" autoComplete="email" required />
-              {error && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{error}</p>}
+              <Notify text={error} />
               <button type="submit" className="hp-btn hp-btn--primary" disabled={busy}>
                 {busy ? "Sending..." : "Send reset link"}
               </button>

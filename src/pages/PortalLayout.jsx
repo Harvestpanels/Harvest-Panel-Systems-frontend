@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import AuthProvider from "../context/AuthProvider";
+import ToastProvider from "../components/toast/ToastProvider";
 import "../styles/App.css";
 import "./Portal.css";
 
@@ -16,7 +17,9 @@ import "./Portal.css";
 export default function PortalLayout() {
   return (
     <AuthProvider>
-      <Outlet />
+      <ToastProvider>
+        <Outlet />
+      </ToastProvider>
     </AuthProvider>
   );
 }

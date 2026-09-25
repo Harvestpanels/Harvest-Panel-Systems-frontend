@@ -1,0 +1,122 @@
+/* Portal notifications (ToastProvider.jsx), in the site's own toast design:
+   the dark glass card the home page contact form used before it moved to
+   Pipedrive (git ed82c93^:src/components/Toast.css). Same position, glass,
+   radius, padding, round "!" icon, type and rise-in; additions are a green
+   success variant, an optional action button, and stacking. */
+@keyframes hp-toast-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes hp-toast-out {
+  to { opacity: 0; transform: translateY(8px) scale(0.98); }
+}
+
+.hp-toasts {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.hp-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 360px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(20, 22, 26, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  animation: hp-toast-in 0.35s var(--hp-ease-out) both;
+}
+
+.hp-toast.is-leaving { animation: hp-toast-out 0.18s ease-in forwards; }
+
+.hp-toast__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #f2f3f5;
+  flex: 1;
+}
+
+.hp-toast__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  margin-top: 1px;
+}
+
+.hp-toast--error .hp-toast__icon {
+  background: rgba(224, 69, 61, 0.18);
+  color: #ff8178;
+}
+
+.hp-toast--ok .hp-toast__icon {
+  background: rgba(52, 209, 122, 0.18);
+  color: #6fe3a3;
+}
+
+/* "Try again" etc. — a small pill in the site's accent, on the card's text line. */
+.hp-toast__action {
+  flex-shrink: 0;
+  margin-top: -2px;
+  padding: 5px 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--hp-accent);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.hp-toast__action:hover { background: var(--hp-accent-hover); }
+
+.hp-toast__close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s ease;
+}
+
+.hp-toast__close:hover { color: #fff; }
+
+@media (max-width: 480px) {
+  .hp-toasts {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    align-items: stretch;
+  }
+
+  .hp-toast { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-toast, .hp-toast.is-leaving { animation: none; opacity: 1; transform: none; }
+}

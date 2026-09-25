@@ -5,6 +5,7 @@ import PortalShell from "../components/PortalShell";
 import { useAuth } from "../hooks/useAuth";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { usePageMeta } from "../hooks/usePageMeta";
+import Notify from "../components/toast/Notify";
 
 export default function PortalLoginPage() {
   usePageMeta({
@@ -55,7 +56,7 @@ export default function PortalLoginPage() {
               <label htmlFor="p-password">Password</label>
               <input id="p-password" name="password" type="password" autoComplete="current-password" required />
 
-              {error && <p className="hp-portal-msg hp-portal-msg--error" role="alert">{error}</p>}
+              <Notify text={error} />
 
               <button type="submit" className="hp-btn hp-btn--primary" disabled={busy}>
                 {busy ? "Signing in..." : "Sign in"}
