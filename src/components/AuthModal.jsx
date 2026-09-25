@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import "./AuthModal.css";
 import { submitAuthForm } from "../features/auth/actions";
+import Notify from "./toast/Notify";
 
 // Drives the focus trap below. Kept up here so the handler reads as logic
 // rather than a wall of selectors.
@@ -191,12 +192,8 @@ export default function AuthModal({ onClose, closing = false, onExited }) {
               </>
             )}
 
-            {error && (
-              <p className="hp-authmodal__msg hp-authmodal__msg--error" role="alert">{error}</p>
-            )}
-            {notice && (
-              <p className="hp-authmodal__msg hp-authmodal__msg--ok" role="status">{notice}</p>
-            )}
+            <Notify text={error} />
+            <Notify type="ok" text={notice} />
 
             <button type="submit" className="hp-btn hp-btn--primary hp-authmodal__submit" disabled={busy}>
               {busy ? "Working…" : heading}

@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import PageLoader from "./components/PageLoader";
 import PageLoaderProvider from "./context/PageLoaderProvider";
 import AuthModalProvider from "./context/AuthModalProvider";
+import ToastProvider from "./components/toast/ToastProvider";
 
 // Route-level code splitting — each page (plus everything it imports:
 // components, hooks, and every image it references) only downloads when a
@@ -64,6 +65,9 @@ function RouteFade({ children }) {
 function App() {
 
   return (
+    // Notifications app-wide (lower-left): the login pop-up on marketing
+    // pages and every portal page share one stack.
+    <ToastProvider>
     <AuthModalProvider>
       <PageLoaderProvider>
       <ScrollToTop />
@@ -118,6 +122,7 @@ function App() {
       <Analytics />
       </PageLoaderProvider>
     </AuthModalProvider>
+    </ToastProvider>
   );
 }
 

@@ -141,11 +141,6 @@
   color: #a3241d;
 }
 
-.hp-authmodal__msg--ok {
-  background: rgba(var(--hp-accent-rgb), 0.08);
-  border: 1px solid rgba(var(--hp-accent-rgb), 0.25);
-  color: var(--hp-accent-hover);
-}
 
 .hp-authmodal__alt {
   margin-top: 22px;

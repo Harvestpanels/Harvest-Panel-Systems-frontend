@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { reportError } from "../utils/errorReporting.js";
+import { CONTACT } from "../data/site";
+import Notify from "./toast/Notify";
 
 const FORM_URL = "https://webforms.pipedrive.com/f/2TX2SJAqKiipmv075m9ytYMz49Art5mJqNLHQfSDU8qG0dKRMoIgTh7VMysU28GwH";
 const LOADER_SRC = "https://webforms.pipedrive.com/f/loader";
@@ -57,7 +59,7 @@ export default function PipedriveForm({ className }) {
   return (
     <div className={className}>
       <div ref={hostRef} />
-      {failed && <p role="status">The contact form is taking too long or could not load. Please email us instead.</p>}
+      <Notify text={failed ? `The contact form couldn't load. Please email ${CONTACT.email} or call ${CONTACT.phone}.` : null} />
       {/* Always available: iframe load cannot prove a cross-origin form is usable. */}
       <p>You can also email <a href="mailto:Sales@harvestpanels.com">Sales@harvestpanels.com</a>.</p>
     </div>

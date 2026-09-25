@@ -10,7 +10,7 @@ describe('Pipedrive contact fallback', () => {
     const { container } = render(<PipedriveForm />);
     expect(screen.getByRole('link')).toHaveAttribute('href', 'mailto:Sales@harvestpanels.com');
     fireEvent.error(container.querySelector('script'));
-    expect(screen.getByRole('status')).toHaveTextContent('email us instead');
+    expect(screen.getByRole('alert')).toHaveTextContent("contact form couldn't load");
     expect(reportError).toHaveBeenCalledWith('pipedrive_load_error');
   });
   it('times out even when the script loads but no working frame arrives', () => {
@@ -18,7 +18,7 @@ describe('Pipedrive contact fallback', () => {
     const { container } = render(<PipedriveForm />);
     fireEvent.load(container.querySelector('script'));
     act(() => vi.advanceTimersByTime(15000));
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(reportError).toHaveBeenCalledWith('pipedrive_timeout');
   });
   it('clears the timeout after frame load and keeps email available', async () => {
@@ -28,7 +28,7 @@ describe('Pipedrive contact fallback', () => {
     await act(async () => { container.querySelector('.pipedriveWebForms').appendChild(frame); });
     fireEvent.load(frame);
     act(() => vi.advanceTimersByTime(15000));
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByRole('link')).toBeInTheDocument();
     expect(reportError).not.toHaveBeenCalled();
   });
