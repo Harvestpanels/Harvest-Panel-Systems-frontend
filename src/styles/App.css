@@ -264,6 +264,39 @@ h3 {
   object-fit: cover;
 }
 
+/* Brand-navy wash over every page's background video: ties the footage to
+   the nav's palette, lifts contrast for white hero text, and softens the
+   720p source's compression artifacts when it's scaled up to fill the
+   screen. Darker at the top and bottom edges, lighter through the middle. */
+.hp-bgvideo-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(var(--hp-navy-rgb), 0.5) 0%,
+      rgba(var(--hp-navy-rgb), 0.22) 35%,
+      rgba(var(--hp-navy-rgb), 0.22) 65%,
+      rgba(var(--hp-navy-rgb), 0.55) 100%),
+    radial-gradient(ellipse at 50% 40%, rgba(var(--hp-accent-rgb), 0.12), transparent 70%);
+}
+
+/* ===================== SCROLL PROGRESS ===================== */
+.hp-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 110;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--hp-accent), #7cc8ff);
+  box-shadow: 0 0 10px rgba(124, 200, 255, 0.6);
+  pointer-events: none;
+}
+
 /* ===================== SECTIONS / REVEAL ===================== */
 .hp-section {
   position: relative;

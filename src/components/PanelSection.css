@@ -53,7 +53,24 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.55s var(--hp-ease-out);
+  /* Settles from a slight zoom as its card scrolls into view. Uses the
+     standalone `scale` property so it composes with the hover `transform`
+     below instead of fighting it for the same property. */
+  scale: 1.18;
+  transition: transform 0.55s var(--hp-ease-out), scale 1.6s var(--hp-ease-out);
+}
+
+.hp-panel-card.is-visible .hp-panel-card__img-el,
+:where(html:not(.hp-js)) .hp-panel-card__img-el {
+  scale: 1;
+}
+
+/* Cards in a row arrive one after another rather than all at once. */
+.hp-panel-card:nth-child(3n + 2) { transition-delay: 90ms; }
+.hp-panel-card:nth-child(3n + 3) { transition-delay: 180ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-panel-card__img-el { scale: 1; }
 }
 
 .hp-panel-card:hover .hp-panel-card__img-el {
