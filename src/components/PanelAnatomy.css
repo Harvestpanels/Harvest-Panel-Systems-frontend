@@ -1,0 +1,155 @@
+/* Tall scroll track with a sticky stage: the diagram holds still while
+   scrolling through the section drives --explode from 0 (closed) to 1
+   (fully apart). See PanelAnatomy.jsx. */
+.hp-anatomy {
+  --explode: 0;
+  position: relative;
+  z-index: 5;
+  height: 260vh;
+}
+
+.hp-anatomy__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.hp-anatomy__stage > .hp-section__inner {
+  width: 100%;
+}
+
+/* Reduced motion: no scroll track, just the finished exploded view. */
+.hp-anatomy.is-static { height: auto; padding: 110px 0; }
+.hp-anatomy.is-static .hp-anatomy__stage { position: static; height: auto; }
+
+/* Navy glass, same family as the nav and the homepage stats strip — the
+   grey steel and amber foam read far better on a dark ground than on the
+   page's white cards. */
+.hp-anatomy__card {
+  border-radius: 28px;
+  padding: 44px 48px 36px;
+  background: linear-gradient(120deg, rgba(var(--hp-navy-rgb), 0.94) 0%, rgba(13, 52, 96, 0.92) 55%, rgba(var(--hp-accent-rgb), 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.12) inset,
+    0 24px 60px rgba(var(--hp-navy-rgb), 0.3);
+  color: #fff;
+}
+
+.hp-anatomy__eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7cc8ff;
+  margin: 0 0 10px;
+}
+
+.hp-anatomy__intro h2 {
+  font-size: clamp(30px, 4.2vw, 46px);
+  color: #fff;
+}
+
+.hp-anatomy__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 32px;
+}
+
+.hp-anatomy__svg {
+  width: 100%;
+  height: auto;
+  max-height: 62vh;
+  overflow: visible;
+}
+
+/* ---- Diagram ---- */
+.hp-anatomy__layer {
+  transition: transform 0.1s linear;
+}
+.hp-anatomy__layer--top    { transform: translateY(calc(var(--explode) * -78px)); }
+.hp-anatomy__layer--bottom { transform: translateY(calc(var(--explode) * 78px)); }
+
+.hp-anatomy__steel-top   { fill: #eef2f6; }
+.hp-anatomy__steel-left  { fill: #c4cdd6; }
+.hp-anatomy__steel-right { fill: #a9b5c1; }
+.hp-anatomy__steel--inner.hp-anatomy__steel-left  { fill: #b9c3cd; }
+.hp-anatomy__steel--inner.hp-anatomy__steel-right { fill: #9eabb8; }
+.hp-anatomy__rib { stroke: rgba(var(--hp-navy-rgb), 0.18); stroke-width: 2; }
+
+.hp-anatomy__foam-top   { fill: #f6cf6a; }
+.hp-anatomy__foam-left  { fill: #e9b341; }
+.hp-anatomy__foam-right { fill: #d59c2a; }
+
+.hp-anatomy__marker circle {
+  fill: #7cc8ff;
+  stroke: rgba(var(--hp-navy-rgb), 0.6);
+  stroke-width: 2;
+}
+.hp-anatomy__marker text {
+  font: 700 14px "Inter", sans-serif;
+  fill: var(--hp-navy);
+  text-anchor: middle;
+}
+/* Numbers only appear once the layers have separated enough to point at. */
+.hp-anatomy__marker {
+  opacity: clamp(0, calc((var(--explode) - 0.35) * 3), 1);
+}
+
+/* ---- Legend: each entry fades in as the diagram opens past its step ---- */
+.hp-anatomy__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 22px;
+}
+
+.hp-anatomy__item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  opacity: clamp(0.15, calc((var(--explode) - 0.3 - var(--i) * 0.2) * 4), 1);
+  transform: translateX(calc((1 - clamp(0, calc((var(--explode) - 0.3 - var(--i) * 0.2) * 4), 1)) * 16px));
+}
+
+.hp-anatomy__num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #7cc8ff;
+  color: var(--hp-navy);
+  font: 700 14px "Inter", sans-serif;
+}
+
+.hp-anatomy__item h3 {
+  font-size: 22px;
+  color: #fff;
+  margin: 1px 0 4px;
+}
+
+.hp-anatomy__item p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+@media (max-width: 860px) {
+  .hp-anatomy { height: 240vh; }
+  .hp-anatomy__card { padding: 28px 22px 24px; }
+  .hp-anatomy__body { grid-template-columns: 1fr; gap: 8px; }
+  .hp-anatomy__svg { max-height: 30vh; }
+  .hp-anatomy__intro h2 { font-size: 28px; }
+  .hp-anatomy__list { gap: 12px; }
+  .hp-anatomy__item h3 { font-size: 18px; }
+  .hp-anatomy__item p { font-size: 13px; }
+}

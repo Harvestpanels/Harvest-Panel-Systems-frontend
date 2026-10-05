@@ -35,6 +35,7 @@ import { useScrollSpy } from "../hooks/useScrollSpy";
 import { scrollCenter, scrollToTop } from "../utils/scroll";
 import { clearAnimOnEnd } from "../utils/animation";
 import Nav from "../components/Nav";
+import PanelAnatomy from "../components/PanelAnatomy";
 import Faq from "../components/Faq";
 import Contact from "../components/Contact";
 import PageLoader from "../components/PageLoader";
@@ -293,6 +294,8 @@ export default function SpecsPage() {
           </div>
         </div>
       </section>
+
+      <PanelAnatomy />
 
       <section className="hp-section" id="profiles">
         <div className="hp-section__inner">

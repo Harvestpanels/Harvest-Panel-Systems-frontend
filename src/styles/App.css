@@ -24,6 +24,12 @@ body,
   width: 100%;
   min-height: 100%;
   overflow-x: hidden;
+  /* `clip` hides horizontal overflow the same way but, unlike `hidden`,
+     doesn't turn these into scroll containers — which would silently break
+     every `position: sticky` on the site (e.g. the Specs page's panel
+     anatomy stage). `hidden` above stays as the fallback for browsers
+     without `clip`. */
+  overflow-x: clip;
 }
 
 html {

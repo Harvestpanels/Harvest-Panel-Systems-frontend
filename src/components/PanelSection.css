@@ -53,16 +53,14 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  /* Settles from a slight zoom as its card scrolls into view. Uses the
-     standalone `scale` property so it composes with the hover `transform`
-     below instead of fighting it for the same property. */
-  scale: 1.18;
-  transition: transform 0.55s var(--hp-ease-out), scale 1.6s var(--hp-ease-out);
-}
-
-.hp-panel-card.is-visible .hp-panel-card__img-el,
-:where(html:not(.hp-js)) .hp-panel-card__img-el {
-  scale: 1;
+  /* Zoom tracks scroll position: --zoom runs 0 -> 1 as the card travels
+     from the bottom of the viewport to the top (set by useScrollZoom in
+     PanelSection.jsx), easing the photo from 1.25x down to its natural
+     size. The standalone `scale` property composes with the hover
+     `transform` below instead of fighting it for the same property.
+     Without JS --zoom is unset and the fallback of 1 means no zoom. */
+  scale: calc(1 + (1 - var(--zoom, 1)) * 0.25);
+  transition: transform 0.55s var(--hp-ease-out), scale 0.15s linear;
 }
 
 /* Cards in a row arrive one after another rather than all at once. */
