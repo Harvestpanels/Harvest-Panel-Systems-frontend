@@ -9,6 +9,7 @@ import { announcePanelOpened, onOtherPanelOpened } from "../utils/floatingPanels
 import NavDropdown from "./navigation/NavDropdown";
 import MobileDropdownGroup from "./navigation/MobileDropdownGroup";
 import { MOBILE_MENU_CLOSE_MS } from "./navigation/constants";
+import ScrollProgress from "./ScrollProgress";
 
 // Total length of the hp-nav-fold-in animation (see Nav.css) plus a small
 // buffer.
@@ -582,6 +583,8 @@ export default function Nav({
     : dropdowns;
 
   return (
+    <>
+    <ScrollProgress />
     <nav className={`hp-nav${menuOpen ? " hp-nav--open" : ""}${entranceReady ? "" : " hp-nav--anim-hold"}`} ref={navRef} aria-label="Main navigation">
       {/* Shown only while the pill is folding/unfolding: starts centered
           over the folded circle, then slides left to land exactly where
@@ -720,5 +723,6 @@ export default function Nav({
         )}
       </div>
     </nav>
+    </>
   );
 }

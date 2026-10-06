@@ -14,6 +14,7 @@ import {
   TRIM_HARDWARE_PANELS,
 } from "../data/panels";
 import { CURTAIN_BG_URL, VIDEO_URL } from "../data/site";
+import StatsStrip from "../components/StatsStrip";
 import { useHeroParallax } from "../hooks/useHeroParallax";
 import { useLightbox } from "../hooks/useLightbox";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -168,6 +169,7 @@ function HomePage() {
       </div>
 
       <Hero heroContentRef={heroContentRef} />
+      <StatsStrip registerReveal={registerReveal} />
       <WhoWeAre registerReveal={registerReveal} />
       <PanelSection
         id="indoor-agriculture"
