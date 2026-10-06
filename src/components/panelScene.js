@@ -126,7 +126,7 @@ function coreGeometry() {
   return geo;
 }
 
-export function createPanelScene(container, markerEls) {
+export async function createPanelScene(container, markerEls) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -239,6 +239,12 @@ export function createPanelScene(container, markerEls) {
     camera.updateProjectionMatrix();
     render();
   }
+
+  // Compile shaders off the main thread where the browser supports
+  // KHR_parallel_shader_compile; done synchronously on first render it
+  // stalled the page for seconds on software GL.
+  layout();
+  await renderer.compileAsync(scene, camera);
 
   const ro = new ResizeObserver(resize);
   ro.observe(container);

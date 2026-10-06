@@ -295,7 +295,7 @@ export default function SpecsPage() {
         </div>
       </section>
 
-      <PanelAnatomy />
+      <PanelAnatomy ready={loaderDone} />
 
       <section className="hp-section" id="profiles">
         <div className="hp-section__inner">

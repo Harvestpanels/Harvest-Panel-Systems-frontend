@@ -19,10 +19,15 @@ const LAYERS = [
   },
 ];
 
+// Creating a GL context is expensive (seconds on software renderers), so
+// this runs only right before the scene would be built, never on mount, and
+// releases the probe context immediately.
 function hasWebGL() {
   try {
     const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+    const gl = c.getContext("webgl2") || c.getContext("webgl");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return !!gl;
   } catch {
     return false;
   }
@@ -33,38 +38,28 @@ function hasWebGL() {
 // pulls its layers apart. Progress goes to a CSS custom property (for the
 // legend) and to the WebGL scene, which only re-renders when it changes —
 // React never re-renders on scroll.
-export default function PanelAnatomy() {
+// `ready` is the host page's loaderDone: the 3D scene isn't built until the
+// page loader has finished, so its main-thread work never competes with it.
+export default function PanelAnatomy({ ready = true }) {
   const sectionRef = useRef(null);
   const viewRef = useRef(null);
   const markerRefs = useRef([]);
-  // Checked once up front; also flipped off if the 3D module fails to load.
-  const [webgl, setWebgl] = useState(hasWebGL);
+  const sceneRef = useRef(null);
+  const progressRef = useRef(0);
+  // Assumed until proven otherwise when the scene is about to load; flipped
+  // off if WebGL is missing or the 3D module fails to load.
+  const [webgl, setWebgl] = useState(true);
 
+  // Scroll progress -> --explode (legend) and the scene, if it exists yet.
   useEffect(() => {
     const section = sectionRef.current;
-    const view = viewRef.current;
     if (!section) return;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    let scene = null;
-    let disposed = false;
-    let progress = reduceMotion ? 1 : 0;
-    section.style.setProperty("--explode", String(progress));
-    if (reduceMotion) section.classList.add("is-static");
-
-    if (view) {
-      import("./panelScene.js").then(({ createPanelScene }) => {
-        if (disposed) return;
-        scene = createPanelScene(view, markerRefs.current);
-        scene.setExplode(progress);
-        section.classList.add("is-ready");
-      }).catch(() => { if (!disposed) setWebgl(false); });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      progressRef.current = 1;
+      section.style.setProperty("--explode", "1");
+      section.classList.add("is-static");
+      return;
     }
-
-    if (reduceMotion) {
-      return () => { disposed = true; scene?.dispose(); };
-    }
-
     let frame = 0;
     const update = () => {
       frame = 0;
@@ -72,22 +67,72 @@ export default function PanelAnatomy() {
       const travel = rect.height - window.innerHeight;
       const raw = travel > 0 ? -rect.top / travel : 1;
       // Hold closed for the first 15%, open over the next 55%, then hold open.
-      progress = Math.min(1, Math.max(0, (raw - 0.15) / 0.55));
-      section.style.setProperty("--explode", progress.toFixed(3));
-      scene?.setExplode(progress);
+      const p = Math.min(1, Math.max(0, (raw - 0.15) / 0.55));
+      progressRef.current = p;
+      section.style.setProperty("--explode", p.toFixed(3));
+      sceneRef.current?.setExplode(p);
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
-      disposed = true;
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       cancelAnimationFrame(frame);
-      scene?.dispose();
     };
   }, []);
+
+  // Build the 3D scene once the page has loaded and the section is getting
+  // close. Parsing three.js and compiling its shaders is heavy main-thread
+  // work; started during page load it pushed the Specs loader past its
+  // ceiling on mobile.
+  useEffect(() => {
+    const section = sectionRef.current;
+    const view = viewRef.current;
+    if (!ready || !section || !view) return;
+    let disposed = false;
+    const load = () => {
+      if (!hasWebGL()) { setWebgl(false); return; }
+      import("./panelScene.js").then(({ createPanelScene }) => {
+        if (disposed) return null;
+        return createPanelScene(view, markerRefs.current);
+      }).then((scene) => {
+        if (!scene) return;
+        if (disposed) { scene.dispose(); return; }
+        scene.setExplode(progressRef.current);
+        sceneRef.current = scene;
+        section.classList.add("is-ready");
+      }).catch(() => { if (!disposed) setWebgl(false); });
+    };
+    // Start when the section is about to scroll into view, and then only
+    // once the browser is idle, so the build never lands mid-interaction.
+    let observer = null;
+    let idle = 0;
+    const schedule = () => {
+      if ("requestIdleCallback" in window) idle = requestIdleCallback(load, { timeout: 800 });
+      else idle = setTimeout(load, 200);
+    };
+    if ("IntersectionObserver" in window) {
+      observer = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        observer.disconnect();
+        schedule();
+      }, { rootMargin: "25% 0px" });
+      observer.observe(section);
+    } else {
+      schedule();
+    }
+    return () => {
+      disposed = true;
+      observer?.disconnect();
+      if ("cancelIdleCallback" in window) cancelIdleCallback(idle);
+      clearTimeout(idle);
+      sceneRef.current?.dispose();
+      sceneRef.current = null;
+      section.classList.remove("is-ready");
+    };
+  }, [ready]);
 
   return (
     <section className="hp-anatomy" id="anatomy" ref={sectionRef} aria-labelledby="hp-anatomy-heading">
