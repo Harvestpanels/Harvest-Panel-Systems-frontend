@@ -59,6 +59,48 @@ function foamTexture() {
   return tex;
 }
 
+// Four shallow grooves pressed into the exterior facing, running the full
+// length. RoundedBoxGeometry maps the top face's u to length and v to width,
+// so each groove is a horizontal band in texture space. Used as a bump map
+// (the groove's depth) and a colour map (a faint shadow line in each), so
+// they catch the light the way a pressed line in painted steel does.
+function grooveTextures() {
+  const size = 1024;
+  const make = (draw) => {
+    const c = document.createElement("canvas");
+    c.width = c.height = size;
+    draw(c.getContext("2d"));
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 8;
+    return tex;
+  };
+  const centers = [0.2, 0.4, 0.6, 0.8].map((f) => f * size);
+  const bump = make((ctx) => {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, size, size);
+    for (const y of centers) {
+      const g = ctx.createLinearGradient(0, y - 7, 0, y + 7);
+      g.addColorStop(0, "#fff");
+      g.addColorStop(0.5, "#000");
+      g.addColorStop(1, "#fff");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, y - 7, size, 14);
+    }
+  });
+  const color = make((ctx) => {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, size, size);
+    for (const y of centers) {
+      ctx.fillStyle = "rgba(110,122,136,0.55)";
+      ctx.fillRect(0, y - 1.5, size, 3);
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.fillRect(0, y + 2, size, 1.5);
+    }
+  });
+  color.colorSpace = THREE.SRGBColorSpace;
+  return { bump, color };
+}
+
 // Core cross-section (width along x, thickness along y) with a tongue on one
 // long edge and the matching groove on the other, extruded along the length.
 function coreGeometry() {
@@ -132,6 +174,10 @@ export function createPanelScene(container, markerEls) {
   });
   const steelInner = steel.clone();
   steelInner.color.set(0xd2d8dd);
+  const grooves = grooveTextures();
+  steel.map = grooves.color;
+  steel.bumpMap = grooves.bump;
+  steel.bumpScale = 1.5;
 
   const foamMap = foamTexture();
   const foam = new THREE.MeshStandardMaterial({
@@ -210,6 +256,7 @@ export function createPanelScene(container, markerEls) {
       pmrem.dispose();
       envTex.dispose();
       foamMap.dispose();
+      grooves.bump.dispose(); grooves.color.dispose();
       skinGeo.dispose();
       core.geometry.dispose();
       steel.dispose(); steelInner.dispose(); foam.dispose();
