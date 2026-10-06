@@ -61,46 +61,50 @@
   gap: 32px;
 }
 
-.hp-anatomy__svg {
+/* WebGL canvas host. The canvas is sized to this box by panelScene.js; the
+   numbered markers are HTML laid over it, positioned each frame from the
+   3D anchor points. Fades in once the scene has rendered its first frame. */
+.hp-anatomy__view {
+  position: relative;
   width: 100%;
-  height: auto;
+  aspect-ratio: 1.05;
   max-height: 62vh;
-  overflow: visible;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.hp-anatomy.is-ready .hp-anatomy__view { opacity: 1; }
+
+.hp-anatomy__view canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-/* ---- Diagram ---- */
-.hp-anatomy__layer {
-  transition: transform 0.1s linear;
-}
-.hp-anatomy__layer--top    { transform: translateY(calc(var(--explode) * -78px)); }
-.hp-anatomy__layer--bottom { transform: translateY(calc(var(--explode) * 78px)); }
-
-/* Face colours are computed per-face from a fixed light direction in
-   PanelAnatomy.jsx; CSS only adds the cut-edge outline and ground shadow. */
-.hp-anatomy__edge {
-  stroke: rgba(var(--hp-navy-rgb), 0.35);
-  stroke-width: 0.8;
-  stroke-linejoin: round;
-}
-
-.hp-anatomy__shadow {
-  fill: rgba(0, 0, 0, 0.45);
-}
-
-.hp-anatomy__marker circle {
-  fill: #7cc8ff;
-  stroke: rgba(var(--hp-navy-rgb), 0.6);
-  stroke-width: 2;
-}
-.hp-anatomy__marker text {
-  font: 700 14px "Inter", sans-serif;
-  fill: var(--hp-navy);
-  text-anchor: middle;
-}
-/* Numbers only appear once the layers have separated enough to point at. */
 .hp-anatomy__marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #7cc8ff;
+  color: var(--hp-navy);
+  font: 700 13px "Inter", sans-serif;
+  box-shadow: 0 0 0 2px rgba(var(--hp-navy-rgb), 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 1; /* above the canvas, which is appended after the markers */
+  /* Only appear once the layers have separated enough to point at. */
   opacity: clamp(0, calc((var(--explode) - 0.35) * 3), 1);
 }
+
+/* No WebGL: the legend carries the section on its own. */
+.hp-anatomy__body.is-text-only { grid-template-columns: 1fr; }
+.hp-anatomy__body.is-text-only .hp-anatomy__item { opacity: 1; transform: none; }
 
 /* ---- Legend: each entry fades in as the diagram opens past its step ---- */
 .hp-anatomy__list {
@@ -148,7 +152,8 @@
   .hp-anatomy { height: 240vh; }
   .hp-anatomy__card { padding: 28px 22px 24px; }
   .hp-anatomy__body { grid-template-columns: 1fr; gap: 8px; }
-  .hp-anatomy__svg { max-height: 30vh; }
+  .hp-anatomy__view { max-height: 34vh; aspect-ratio: 1.35; margin: 0 auto; }
+  .hp-anatomy__marker { width: 20px; height: 20px; margin: -10px 0 0 -10px; font-size: 11px; }
   .hp-anatomy__intro h2 { font-size: 28px; }
   .hp-anatomy__list { gap: 12px; }
   .hp-anatomy__item h3 { font-size: 18px; }
