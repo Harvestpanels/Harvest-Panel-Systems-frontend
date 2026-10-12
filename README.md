@@ -171,3 +171,10 @@ SEO project rather than a requirement for these portal fixes.
 
 The local dependency lock was updated to patched compatible releases and Vitest
 4.1.11. Run `npm audit` periodically; advisory results change over time.
+
+## Site architecture (prototype redesign)
+
+- The public marketing site is static HTML in `public/` (`index.html`, `products.html`, `specs.html`, `blog.html`, `gallery.html`, `showroom.html`, `product-100mm-pir.html`) with its CSS/JS/images in `public/site/` and three.js in `public/vendor/`. Vercel serves it as-is with clean URLs (see `vercel.json`).
+- The React app is now only the customer portal: `portal.html` is served for `/portal/*`.
+- The chat assistant is the same `ChatWidget`, built as a separate bundle (`src/chat-entry.jsx` -> `/site/chat.js`) and mounted on every static page via `<div id="hp-chat-root">`.
+- E2E tests (`npm run test:e2e`) build the site and run `vite preview`, which mimics the Vercel rewrites.

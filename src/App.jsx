@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { useRouteScroll } from "./hooks/useRouteScroll";
@@ -15,10 +15,10 @@ import ToastProvider from "./components/toast/ToastProvider";
 // visitor actually navigates there, instead of all three shipping in one
 // bundle up front. A visitor landing on "/" never needs ProductsPage's
 // code at all, and vice versa.
-const HomePage = lazy(() => import("./pages/HomePage"));
-const ProductsPage = lazy(() => import("./pages/ProductsPage"));
-const SpecsPage = lazy(() => import("./pages/SpecsPage"));
-const BlogPage = lazy(() => import("./pages/BlogPage"));
+// The public marketing pages (home, products, specs, blog, gallery, showroom,
+// ...) are static HTML in public/ now. This React app only serves /portal/*.
+// Anything else that reaches it (a link inside the portal to "/products", say)
+// is handed to the browser as a normal page load; see CatchAll below.
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 // Customer portal. Lazy like every other route, so none of its code — or the
@@ -34,6 +34,18 @@ const PortalProfilePage = lazy(() => import("./pages/PortalProfilePage"));
 const PortalSettingsPage = lazy(() => import("./pages/PortalSettingsPage"));
 const PortalAdminPage = lazy(() => import("./pages/PortalAdminPage"));
 const PortalSignOutPage = lazy(() => import("./pages/PortalSignOutPage"));
+
+// Non-portal paths are served by static pages, so reload them for real instead
+// of routing client-side. Unknown /portal/* paths stay in the app (404 page) so
+// a bad portal URL can never bounce between the static host and this shell.
+function CatchAll() {
+  const { pathname, search, hash } = useLocation();
+  const inPortal = pathname === "/portal" || pathname.startsWith("/portal/");
+  useEffect(() => {
+    if (!inPortal) window.location.replace(`${pathname}${search}${hash}`);
+  }, [inPortal, pathname, search, hash]);
+  return inPortal ? <NotFoundPage /> : null;
+}
 
 function ScrollToTop() {
   useRouteScroll();
@@ -81,11 +93,6 @@ function App() {
       <RouteFade>
       <Suspense fallback={<PageLoader ready={false} />}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/specs" element={<SpecsPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-
           {/* Portal. The three public routes stay reachable signed-out;
               everything under RequireAuth waits for the session check before
               rendering so a refresh does not bounce a signed-in user to the
@@ -106,7 +113,7 @@ function App() {
             <Route path="admin" element={<RequireAuth adminOnly><PortalAdminPage /></RequireAuth>} />
           </Route>
 
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<CatchAll />} />
         </Routes>
       </Suspense>
       </RouteFade>

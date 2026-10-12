@@ -1,0 +1,23 @@
+/* Design tokens the chat assistant needs on the static pages. A copy of the :root
+   block in styles/index.css, deliberately WITHOUT that file's global html/body
+   background and color-scheme rules, which belong to the portal and would repaint
+   the marketing pages dark. Keep in sync with index.css. */
+:root {
+  --hp-dark: #1b1d1f;
+  --hp-cream: #f3f1ec;
+  --hp-navy: #10233f;
+  --hp-navy-rgb: 16, 35, 63;
+  --hp-accent: #105c94;
+  --hp-accent-rgb: 16, 92, 148;
+  --hp-accent-hover: #0c4670;
+  --hp-alert: #c8262e;
+  --hp-link: #4a8fd6;
+  --hp-link-light: #a6cdec;
+  --hp-link-soft: #6aa9dc;
+  --hp-error: #a3241d;
+  --hp-error-light: #ffb4ae;
+  --hp-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --hp-dur-fast: 150ms;
+  --hp-dur-normal: 280ms;
+  --hp-dur-reveal: 650ms;
+}

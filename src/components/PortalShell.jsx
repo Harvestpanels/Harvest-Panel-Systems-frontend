@@ -32,16 +32,11 @@ const PORTAL_NAV_DROPDOWNS = [
     label: "Menu",
     items: [
       HOME_SECTION("why", "Who We Are"),
-      HOME_SECTION("indoor-agriculture", "Controlled Environment Agriculture"),
-      HOME_SECTION("cold-storage", "Cold Storage"),
-      HOME_SECTION("pvc-panels", "PVC Panels"),
-      HOME_SECTION("laboratories", "Laboratories"),
-      HOME_SECTION("modular-housing", "Modular IMP Housing"),
-      HOME_SECTION("doors", "Doors"),
-      HOME_SECTION("trim-hardware", "Trim & Hardware"),
+      HOME_SECTION("industries", "Industries"),
+      { to: "/showroom", label: "3D Showroom" },
+      HOME_SECTION("calculator", "Room Calculator"),
       HOME_SECTION("flooring", "Flooring"),
-      HOME_SECTION("gallery", "Photo Gallery"),
-      HOME_SECTION("memberships", "Memberships"),
+      { to: "/gallery", label: "Photo Gallery" },
       HOME_SECTION("sustainability", "Sustainability"),
     ],
   },
@@ -51,7 +46,6 @@ const PORTAL_NAV_DROPDOWNS = [
     items: [
       HOME_SECTION("faq", "FAQ"),
       HOME_SECTION("contact", "Contact Us"),
-      HOME_SECTION("social-media", "Follow Us"),
     ],
   },
 ];

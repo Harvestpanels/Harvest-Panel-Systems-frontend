@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 import { mockPortal, user, accountId } from "./portal-fixture.js";
 
 test("portal tab titles are correct before the app loads", async ({ page }) => {
-  await page.route("**/src/main.jsx", route => route.abort());
+  await page.route(/\/assets\/portal-[^/]*\.js$/, route => route.abort());
   for (const [path, title] of [
     ["/portal", "Your documents"], ["/portal/profile", "Profile"],
     ["/portal/settings", "Settings"], ["/portal/admin", "Admin"],
@@ -95,26 +95,6 @@ test("admin upload completes and retains themed controls", async ({ page }, info
   await page.screenshot({ path: info.outputPath("admin.png"), fullPage: true });
 });
 
-test("public routes retain usable navigation and no render errors", async ({ page, isMobile }, info) => {
-  const errors = []; page.on("pageerror", (error) => errors.push(error.message));
-  await mockPortal(page);
-  for (const route of ["/", "/products", "/specs", "/blog"]) {
-    await page.goto(route);
-    await expect(page.locator(".hp-page-loader")).toHaveCount(0);
-    await expect(page.locator(".hp-nav__pill--fold")).toHaveCount(0);
-    await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  }
-  await page.screenshot({ path: info.outputPath("public-blog.png"), fullPage: false });
-  if (isMobile) {
-    await page.getByRole("button", { name: "Open menu", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Close menu", exact: true })).toHaveAttribute("aria-expanded", "true");
-    await page.getByRole("button", { name: "Close menu", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Open menu", exact: true })).toHaveAttribute("aria-expanded", "false");
-  }
-  expect(errors).toEqual([]);
-});
-
 test("password recovery reports errors and permits a successful retry", async ({ page }) => {
   await mockPortal(page, { signedIn: true });
   const rejectUpdate = (route) => route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ msg: "Session expired", code: "session_not_found" }) });
@@ -129,13 +109,4 @@ test("password recovery reports errors and permits a successful retry", async ({
   await page.getByRole("button", { name: "Save password" }).click();
   await expect(page.getByText("Password updated. Taking you to your documents...")).toBeVisible();
   await expect(page).toHaveURL(/\/portal$/);
-});
-
-test("uncached hash navigation waits for the destination and failed contact embed offers email", async ({ page }) => {
-  await mockPortal(page);
-  await page.goto("/products#contact");
-  await expect(page.locator(".hp-page-loader")).toHaveCount(0);
-  await expect(page.locator("#contact")).toBeInViewport();
-  await expect(page.locator('#contact a[href="mailto:Sales@harvestpanels.com"]').first()).toBeVisible();
-  expect(await page.evaluate(() => document.querySelectorAll("[inert]").length)).toBeLessThan(5);
 });

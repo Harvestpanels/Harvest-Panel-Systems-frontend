@@ -13,8 +13,8 @@ export default defineConfig({
     { name: "webkit", testMatch: "responsive.spec.js", use: { ...devices["iPhone 13"] } },
   ],
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1 --port 4173 --strictPort",
-    url: "http://127.0.0.1:4173", reuseExistingServer: false,
+    command: "npm run build && npx vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    url: "http://127.0.0.1:4173", reuseExistingServer: false, timeout: 180000,
     env: { VITE_SUPABASE_URL: "https://portal-test.supabase.co", VITE_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test", VITE_ERROR_REPORTING_ENABLED: "false" },
   },
 });

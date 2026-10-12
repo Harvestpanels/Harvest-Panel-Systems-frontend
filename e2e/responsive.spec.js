@@ -2,25 +2,61 @@ import { test, expect } from "@playwright/test";
 import { mockPortal } from "./portal-fixture.js";
 
 const sizes = [[320, 568], [390, 844], [667, 375], [768, 1024], [1024, 768], [1440, 900]];
+const STATIC_PAGES = ["/", "/products", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir"];
+const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal/admin"];
+
+const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
+
+async function chatRoundTrip(page) {
+  await page.getByRole("button", { name: "Open chat assistant" }).click();
+  const chat = page.getByRole("dialog", { name: "Harvest Panel Systems assistant" });
+  await expect(chat).toBeVisible();
+  await expect.poll(() => chat.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    return rect.top >= 0 && rect.left >= 0 && rect.right <= innerWidth && rect.bottom <= innerHeight;
+  })).toBe(true);
+  await page.getByRole("textbox", { name: "Type your question" }).fill("What panels do you offer?");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(chat).toContainText("What panels do you offer?");
+  await page.getByRole("button", { name: "Close chat", exact: true }).click();
+  await expect(chat).toHaveCount(0);
+}
 
 for (const [width, height] of sizes) {
-  test(`responsive routes and floating controls at ${width}x${height}`, async ({ page, browserName, isMobile }) => {
+  test(`static pages fit and chat works at ${width}x${height}`, async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width, height });
+    const errors = [];
+    page.on("pageerror", error => errors.push(error.message));
+    for (const path of STATIC_PAGES) {
+      await page.goto(path, { waitUntil: "load" });
+      await expect(page.locator("nav.nav, .nav").first()).toBeVisible();
+      expect(await fitsWidth(page), path).toBe(true);
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      expect(await fitsWidth(page), `${path} footer`).toBe(true);
+    }
+    await page.goto("/", { waitUntil: "load" });
+    await chatRoundTrip(page);
+    expect(errors).toEqual([]);
+  });
+
+  test(`portal pages and floating controls at ${width}x${height}`, async ({ page, browserName, isMobile }) => {
     test.setTimeout(90000);
     await page.setViewportSize({ width, height });
     const errors = [];
     page.on("pageerror", error => errors.push(error.message));
     await mockPortal(page, { signedIn: true, admin: true });
-    for (const path of ["/", "/products", "/specs", "/blog", "/portal", "/portal/profile", "/portal/settings", "/portal/admin"]) {
+    for (const path of PORTAL_PAGES) {
       await page.goto(path, { waitUntil: "domcontentloaded" });
       await expect(page.locator(".hp-nav")).toHaveCount(1);
       await expect(page.locator(".hp-page-loader")).toHaveCount(0, { timeout: 15000 });
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), path).toBe(true);
+      expect(await fitsWidth(page), path).toBe(true);
       expect(await page.locator(".hp-panel").evaluateAll(elements => elements.every(el => {
         const rect = el.getBoundingClientRect();
         return rect.left >= 0 && rect.right <= innerWidth;
       })), `${path} panels fit`).toBe(true);
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${path} footer`).toBe(true);
+      expect(await fitsWidth(page), `${path} footer`).toBe(true);
     }
     await page.evaluate(() => window.scrollTo(0, 0));
     if (width <= 1024) {
@@ -45,95 +81,38 @@ for (const [width, height] of sizes) {
       await page.getByRole("button", { name: "Close menu", exact: true }).click();
       await page.setViewportSize({ width, height });
     }
-    await page.getByRole("button", { name: "Open chat assistant" }).click();
-    const chat = page.getByRole("dialog", { name: "Harvest Panel Systems assistant" });
-    await expect(chat).toBeVisible();
-    await expect.poll(() => chat.evaluate(el => {
-      const rect = el.getBoundingClientRect();
-      return rect.top >= 0 && rect.left >= 0 && rect.right <= innerWidth && rect.bottom <= innerHeight;
-    })).toBe(true);
-    await page.getByRole("textbox", { name: "Type your question" }).fill("What panels do you offer?");
-    await page.getByRole("button", { name: "Send message" }).click();
-    await expect(chat).toContainText("What panels do you offer?");
-    await page.getByRole("button", { name: "Close chat", exact: true }).click();
-    await expect(chat).toHaveCount(0);
+    await chatRoundTrip(page);
     expect(errors).toEqual([]);
   });
 }
 
-test("reduced motion avoids persistent animation loops", async ({ page }) => {
+test("home page: log in link, 20x20 calculator preset and showroom picker work", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/", { waitUntil: "load" });
+  await expect(page.locator('a.login[href="/portal/login"]').first()).toBeVisible();
+  await page.locator("#calculator").scrollIntoViewIfNeeded();
+  await page.locator('#c-presets [data-l="20"][data-w="20"]').click();
+  await expect(page.locator("#o-total")).toHaveText("35");
+  await page.goto("/showroom", { waitUntil: "load" });
+  await expect(page.locator(".pick .pcard3").nth(1)).toBeVisible();
+  await page.locator(".pick .pcard3").nth(1).click();
+  await expect(page.locator(".pick .pcard3.on")).toHaveCount(1);
+});
+
+test("FAQ on the home page opens and closes", async ({ page }) => {
+  await page.goto("/", { waitUntil: "load" });
+  const first = page.locator("#faq details").first();
+  await first.locator("summary").click();
+  await expect(first).toHaveAttribute("open", "");
+  await first.locator("summary").click();
+  await expect(first).not.toHaveAttribute("open", "");
+});
+
+test("reduced motion avoids persistent CSS animation loops on the static home page", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await mockPortal(page);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.locator(".hp-nav")).toHaveCount(1);
-  await expect(page.locator(".hp-page-loader")).toHaveCount(0);
+  await page.goto("/", { waitUntil: "load" });
+  await expect(page.locator(".nav").first()).toBeVisible();
   expect(await page.evaluate(() => document.getAnimations().filter(animation =>
     animation.effect.getTiming().iterations === Infinity && animation.playState === "running"
   ).length)).toBe(0);
-  await expect(page.locator(".hp-parallax-layer")).toHaveCSS("pointer-events", "none");
-  await page.locator("#why").scrollIntoViewIfNeeded();
-  expect(await page.locator("#why").evaluate(el => {
-    const rect = el.getBoundingClientRect();
-    const hit = document.elementFromPoint(innerWidth / 2, Math.max(1, Math.min(innerHeight / 2, rect.bottom - 1)));
-    return !hit?.closest(".hp-parallax-layer");
-  })).toBe(true);
-});
-
-test("gallery keyboard controls, captions, FAQ and sign-in dialog remain usable", async ({ page }) => {
-  await page.setViewportSize({ width: 667, height: 375 });
-  await mockPortal(page);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.locator(".hp-nav")).toHaveCount(1);
-  await expect(page.locator(".hp-page-loader")).toHaveCount(0);
-  await page.getByRole("button", { name: /^View .* full screen$/ }).first().click();
-  const lightbox = page.locator(".hp-lightbox");
-  await expect(lightbox).toBeVisible();
-  const next = page.getByRole("button", { name: "Next photo", exact: true });
-  await next.focus();
-  await page.keyboard.press("Enter");
-  await expect(lightbox.locator(".hp-lightbox__count")).toContainText("2 /");
-  await expect(next).toBeFocused();
-  await page.keyboard.press("Enter");
-  await expect(lightbox.locator(".hp-lightbox__count")).toContainText("3 /");
-  const caption = lightbox.locator("figcaption");
-  await expect.poll(() => caption.evaluate(el => {
-    const rect = el.getBoundingClientRect();
-    return rect.top >= 0 && rect.bottom <= innerHeight;
-  })).toBe(true);
-  await page.getByRole("button", { name: "Close", exact: true }).click();
-  const question = page.locator(".hp-faq-item__q").first();
-  await question.click();
-  await expect(question).toHaveAttribute("aria-expanded", "true");
-  await question.click();
-  await expect(question).toHaveAttribute("aria-expanded", "false");
-  await page.getByRole("button", { name: "Open menu", exact: true }).click();
-  await page.getByRole("button", { name: "Log in", exact: true }).click();
-  const modal = page.locator(".hp-authmodal");
-  await expect(modal).toBeVisible();
-  await modal.getByLabel("Email", { exact: true }).fill("mobile@example.test");
-  await expect(modal.getByLabel("Email", { exact: true })).toHaveValue("mobile@example.test");
-  await modal.getByRole("button", { name: "Close", exact: true }).click();
-  await expect(modal).toHaveCount(0);
-});
-
-test("desktop dropdowns fit short windows and close on mobile resize or modal open", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 375 });
-  await mockPortal(page);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.locator(".hp-nav")).toHaveCount(1);
-  await expect(page.locator(".hp-page-loader")).toHaveCount(0);
-  const menu = page.getByRole("button", { name: "Menu", exact: true });
-  await menu.click();
-  const panel = page.locator(".hp-nav__menu-panel.is-open");
-  await expect(panel).toBeVisible();
-  await expect.poll(() => panel.evaluate(el => el.getBoundingClientRect().bottom <= innerHeight)).toBe(true);
-  await page.setViewportSize({ width: 667, height: 375 });
-  await expect(panel).toHaveCount(0);
-  await page.setViewportSize({ width: 1280, height: 720 });
-  await menu.click();
-  const login = page.getByRole("button", { name: "Log in", exact: true });
-  await login.focus();
-  await page.keyboard.press("Enter");
-  await expect(page.locator(".hp-authmodal")).toBeVisible();
-  await expect(panel).toHaveCount(0);
 });
