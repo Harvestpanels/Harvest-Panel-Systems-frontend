@@ -157,18 +157,72 @@
 <section class="sec dark" id="inside">
   <div class="wrap">
     <div class="center">
-      <p class="eyebrow rv">4&quot; (100 mm) PIR panel</p>
-      <h2 class="rv d1">Look inside.</h2>
-      <p class="lead rv d2">Spin it. Lift the steel off the core. Slide two panels together.</p>
+      <p class="eyebrow rv">Look inside</p>
+      <h2 class="rv d1">See how a room goes together.</h2>
+      <p class="lead rv d2">The panel, the joint, the ceiling, the trim and every screw, built from our installation guide.</p>
     </div>
-    <div class="viewer rv" style="margin-top:56px"><iframe src="/site/viewer.html" title="Interactive 3D panel and joint viewer" loading="lazy"></iframe></div>
-    <div class="stats" style="margin-top:56px">
-      <div class="stat rv"><div class="num"><span data-to="100" data-suf=" mm">100 mm</span></div><p>Panel thickness (3.94&quot;)</p></div>
-      <div class="stat rv d1"><div class="num"><span data-to="1000" data-suf=" mm">1,000 mm</span></div><p>Cover width (39.37&quot;)</p></div>
-      <div class="stat rv d2"><div class="num"><span data-to="0.5" data-dec="1" data-suf=" mm">0.5 mm</span></div><p>Steel face, both sides (0.020&quot;)</p></div>
-      <div class="stat rv d3"><div class="num">PIR</div><p>Rigid foam core</p></div>
+    <div class="inst rv" id="inst" style="margin-top:48px">
+      <div class="inst-tabs" role="tablist" aria-label="Installation details">
+        <button class="pill on" data-pane="panel" role="tab">The panel</button>
+        <button class="pill" data-scene="joint" role="tab">Panel to panel</button>
+        <button class="pill" data-scene="ceiling" role="tab">Ceiling on a wall</button>
+        <button class="pill" data-scene="track" role="tab">Floor track</button>
+      </div>
+
+      <div class="inst-pane" data-p="panel">
+        <div class="viewer"><iframe src="/site/viewer.html" title="Interactive 3D panel and joint viewer" loading="lazy"></iframe></div>
+        <div class="stats" style="margin-top:48px">
+          <div class="stat rv"><div class="num"><span data-to="100" data-suf=" mm">100 mm</span></div><p>Panel thickness (3.94&quot;)</p></div>
+          <div class="stat rv d1"><div class="num"><span data-to="1000" data-suf=" mm">1,000 mm</span></div><p>Cover width (39.37&quot;)</p></div>
+          <div class="stat rv d2"><div class="num"><span data-to="0.5" data-dec="1" data-suf=" mm">0.5 mm</span></div><p>Steel face, both sides (0.020&quot;)</p></div>
+          <div class="stat rv d3"><div class="num">PIR</div><p>Rigid foam core</p></div>
+        </div>
+        <p class="center" style="margin-top:36px"><a class="link rv" href="/product-100mm-pir">Explore the 4&quot; (100 mm) panel</a></p>
+      </div>
+
+      <div class="inst-pane" data-p="scene" hidden>
+        <div class="inst-grid">
+          <div class="inst-view">
+            <div class="inst-img"><img alt="" decoding="async"><img alt="" decoding="async"></div>
+            <div class="inst-labels" aria-hidden="true"></div>
+            <div class="inst-line" aria-hidden="true"></div><div class="inst-ring" aria-hidden="true"></div>
+            <div class="inst-inset" aria-hidden="true"><img alt="" decoding="async"></div>
+            <div class="inst-ctl">
+              <button class="chip3" data-act="prev" aria-label="Previous step">&larr;</button>
+              <button class="chip3" data-act="play">&#9654; Play steps</button>
+              <button class="chip3" data-act="next" aria-label="Next step">&rarr;</button>
+              <span class="inst-count" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="inst-side">
+            <div class="inst-steps" role="list"></div>
+            <div class="inst-detail" aria-live="polite"></div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="inst-more">
+        <div class="inst-card">
+          <h3>Trim and accessories in a typical room</h3>
+          <ul>
+            <li><b>Floor track.</b> 20 ga (0.91 mm) galvanized U-track, web sized to the panel thickness.</li>
+            <li><b>Inside corner trim.</b> 2&quot; &times; 2&quot; &times; 26 ga (51 &times; 51 &times; 0.46 mm), continuous, on the room side.</li>
+            <li><b>Outside corner trim.</b> Continuous 26 ga, on the warm side, over sealant.</li>
+            <li><b>Flat batten.</b> 26 ga, 4&quot; (102 mm) wide minimum, over a ceiling-to-ceiling butt joint above a partition.</li>
+            <li><b>Joint covers and Z-flashing.</b> Where thickness changes or the drawings call for them.</li>
+            <li><b>Butyl and sealant.</b> Under the track, at corners and joints, and on the warm side to keep the vapor seal continuous.</li>
+          </ul>
+          <p class="cnote">Project installation drawings and Harvest Panel Systems shop drawings always govern. <a href="/trim">See the trim and accessories</a>.</p>
+        </div>
+        <div class="inst-card" id="fast-est">
+          <h3>How many fasteners?</h3>
+          <p class="cnote" style="margin:0 0 14px">Typical counts from the guide&rsquo;s spacings, for a 39.37&quot; (1,000 mm) wide wall panel.</p>
+          <label class="fe-l">Panel length
+            <select><option value="8">8 ft (2.4 m)</option><option value="10">10 ft (3.0 m)</option><option value="12" selected>12 ft (3.7 m)</option><option value="14">14 ft (4.3 m)</option><option value="16">16 ft (4.9 m)</option><option value="20">20 ft (6.1 m)</option><option value="24">24 ft (7.3 m)</option><option value="36">36 ft (11 m)</option></select></label>
+          <div class="fe-out"></div>
+        </div>
+      </div>
     </div>
-    <p class="center" style="margin-top:44px"><a class="link rv" href="/product-100mm-pir">Explore the 4&quot; (100 mm) panel</a></p>
   </div>
 </section>
 
@@ -332,6 +386,8 @@
 <script src="/vendor/three/GLTFLoader.js"></script>
 <script src="/site/js/panel_assets.js"></script>
 <script src="/site/js/room.js"></script>
+<script src="/site/js/install_data.js"></script>
+<script src="/site/js/install.js"></script>
 <script src="/site/js/pages.js"></script>
 <script src="/site/js/calc.js"></script>
 <div id="hp-chat-root"></div>
