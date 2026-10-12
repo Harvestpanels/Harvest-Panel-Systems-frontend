@@ -58,8 +58,8 @@
   // fastener estimator (guide spacings)
   const est=$('#fast-est');
   if(est){ const sel=$('select',est), out=$('.fe-out',est);
-    const calc=()=>{ const ft=+sel.value, stitch=Math.floor(ft*12/12)+1, trackPer=Math.floor(39.37/12)+1, pins=Math.ceil(39.37/24)+1;
-      out.innerHTML=`<div><b>${stitch}</b><span>Stitch screws per joint, if the drawings call for them (12&quot; / 305 mm O.C.)</span></div>`+
+    const calc=()=>{ const ft=+sel.value, joint=Math.floor(ft*12/12)+1, trackPer=Math.floor(39.37/12)+1, pins=Math.ceil(39.37/24)+1;
+      out.innerHTML=`<div><b>${joint}</b><span>Screws per joint through the female lip, if the drawings call for them (12&quot; / 305 mm O.C.)</span></div>`+
         `<div><b>${trackPer*2}</b><span>Floor-track screws per panel (${trackPer} per leg, 12&quot; / 305 mm O.C.)</span></div>`+
         `<div><b>${pins}</b><span>Shot pins per panel at a curb base (24&quot; / 610 mm O.C. alternate)</span></div>`; };
     sel.onchange=calc; calc(); }
