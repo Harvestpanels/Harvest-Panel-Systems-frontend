@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Strut channel 41 by 41 mm">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3f6fa"/><stop offset="1" stop-color="#dfe6ee"/></linearGradient></defs>
+<rect width="400" height="300" fill="url(#bg)"/>
+<g fill="#aeb8c4" stroke="#7f8b99" stroke-width="2" stroke-linejoin="round"><path d="M130 80 h140 v140 h-140 z M146 96 v108 h108 v-34 h-26 v-9 h26 v-65 z" fill-rule="evenodd"/><g fill="#f3f6fa" stroke="none"><rect x="168" y="86" width="9" height="4" rx="2"/><rect x="196" y="86" width="9" height="4" rx="2"/><rect x="224" y="86" width="9" height="4" rx="2"/></g><rect x="138" y="140" width="4" height="9" rx="2" fill="#f3f6fa" stroke="none"/></g></svg>
