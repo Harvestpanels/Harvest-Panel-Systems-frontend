@@ -129,12 +129,12 @@
         {type:'slider',label:'Joint',min:0,max:100,value:100,fmt:v=>v+'%',onChange:v=>{jn=v/100;apply();}},
         {type:'button',text:'Play layers',onClick:()=>{ const a=ex>.5?0:1; tween(ex,a,2400,v=>{ex=v;apply();},()=>{ctx.controls[0].setValue&&ctx.controls[0].setValue(a*100);}); }},
         {type:'button',text:'Play joint',onClick:()=>{ const a=jn>.5?0:1; tween(jn,a,2400,v=>{jn=v;apply();}); }}],
-      stats:()=>[['Thickness','100 mm'],['Cover width','1,000 mm'],['Steel faces','0.5 mm'],['Insulation','R-28']],
+      stats:()=>[['Thickness','100 mm'],['Cover width','1,000 mm'],['Steel faces','0.5 mm'],['Insulation','R-30']],
       views:'34' };
   }
 
   // ================================================================= PRODUCT 2: wall & roof panel designer
-  const THICK=[['2″',50.8,14.08,2.85],['3″',76.2,21.13,3.04],['4″',101.6,28.17,3.22],['5″',127,35.21,3.41],['6″',152.4,42.25,3.60],['8″',203.2,56.34,3.97]];
+  const THICK=[['2″',50.8,15.0,2.85],['3″',76.2,22.5,3.04],['4″',101.6,30.0,3.22],['5″',127,37.5,3.41],['6″',152.4,45.0,3.60],['8″',203.2,60.0,3.97]];
   const PROFILES={
     flat:{n:'Flat',kind:'wall',d:'Smooth, unribbed face for a minimal, monolithic look.',pts:()=>[[-500,0],[500,0]]},
     box:{n:'Box',kind:'wall',d:'Flat pans separated by narrow ribs.',pts:()=>{ const p=[[-500,0]]; [-375,-125,125,375].forEach(c=>p.push([c-12,0],[c-8,8],[c+8,8],[c+12,0])); p.push([500,0]); return p; }},

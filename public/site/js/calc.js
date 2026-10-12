@@ -1,5 +1,5 @@
 /* Live room-size calculator: length x width x height -> panel counts, area, budget, install time, plan view.
-   Rules come from Harvest's own published numbers: 1 m (39.37") or 45" cover, 12-20 ft stock lengths,
+   Rules come from Harvest's own published numbers: 1 m (39.37") or 45" cover, 12-36 ft stock lengths,
    $4-$8 per sq ft panel pricing and 1,000-1,500 sq ft/day crew rate (site FAQ). Estimate only, not a quote. */
 (function(){
   const root=document.getElementById('calc'); if(!root) return;
@@ -87,7 +87,7 @@
     $('o-trim').textContent=`${4} corner angles · ${fmt(c.perim/FT)} ft ceiling-edge trim`;
     // warnings
     const w=[];
-    if(S.ceiling && c.span>6.096+1e-6) w.push(`The ${lenTxt(Math.min(S.L,S.W))} ceiling span is longer than our 20 ft stock panels. It needs a support beam or custom lengths. Call us.`);
+    if(S.ceiling && c.span>10.973+1e-6) w.push(`The ${lenTxt(Math.min(S.L,S.W))} ceiling span is longer than our 36 ft maximum panel length. It needs a support beam or custom lengths. Call us.`);
     if(S.H>20) w.push('Walls over 20 ft need custom-length panels or a panel splice.');
     if(S.H<12) w.push(`Wall panels ship from 12 ft stock, so ${S.H} ft walls are cut to length. Cut-off may be reusable.`);
     if(c.doors>=c.slots.reduce((a,b)=>a+b,0)) w.push('That is more doors than the room has wall panels.');

@@ -134,7 +134,7 @@
     // HUD + stages + rail
     if(hP) hP.textContent=placed+' / '+totalItems;
     if(hA) hA.textContent=Math.round(area/totalArea*targetArea).toLocaleString('en-US');
-    if(hR) hR.textContent='R-28';
+    if(hR) hR.textContent='R-30';
     stages.forEach(s=>s.classList.toggle('on', p>=+s.dataset.a && p<+s.dataset.b));
     dots.forEach((d,i)=>d.classList.toggle('on', p>=phases[i][0] && p<phases[i][1]));
 
