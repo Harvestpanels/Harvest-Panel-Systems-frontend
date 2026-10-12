@@ -15,7 +15,7 @@
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.outputEncoding=THREE.sRGBEncoding;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=.8;
   renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   host.appendChild(renderer.domElement);
   const scene=new THREE.Scene();
@@ -29,8 +29,8 @@
     box(30,18,-25,22,25,5); box(24,14,28,10,12,3); box(40,10,0,40,0,4);
     const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(es,0.02).texture; pm.dispose();
   })();
-  scene.add(new THREE.HemisphereLight(0xffffff,0xd9d6cc,.55));
-  const sun=new THREE.DirectionalLight(0xffffff,1.15); sun.position.set(-7,13,9); sun.castShadow=true;
+  scene.add(new THREE.HemisphereLight(0xffffff,0xd9d6cc,.4));
+  const sun=new THREE.DirectionalLight(0xffffff,1.0); sun.position.set(-7,13,9); sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048); const sc=sun.shadow.camera; sc.left=-9;sc.right=9;sc.top=9;sc.bottom=-9;sc.near=1;sc.far=40;
   sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.02; sun.shadow.radius=5; scene.add(sun);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:.28}));
@@ -52,8 +52,33 @@
   // ---- build list ----
   const items=[];   // {obj, t0, t1, from:Vector3, to:Vector3, area}
   function add(obj,to,from,t0,t1,area){ obj.position.copy(from); obj.visible=false; scene.add(obj); items.push({obj,to,from,t0,t1,area}); }
-  function strip(total){ const o=[]; for(let i=0;i<6;i++) o.push({c:-total/2+.5+i,w:1}); const cw=total-6; o.push({c:-total/2+6+cw/2,w:cw}); return o; }
-  function pbox(w,h,d,shadow=true){ const m=new THREE.Mesh(new THREE.BoxGeometry(w-GAP,h,d),steelMat(w)); m.castShadow=shadow; m.receiveShadow=true; return m; }
+  // 6 full 1 m panels at the real joint pitch (the tongue sits 0.9 mm into the groove), then one cut panel
+  const PITCH=1.002;                          // a 2 mm reveal at each joint so the seams read on screen
+  function strip(total){ const o=[]; for(let i=0;i<6;i++) o.push({c:-total/2+.5+i*PITCH,w:1}); const cw=total-6*PITCH; o.push({c:-total/2+6*PITCH+cw/2,w:cw}); return o; }
+
+  // The panels are the Blender-modelled 100 mm PIR panel (panel_assets.js). Until that model has
+  // decoded, each panel shows a plain box of the same size; dressPanels() swaps the real model in.
+  const PANEL_LEN=1.875;                       // length of the modelled panel (m); stretched to the length needed
+  const panels=[];
+  function pbox(w,h,d,kind){ const g=new THREE.Group(); const m=new THREE.Mesh(new THREE.BoxGeometry(w-GAP,h,d),steelMat(w)); m.castShadow=true; m.receiveShadow=true; g.add(m);
+    g.userData={w,h,d,kind}; panels.push(g); return g; }
+  // model axes: X = length, Y = thickness, Z = cover width (tongue on +Z)
+  const BASIS={ wall:new THREE.Matrix4().makeBasis(new THREE.Vector3(0,1,0),new THREE.Vector3(0,0,1),new THREE.Vector3(1,0,0)),
+                ceil:new THREE.Matrix4().makeBasis(new THREE.Vector3(0,0,-1),new THREE.Vector3(0,1,0),new THREE.Vector3(1,0,0)) };
+  function dressPanels(proto){ panels.forEach(g=>{ const {w,h,d,kind}=g.userData; g.clear();
+      const model=proto.clone(true); model.scale.set((kind==='wall'?h:d)/PANEL_LEN,1,w);
+      const holder=new THREE.Group(); holder.add(model); holder.quaternion.setFromRotationMatrix(BASIS[kind]); g.add(holder); }); }
+  if(THREE.GLTFLoader && typeof PANEL_GLB_B64!=='undefined'){
+    const ab=(s=>{ const a=atob(s),u=new Uint8Array(a.length); for(let i=0;i<a.length;i++)u[i]=a.charCodeAt(i); return u.buffer; })(PANEL_GLB_B64);
+    const mats={ Steel_top:new THREE.MeshPhysicalMaterial({color:0xcfd5c8,roughness:.5,clearcoat:.1,clearcoatRoughness:.4}),
+      PIR_core:new THREE.MeshStandardMaterial({color:0xe9dcae,roughness:.85}), Gasket:new THREE.MeshStandardMaterial({color:0x3a3a3d,roughness:.95}),
+      Tongue_tape:new THREE.MeshStandardMaterial({color:0xf7f1da,roughness:.42}) };
+    mats.Steel_bottom=mats.Steel_top;
+    new THREE.GLTFLoader().parse(ab,'',gltf=>{ const proto=gltf.scene;
+      proto.traverse(o=>{ if(!o.isMesh) return; const nm=o.name.replace(/\.\d+$/,''); if(nm==='Tongue_print'){ o.visible=false; return; } // logo tape sits inside the joint
+        if(mats[nm]) o.material=mats[nm]; o.castShadow=true; o.receiveShadow=true; });
+      dressPanels(proto); });
+  }
   const SQFT=10.7639;
 
   // floor slab
@@ -62,8 +87,8 @@
 
   // walls: back, left, right, front
   const wallY=H/2;
-  strip(OUT).forEach((s,i)=>{ const m=pbox(s.w,H,T); add(m,new THREE.Vector3(s.c,wallY,-(W/2+T/2)),new THREE.Vector3(s.c,wallY+5,-(W/2+T/2)-2.4),.08+i*.018,.22+i*.018,s.w*H*SQFT); });
-  [-1,1].forEach((side,k)=>{ strip(W).forEach((s,i)=>{ const m=pbox(s.w,H,T); m.rotation.y=Math.PI/2;
+  strip(OUT).forEach((s,i)=>{ const m=pbox(s.w,H,T,'wall'); add(m,new THREE.Vector3(s.c,wallY,-(W/2+T/2)),new THREE.Vector3(s.c,wallY+5,-(W/2+T/2)-2.4),.08+i*.018,.22+i*.018,s.w*H*SQFT); });
+  [-1,1].forEach((side,k)=>{ strip(W).forEach((s,i)=>{ const m=pbox(s.w,H,T,'wall'); m.rotation.y=Math.PI/2;
       const t0=(k?.32:.2)+i*.018; add(m,new THREE.Vector3(side*(W/2+T/2),wallY,s.c),new THREE.Vector3(side*(W/2+T/2+2.4),wallY+5,s.c),t0,t0+.14,s.w*H*SQFT); }); });
   strip(OUT).forEach((s,i)=>{
     const t0=.44+i*.016, to=new THREE.Vector3(s.c,wallY,W/2+T/2), from=new THREE.Vector3(s.c,wallY+5,W/2+T/2+2.4);
@@ -72,12 +97,12 @@
       const hd=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.55,16),handleMat); hd.position.set(.36,0,T/2+.06); hd.castShadow=true; door.add(hd);
       const f=new THREE.Mesh(new THREE.BoxGeometry(.04,DOOR_H,.04),handleMat); f.position.set(.31,0,T/2+.03); door.add(f);
       add(door,new THREE.Vector3(s.c,DOOR_H/2,W/2+T/2+.01),new THREE.Vector3(s.c,DOOR_H/2+5,W/2+T/2+2.6),.58,.72,s.w*DOOR_H*SQFT);
-      const lh=H-DOOR_H, lm=pbox(s.w,lh,T);
+      const lh=H-DOOR_H, lm=pbox(s.w,lh,T,'wall');
       add(lm,new THREE.Vector3(s.c,DOOR_H+lh/2,W/2+T/2),new THREE.Vector3(s.c,DOOR_H+lh/2+5,W/2+T/2+2.4),t0,t0+.14,s.w*lh*SQFT);
-    } else { const m=pbox(s.w,H,T); add(m,to,from,t0,t0+.14,s.w*H*SQFT); }
+    } else { const m=pbox(s.w,H,T,'wall'); add(m,to,from,t0,t0+.14,s.w*H*SQFT); }
   });
   // ceiling: 20 ft panels spanning the room, dropped in one by one
-  strip(OUT).forEach((s,i)=>{ const m=pbox(s.w,T,W); const t0=.62+i*.035;
+  strip(OUT).forEach((s,i)=>{ const m=pbox(s.w,T,W,'ceil'); const t0=.62+i*.035;
     add(m,new THREE.Vector3(s.c,H+T/2,0),new THREE.Vector3(s.c,H+T/2+6.5,0),t0,t0+.16,s.w*W*SQFT); });
   // LED strips under the ceiling edge glow on at the end (visible through the door side as accent)
   const glowMat=new THREE.MeshBasicMaterial({color:0x4a8fd6,transparent:true,opacity:0});
