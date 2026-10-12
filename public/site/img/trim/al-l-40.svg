@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Aluminum L angle 40 by 40 mm">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3f6fa"/><stop offset="1" stop-color="#dfe6ee"/></linearGradient></defs>
-<rect width="400" height="300" fill="url(#bg)"/>
-<g fill="#aeb8c4" stroke="#7f8b99" stroke-width="2" stroke-linejoin="round"><path d="M130 220 h140 v-12 h-128 v-128 h-12 z"/></g></svg>

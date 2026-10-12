@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="PVC base track">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3f6fa"/><stop offset="1" stop-color="#dfe6ee"/></linearGradient></defs>
-<rect width="400" height="300" fill="url(#bg)"/>
-<g fill="#e9edf2" stroke="#b9c2cf" stroke-width="2" stroke-linejoin="round"><path d="M120 210 h160 v-20 h-30 v-74 h-100 v74 h-30 z" transform="translate(0,-10)"/></g></svg>
