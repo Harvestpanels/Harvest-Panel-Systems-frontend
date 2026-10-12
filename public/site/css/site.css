@@ -435,3 +435,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .inst-inset{position:absolute;border-radius:50%;overflow:hidden;border:4px solid #fff;box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;transform:scale(.86);transition:opacity .45s,transform .45s;background:#10233f;pointer-events:none}
 .inst-inset.on{opacity:1;transform:scale(1)}.inst-inset img{width:100%;height:100%;object-fit:cover;display:block}
 @media(prefers-reduced-motion:reduce){.inst-ring{animation:none}}
+.inst-view.mode-3d{background:radial-gradient(ellipse at 50% 35%,#bfc4cb,#737a85)}
+.inst-3d{position:absolute;inset:0}.inst-3d canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}.inst-3d canvas:active{cursor:grabbing}
+.inst-view.mode-3d .inst-img,.inst-view.mode-3d .inst-inset{display:none}
+.inst-view.mode-photo .inst-3d,.inst-view.mode-photo .inst-hint{display:none}
+.inst-hint{position:absolute;left:0;right:0;bottom:56px;text-align:center;font-size:12px;color:#5d6775;margin:0;pointer-events:none}
+.inst-view.loading::after{content:"Loading 3D model…";position:absolute;inset:0;display:grid;place-items:center;color:#5d6775;font-size:14px}
+.inst-view.mode-3d .ilab{transform:translate(-50%,-135%)}

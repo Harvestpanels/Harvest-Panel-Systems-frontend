@@ -182,7 +182,8 @@
 
       <div class="inst-pane" data-p="scene" hidden>
         <div class="inst-grid">
-          <div class="inst-view">
+          <div class="inst-view mode-3d">
+            <div class="inst-3d"></div>
             <div class="inst-img"><img alt="" decoding="async"><img alt="" decoding="async"></div>
             <div class="inst-labels" aria-hidden="true"></div>
             <div class="inst-line" aria-hidden="true"></div><div class="inst-ring" aria-hidden="true"></div>
@@ -191,8 +192,11 @@
               <button class="chip3" data-act="prev" aria-label="Previous step">&larr;</button>
               <button class="chip3" data-act="play">&#9654; Play steps</button>
               <button class="chip3" data-act="next" aria-label="Next step">&rarr;</button>
+              <button class="chip3" data-act="mode">&#128247; Photo view</button>
+              <button class="chip3" data-act="reset">Reset view</button>
               <span class="inst-count" aria-live="polite"></span>
             </div>
+            <p class="inst-hint">Drag to orbit &middot; scroll to zoom</p>
           </div>
           <aside class="inst-side">
             <div class="inst-steps" role="list"></div>
@@ -386,6 +390,7 @@
 <script src="/vendor/three/GLTFLoader.js"></script>
 <script src="/site/js/panel_assets.js"></script>
 <script src="/site/js/room.js"></script>
+<script src="/vendor/three/OrbitControls.js"></script>
 <script src="/site/js/install_data.js"></script>
 <script src="/site/js/install.js"></script>
 <script src="/site/js/pages.js"></script>
