@@ -35,7 +35,7 @@
     const R={'1-5/8':12.2,'2':15.0,'2-1/2':18.8,'3':22.5,'4':30.0,'5':37.5,'6':45.0,'8':60.0};
     const WT={'26/26':[2.07,2.14,2.24,2.33,2.52,2.70,2.89,3.27],'24/26':[2.44,2.51,2.61,2.70,2.85,3.04,3.26,3.64],'24/24':[2.78,2.85,2.94,3.04,3.22,3.41,3.60,3.97],'22/26':[2.72,2.70,2.88,2.98,3.16,3.35,3.54,3.91]};
     const keys=['1-5/8','2','2-1/2','3','4','5','6','8']; let th='4', gg='24/24';   // explicit order: JS reorders integer-like object keys
-    const upd=()=>{ $('#cfg-r').textContent='R-'+R[th].toFixed(1).replace(/\.0$/,''); $('#cfg-w').textContent=WT[gg][keys.indexOf(th)].toFixed(2)+' psf';
+    const upd=()=>{ $('#cfg-r').textContent='R-'+R[th].toFixed(1).replace(/\.0$/,''); $('#cfg-w').textContent=WT[gg][keys.indexOf(th)].toFixed(2)+' psf · '+(WT[gg][keys.indexOf(th)]*4.8824).toFixed(1)+' kg/m²';
       $('#cfg-t').textContent=$(`[data-th="${th}"]`).textContent+' panel, '+gg+' steel'; };
     $$('[data-th]',cfg).forEach(b=>b.addEventListener('click',()=>{ th=b.dataset.th; $$('[data-th]',cfg).forEach(x=>x.classList.toggle('on',x===b)); upd(); }));
     $$('[data-g]',cfg).forEach(b=>b.addEventListener('click',()=>{ gg=b.dataset.g; $$('[data-g]',cfg).forEach(x=>x.classList.toggle('on',x===b)); upd(); }));

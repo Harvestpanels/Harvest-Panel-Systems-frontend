@@ -13,7 +13,7 @@
   const fmt=n=>Math.round(n).toLocaleString('en-US');
   const toU=ft=>S.unit==='ft'?ft:ft*FT;
   const fromU=v=>S.unit==='ft'?v:v/FT;
-  const lenTxt=ft=>S.unit==='ft'?`${+ft.toFixed(1)} ft`:`${+(ft*FT).toFixed(2)} m`;
+  const lenTxt=ft=>S.unit==='ft'?`${+ft.toFixed(1)} ft (${+(ft*FT).toFixed(2)} m)`:`${+(ft*FT).toFixed(2)} m (${+ft.toFixed(1)} ft)`;
 
   function calc(){
     const cov=COVERS[S.cover].m, Lm=S.L*FT, Wm=S.W*FT, Hm=S.H*FT;
@@ -71,7 +71,7 @@
     });
     // dimensions
     const fs=Math.max(10,Math.min(22,w/9)); if(w>90){ g+=`<text x="${x0+w/2}" y="${y0+h/2-2}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="#10233f" opacity=".85">${lenTxt(S.L)} × ${lenTxt(S.W)}</text>`;
-    if(w>150) g+=`<text x="${x0+w/2}" y="${y0+h/2+fs+2}" text-anchor="middle" font-size="${Math.max(9,fs*.6)}" fill="#6e6e73">${S.ceiling?c.ceilPanels+" ceiling panels, "+c.ceilLenFt+" ft long":"no ceiling"}</text>`; }
+    if(w>150) g+=`<text x="${x0+w/2}" y="${y0+h/2+fs+2}" text-anchor="middle" font-size="${Math.max(9,fs*.6)}" fill="#6e6e73">${S.ceiling?c.ceilPanels+" ceiling panels, "+c.ceilLenFt+" ft ("+(c.ceilLenFt*FT).toFixed(1)+" m) long":"no ceiling"}</text>`; }
     el.plan.innerHTML=`<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="Plan view of the room with panel layout">${g}</svg>`;
   }
 
@@ -80,21 +80,21 @@
     $('o-wall').textContent=fmt(c.wallPanels+c.headers);
     $('o-ceil').textContent=fmt(c.ceilPanels);
     $('o-door').textContent=c.doors;
-    $('o-area').textContent=fmt(c.area);
+    $('o-area').textContent=fmt(c.area); $('o-arealab').textContent='Sq ft insulated ('+fmt(c.area/SQFT)+' m²)';
     $('o-days').textContent=c.lowD===c.highD?`${c.lowD} day${c.lowD>1?'s':''}`:`${c.lowD}–${c.highD} days`;
     $('o-cost').textContent=`$${fmt(c.area*4)} – $${fmt(c.area*8)}`;
-    $('o-len').textContent=`${c.wallLenFt} ft walls${S.ceiling?` · ${c.ceilLenFt} ft ceiling`:''}`;
-    $('o-trim').textContent=`${4} corner angles · ${fmt(c.perim/FT)} ft ceiling-edge trim`;
+    $('o-len').textContent=`${c.wallLenFt} ft (${+(c.wallLenFt*FT).toFixed(2)} m) walls${S.ceiling?` · ${c.ceilLenFt} ft (${+(c.ceilLenFt*FT).toFixed(2)} m) ceiling`:''}`;
+    $('o-trim').textContent=`${4} corner angles · ${fmt(c.perim/FT)} ft (${fmt(c.perim)} m) ceiling-edge trim`;
     // warnings
     const w=[];
     if(S.ceiling && c.span>10.973+1e-6) w.push(`The ${lenTxt(Math.min(S.L,S.W))} ceiling span is longer than our 36 ft maximum panel length. It needs a support beam or custom lengths. Call us.`);
-    if(S.H>20) w.push('Walls over 20 ft need custom-length panels or a panel splice.');
-    if(S.H<12) w.push(`Wall panels ship from 12 ft stock, so ${S.H} ft walls are cut to length. Cut-off may be reusable.`);
+    if(S.H>20) w.push('Walls over 20 ft (6.1 m) need custom-length panels or a panel splice.');
+    if(S.H<12) w.push(`Wall panels ship from 12 ft (3.7 m) stock, so ${lenTxt(S.H)} walls are cut to length. Cut-off may be reusable.`);
     if(c.doors>=c.slots.reduce((a,b)=>a+b,0)) w.push('That is more doors than the room has wall panels.');
     el.warn.innerHTML=w.join('<br>'); el.warn.classList.toggle('on',w.length>0);
     window.__calcSummary=()=>`Room: ${lenTxt(S.L)} x ${lenTxt(S.W)} x ${lenTxt(S.H)} high, ${c.doors} door(s)${S.ceiling?', with ceiling':', no ceiling'}. `+
       `Panels: ${c.total} (${c.wallPanels} wall + ${c.headers} door headers + ${c.ceilPanels} ceiling), ${COVERS[S.cover].label} cover. `+
-      `Wall length ${c.wallLenFt} ft${S.ceiling?', ceiling length '+c.ceilLenFt+' ft':''}. Insulated area about ${fmt(c.area)} sq ft.`;
+      `Wall length ${c.wallLenFt} ft (${+(c.wallLenFt*FT).toFixed(2)} m)${S.ceiling?', ceiling length '+c.ceilLenFt+' ft ('+(c.ceilLenFt*FT).toFixed(2)+' m)':''}. Insulated area about ${fmt(c.area)} sq ft (${fmt(c.area/SQFT)} m²).`;
   }
 
   function render(){
@@ -109,7 +109,7 @@
       el[k].step=step; el[k].value=+(toU(S[K])).toFixed(2);
       el[k+'r'].min=u==='ft'?6:2; el[k+'r'].max=u==='ft'?100:30; el[k+'r'].step=step; el[k+'r'].value=+(toU(S[K])).toFixed(2);
     });
-    [...el.h.options].forEach(o=>{ o.textContent=u==='ft'?`${o.value} ft`:`${(o.value*FT).toFixed(1)} m`; });
+    [...el.h.options].forEach(o=>{ o.textContent=u==='ft'?`${o.value} ft (${(o.value*FT).toFixed(1)} m)`:`${(o.value*FT).toFixed(1)} m (${o.value} ft)`; });
     el.h.value=String(S.H);
     $('c-unit').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.u===u));
   }

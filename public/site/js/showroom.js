@@ -129,7 +129,7 @@
         {type:'slider',label:'Joint',min:0,max:100,value:100,fmt:v=>v+'%',onChange:v=>{jn=v/100;apply();}},
         {type:'button',text:'Play layers',onClick:()=>{ const a=ex>.5?0:1; tween(ex,a,2400,v=>{ex=v;apply();},()=>{ctx.controls[0].setValue&&ctx.controls[0].setValue(a*100);}); }},
         {type:'button',text:'Play joint',onClick:()=>{ const a=jn>.5?0:1; tween(jn,a,2400,v=>{jn=v;apply();}); }}],
-      stats:()=>[['Thickness','100 mm'],['Cover width','1,000 mm'],['Steel faces','0.5 mm'],['Insulation','R-30']],
+      stats:()=>[['Thickness','100 mm (3.94 in)'],['Cover width','1,000 mm (39.37 in)'],['Steel faces','0.5 mm (0.020 in)'],['Insulation','R-30 (RSI 5.3)']],
       views:'34' };
   }
 
@@ -166,7 +166,7 @@
         {type:'chips',label:'Profile',value:'trap',options:Object.keys(PROFILES).map(k=>({v:k,label:PROFILES[k].n})),onChange:v=>{S.profile=v;make();ctx.view('34');}},
         {type:'chips',label:'Thickness',value:2,options:THICK.map((t,i)=>({v:i,label:t[0]})),onChange:v=>{S.thick=v;make();}},
         {type:'swatches',label:'Color',value:'#E7EBDA',options:COLORS.map(c=>({v:c[1],label:c[0]})),onChange:v=>{S.color=v;make();}}],
-      stats:()=>{ const T=THICK[S.thick]; return [['Profile',PROFILES[S.profile].n],['Thickness',T[0]+' · '+T[1].toFixed(0)+' mm'],['Insulation','R-'+T[2].toFixed(1)],['Weight (24/24 steel)',T[3].toFixed(2)+' psf']]; },
+      stats:()=>{ const T=THICK[S.thick]; return [['Profile',PROFILES[S.profile].n],['Thickness',T[0]+' ('+T[1].toFixed(0)+' mm)'],['Insulation','R-'+T[2].toFixed(1)+' (RSI '+(T[2]*0.1761).toFixed(1)+')'],['Weight (24/24 steel)',T[3].toFixed(2)+' psf ('+(T[3]*4.8824).toFixed(1)+' kg/m²)']]; },
       note:()=>PROFILES[S.profile].d };
   }
 
@@ -226,9 +226,9 @@
         {type:'button',text:'Open / close',onClick:()=>{ const a=S.open>.5?0:1; tween(S.open,a,1800,v=>{S.open=v;apply();ctx.controls[1].setValue&&ctx.controls[1].setValue(Math.round(v*100));}); }},
         {type:'toggle',label:'See inside',text:'X-ray: show the insulated core',value:false,onChange:v=>{S.xray=v;setXray();}},
         {type:'swatches',label:'Door color',value:'#F5F5F2',options:COLORS.slice(0,6).map(c=>({v:c[1],label:c[0]})),onChange:v=>{S.color=v;const o=S.open;make();S.open=o;apply();}}],
-      stats:()=>({hinged:[['Type','Hinged cooler'],['Use','Cold storage entries'],['Leaf','Insulated, gasketed'],['Opening','1,000 × 2,150 mm']],
-                   sliding:[['Type','Sliding cooler'],['Use','Heavy-duty track'],['Leaf','Insulated, overlaps frame'],['Opening','1,000 × 2,150 mm']],
-                   metal:[['Type','Insulated metal'],['Use','Personnel doors'],['Hardware','Lever + closer'],['Opening','1,000 × 2,150 mm']]})[S.type],
+      stats:()=>({hinged:[['Type','Hinged cooler'],['Use','Cold storage entries'],['Leaf','Insulated, gasketed'],['Opening','1,000 × 2,150 mm (39.4 × 84.6 in)']],
+                   sliding:[['Type','Sliding cooler'],['Use','Heavy-duty track'],['Leaf','Insulated, overlaps frame'],['Opening','1,000 × 2,150 mm (39.4 × 84.6 in)']],
+                   metal:[['Type','Insulated metal'],['Use','Personnel doors'],['Hardware','Lever + closer'],['Opening','1,000 × 2,150 mm (39.4 × 84.6 in)']]})[S.type],
       note:()=>'Illustrative model. Sizes and hardware vary by order.' };
   }
 
@@ -273,7 +273,7 @@
   // ---------------- registry + switching ----------------
   const reg={pir100:buildPir,designer:buildDesigner,doors:buildDoors,trim:buildTrim};
   const meta={
-    pir100:{t:'100 mm PIR panel',b:'The real Blender-built model. Lift the steel off the core and slide two panels together to see the locking joint.'},
+    pir100:{t:'4" (100 mm) PIR panel',b:'The real Blender-built model. Lift the steel off the core and slide two panels together to see the locking joint.'},
     designer:{t:'Wall & roof panels',b:'Pick a profile, a thickness and a color. The insulation value and weight update with your choice.'},
     doors:{t:'Cooler doors',b:'Open each door type and switch on X-ray to see the insulated core.'},
     trim:{t:'Trim & hardware',b:'The small parts that finish a panel system. Pull each assembly apart to see how it fits.'}
