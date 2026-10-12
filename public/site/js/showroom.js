@@ -234,49 +234,40 @@
 
   // ================================================================= PRODUCT 4: trim & hardware
   function buildTrim(ctx){
-    const S={item:'corner',explode:0,color:'#0E4C92'}; const rootG=new THREE.Group(); let inner=null, mover=null, apply=()=>{};
-    const ext=(pts,depth,mat)=>{ const m=sh(new THREE.Mesh(new THREE.ExtrudeGeometry(poly(pts),{depth,bevelEnabled:false}),mat)); m.rotation.x=-Math.PI/2; return m; };   // profile (a,b) -> world x, -z ; extruded upward
+    // Real Blender-built models (acc_assets.js). Shown at a short display length; true stock length is in the spec rows.
+    const rootG=new THREE.Group(); let inner=null, item=ACC_META[0].id; const cache={};
+    const mats={
+      Alu:new THREE.MeshPhysicalMaterial({color:0xa9aeb0,metalness:.4,roughness:.3,clearcoat:.08}),
+      Galv:new THREE.MeshStandardMaterial({color:0x9ea6af,metalness:.9,roughness:.34}),
+      PVC:new THREE.MeshStandardMaterial({color:0xdfe1df,roughness:.38}),
+      Steel:steelMat(0xe7ebda) };
+    const b64=s=>{ const a=atob(s),u=new Uint8Array(a.length); for(let i=0;i<a.length;i++)u[i]=a.charCodeAt(i); return u.buffer; };
+    function load(id,cb){
+      if(cache[id]) return cb(cache[id].clone(true));
+      new THREE.GLTFLoader().parse(b64(ACC_GLB[id]),'',g=>{ const m=g.scene; m.scale.setScalar(1000);
+        m.traverse(o=>{ if(!o.isMesh) return; o.material=mats[o.name.replace(/\.\d+$/,'')]||mats.Alu; o.castShadow=o.receiveShadow=true; });
+        cache[id]=m; cb(m.clone(true)); }); }
     function make(){
-      if(inner){ rootG.remove(inner); inner.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-      inner=new THREE.Group(); const tm=steelMat(S.color), pm=steelMat(0xe7ebda);
-      if(S.item==='corner'){
-        inner.add(box(1000,1200,100,pm,-500,600,-50), box(100,1200,900,pm,-50,600,-550));    // two walls meeting at an outside corner
-        const a=ext([[2,-2],[-70,-2],[-70,0],[0,0],[0,70],[2,70]],1200,tm); inner.add(a); mover=a;
-        apply=()=>{ a.position.set(S.explode*160,0,S.explode*160); };
-      } else if(S.item==='tbar'){
-        inner.add(box(995,1200,100,pm,-502.5,600,-50), box(995,1200,100,pm,502.5,600,-50));  // two panels, joint between
-        const tb=new THREE.Group(); const prof=ext([[-45,0],[-45,-3],[45,-3],[45,0],[2,0],[2,60],[-2,60],[-2,0]],1200,tm); tb.add(prof);
-        const rod=cyl(5,520,M.zinc,0,1200+260,-30,14); tb.add(rod,box(26,26,12,M.zinc,0,1200+10,-30),cyl(14,10,M.zinc,0,1200+40,-30,6)); inner.add(tb); mover=tb;
-        apply=()=>{ tb.position.set(0,S.explode*220,S.explode*180); };
-      } else {
-        // hardware kit: unistrut channel, all-thread rod, nut + washer, butyl roll, screws
-        const kit=new THREE.Group(); inner.add(kit); mover=kit;
-        const uni=ext([[-20.5,0],[-20.5,41],[-8,41],[-8,38.5],[-18,38.5],[-18,2.5],[18,2.5],[18,38.5],[8,38.5],[8,41],[20.5,41],[20.5,0]],600,M.zinc); const ug=new THREE.Group(); ug.add(uni); ug.rotation.z=-Math.PI/2; ug.position.set(-300,21,-140); kit.add(ug);
-        const rod=cyl(6,620,M.zinc,0,0,0,16); rod.rotation.z=Math.PI/2; rod.position.set(0,22,40); const thread=new THREE.Mesh(new THREE.CylinderGeometry(6.4,6.4,620,16),new THREE.MeshStandardMaterial({map:(()=>{const c=document.createElement('canvas');c.width=4;c.height=16;const g=c.getContext('2d');g.fillStyle='#8f959d';g.fillRect(0,0,4,16);g.fillStyle='#b9bec5';g.fillRect(0,0,4,6);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,90);return t;})(),metalness:.8,roughness:.4})); thread.rotation.z=Math.PI/2; thread.position.copy(rod.position); kit.add(thread);
-        const nut=cyl(11,10,M.zinc,0,0,0,6); nut.rotation.z=Math.PI/2; nut.position.set(120,22,40); const wsh=cyl(15,2.5,M.zinc,0,0,0,24); wsh.rotation.z=Math.PI/2; wsh.position.set(98,22,40); kit.add(nut,wsh);
-        const roll=new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(32,0),new THREE.Vector2(75,0),new THREE.Vector2(75,28),new THREE.Vector2(32,28),new THREE.Vector2(32,0)],40),M.butyl); roll.position.set(300,0,-120); sh(roll); roll.castShadow=true; kit.add(roll);
-        for(let i=0;i<4;i++){ const sc=new THREE.Group(); sc.add(cyl(2.4,40,M.zinc,0,20,0,10),cyl(8,3,M.zinc,0,41,0,18)); sc.position.set(-150+i*60,0,160); kit.add(sc); }
-        apply=()=>{ ug.position.x=-300-S.explode*220; nut.position.x=120+S.explode*140; wsh.position.x=98+S.explode*60; roll.position.x=300+S.explode*220; };
-      }
-      rootG.add(inner); apply(); ctx.update(); }
+      if(inner){ rootG.remove(inner); inner=null; }
+      const id=item;
+      load(id,m=>{ if(id!==item) return; const g=new THREE.Group(); g.add(m);
+        const bb=new THREE.Box3().setFromObject(m), c=bb.getCenter(new THREE.Vector3()); m.position.set(-c.x,-bb.min.y,-c.z);   // stand on the floor, centred
+        inner=g; rootG.add(g); ctx.update(); ctx.view('34');
+        camera.position.lerpVectors(controls.target,camera.position,.62); controls.update(); });
+    }
     return { root:rootG, build:make,
       controls:[
-        {type:'chips',label:'Item',value:'corner',options:[{v:'corner',label:'Corner angle'},{v:'tbar',label:'T-bar'},{v:'kit',label:'Hardware kit'}],onChange:v=>{S.item=v;S.explode=0;ctx.controls[1].setValue&&ctx.controls[1].setValue(0);make();ctx.view('34');}},
-        {type:'slider',label:'Pull apart',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{S.explode=v/100;apply();}},
-        {type:'swatches',label:'Trim color',value:'#0E4C92',options:COLORS.map(c=>({v:c[1],label:c[0]})),onChange:v=>{S.color=v;const e=S.explode;make();S.explode=e;apply();}}],
-      stats:()=>({corner:[['Item','Corner angle'],['Type','Formed trim'],['Finish','Color-matched'],['Seals','Panel corners']],
-                  tbar:[['Item','T-bar'],['Type','Seam trim'],['Use','Panel-to-panel'],['Support','All-thread hanger']],
-                  kit:[['Kit','Miscellaneous'],['Includes','All-thread · unistrut'],['Also','Fasteners · butyl sealant'],['Use','Hold the system together']]})[S.item],
-      note:()=>'Illustrative model. Profiles and sizes are representative.' };
+        {type:'chips',label:'Item',value:item,options:ACC_META.map(a=>({v:a.id,label:a.label})),onChange:v=>{item=v;make();}}],
+      stats:()=>ACC_META.find(a=>a.id===item).stats,
+      note:()=>'Built from supplier drawings and photos, shown at a short length. Metric and imperial values are rounded conversions.' };
   }
-
   // ---------------- registry + switching ----------------
   const reg={pir100:buildPir,designer:buildDesigner,doors:buildDoors,trim:buildTrim};
   const meta={
     pir100:{t:'4" (100 mm) PIR panel',b:'The real Blender-built model. Lift the steel off the core and slide two panels together to see the locking joint.'},
     designer:{t:'Wall & roof panels',b:'Pick a profile, a thickness and a color. The insulation value and weight update with your choice.'},
     doors:{t:'Cooler doors',b:'Open each door type and switch on X-ray to see the insulated core.'},
-    trim:{t:'Trim & hardware',b:'The small parts that finish a panel system. Pull each assembly apart to see how it fits.'}
+    trim:{t:'Trim & accessories',b:'Aluminum and steel trim, strut channel, PVC wall panel and PVC trim. Pick an item and orbit it to see the profile up close.'}
   };
   let tickList=[], autoView=null;
   function show(id){
