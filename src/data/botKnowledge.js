@@ -113,31 +113,31 @@ export const BOT_INTENTS = [
     id: "certifications",
     keywords: ["certification", "certified", "certifications", "fire rating", "fire rated", "fm approved", "factory mutual", "iso", "iso 9001", "ul", "fm 4880", "fm 4881", "fm 4471", "class 1", "standards", "compliance"],
     answer: "Our panels are manufactured under an ISO 9001 quality system and tested to FM's Class 1 fire performance standards, FM 4880 (fire rating), FM 4881 (exterior wall systems), and FM 4471 (roof assemblies). Full details and the individual test standards are on the Specs page.",
-    links: [{ label: "See certifications", href: "/specs#certifications" }],
+    links: [{ label: "See certifications", href: "/specs#s-std" }],
   },
   {
     id: "colors",
     keywords: ["color", "colors", "colours", "finish", "finishes", "paint", "palette", "swatches", "custom color", "what colors"],
     answer: "We offer standard finishes including Grey White, White, White Aluminum, Ivory, Light Blue, Gentian Blue, Signal Green, Colza Yellow, Pure Orange, and Flame Red, and custom colors on request. You can preview each finish on an actual panel on the Specs page.",
-    links: [{ label: "View color palette", href: "/specs#colors" }],
+    links: [{ label: "View color palette", href: "/specs#s-col" }],
   },
   {
     id: "insulation",
     keywords: ["rvalue", "r value", "insulation", "insulating", "insulated", "thermal", "r8", "energy efficiency", "energy efficient", "how insulated", "thermal performance"],
-    answer: "Our panels deliver about R-8 per inch of thickness. Exact insulation values (R-values) depend on panel thickness and core material, thicker panels and PIR cores give the highest values. Our team can recommend the right spec for your climate and use case.",
-    links: [{ label: "See thermal specs", href: "/specs#engineering" }],
+    answer: "Our 4\" (100 mm) PIR panel delivers about R-30 (RSI 5.3), which is roughly R-7.5 per inch. Exact insulation values (R-values) depend on panel thickness and core material, thicker panels and PIR cores give the highest values. Our team can recommend the right spec for your climate and use case.",
+    links: [{ label: "See thermal specs", href: "/specs#s-tbl" }],
   },
   {
     id: "doors",
     keywords: ["door", "doors", "hinged door", "sliding door", "roll up", "rollup", "cooler door", "freezer door", "entry", "metal door", "insulated door"],
-    answer: "Yes, we supply and install insulated metal doors to match the thermal performance of the panels around them: hinged cooler doors, sliding cooler doors, and metal doors for cold storage, clean rooms, and general access.",
-    links: [{ label: "Browse doors", href: "/products" }],
+    answer: "Yes, we supply insulated doors to match the thermal performance of the panels around them: hinged and double cold-room doors, sliding doors, office doors, clean-room doors with vision windows, and roll-up doors. You can swing the doors open in our 3D showroom, installed in a real panel wall.",
+    links: [{ label: "See the doors in 3D", href: "/showroom#doors" }, { label: "Browse doors", href: "/products#doors" }],
   },
   {
     id: "core-materials",
     keywords: ["pir", "pur", "eps", "pvc", "harvestboxx", "harvest boxx", "mineral wool", "rockwool", "rock wool", "foam", "core", "core material", "insulation type", "polyisocyanurate", "polyurethane", "what foam"],
     answer: "We offer five core options: PIR (polyisocyanurate) as our standard, a rigid, closed-cell \"Class 1\" foam with high structural strength, fire resistance, and low smoke emission; EPS (expanded polystyrene) for a lightweight, cost-effective option; PVC interlocking panels for hygienic, wash-down interiors; mineral wool for the highest fire and acoustic performance; and our HarvestBoxx line. Our team can recommend the right core for your fire, cost, or performance needs.",
-    links: [{ label: "Learn about panel foam", href: "/specs#foam-core" }],
+    links: [{ label: "Learn about panel foam", href: "/specs#s-core" }],
   },
   {
     // Placed before `delivery` and given country-name keywords as its own
@@ -158,7 +158,7 @@ export const BOT_INTENTS = [
   {
     id: "delivery",
     keywords: ["delivery", "deliver", "shipping", "ship", "how fast", "lead time", "lead times", "how long to get", "when can i get", "availability", "in stock", "stock"],
-    answer: "We keep consistent stock in pre-cut lengths and ship from our centrally located Oklahoma distribution center, delivery anywhere in the U.S. within 48 hours of departure. Custom orders can typically be fulfilled within 30 days. Let me know your timeline and I can point you the right direction.",
+    answer: "We keep consistent stock in pre-cut lengths and ship from our centrally located Oklahoma distribution center, delivery anywhere in the U.S. within 48 hours of departure. Custom orders typically take 3 to 8 weeks. Let me know your timeline and I can point you the right direction.",
   },
   {
     id: "warranty",
@@ -183,7 +183,7 @@ export const BOT_INTENTS = [
       "mbcea", "metal building contractors", "accredited", "member of",
     ],
     answer: "We're proud members of several industry organizations: MBCEA (Metal Building Contractors & Erectors Association), GCCA (Global Cold Chain Alliance), BBB (Better Business Bureau), and CEBA (Controlled Environment Building Association), reflecting our commitment to industry standards and ethical business practices.",
-    links: [{ label: "See our memberships", href: "/#memberships" }],
+    links: [{ label: "See our memberships", href: "/#why" }],
   },
   {
     id: "gallery",
@@ -198,7 +198,7 @@ export const BOT_INTENTS = [
       "visual examples", "portfolio",
     ],
     answer: "You can see real installs, panels, doors, and finished interiors from projects we've shipped nationwide, in our Photo Gallery. There's also a live preview on the Specs page where you can see any color finish rendered on an actual panel.",
-    links: [{ label: "View photo gallery", href: "/#gallery" }, { label: "Preview color finishes", href: "/specs#colors" }],
+    links: [{ label: "View photo gallery", href: "/gallery" }, { label: "Preview color finishes", href: "/specs#s-col" }],
   },
   {
     id: "market-segments",
@@ -211,7 +211,7 @@ export const BOT_INTENTS = [
       "laboratory", "laboratories", "lab", "research lab", "testing lab",
     ],
     answer: "We work across a wide range of building types: indoor cultivation & cannabis facilities, data centers, cold storage & refrigeration, walk-in freezers and coolers, clean rooms, pharmaceutical manufacturing facilities, research and testing laboratories, pre-engineered metal buildings, and industrial, commercial, and residential construction. Each has its own recommended panel specs (fire rating, insulation, and finish), our team can match one to your project.",
-    links: [{ label: "See building types", href: "/#indoor-agriculture" }],
+    links: [{ label: "See building types", href: "/#industries" }],
   },
   {
     id: "trim-hardware",
@@ -219,8 +219,8 @@ export const BOT_INTENTS = [
       "trim", "hardware", "trim and hardware", "accessories", "flashing", "flashings", "screws",
       "nuts", "washers", "t bar", "t-bar", "butyl", "corner angle", "corner angles",
     ],
-    answer: "We also supply the trim & hardware to finish out an installation: flashings, screws, nuts, washers, T-bars, butyl sealant, and corner angles, so everything comes from one source instead of piecing it together separately.",
-    links: [{ label: "Browse trim & hardware", href: "/products" }],
+    answer: "We also supply the trim & hardware to finish out an installation: aluminum and steel trim (L angles, T profile, inside and outside corners, corner flashing), strut channel, PVC wall panels and PVC trim, plus screws and butyl sealant, so everything comes from one source instead of piecing it together separately.",
+    links: [{ label: "See trim & accessories", href: "/trim" }, { label: "See how trim goes on", href: "/#inside" }],
   },
 ];
 

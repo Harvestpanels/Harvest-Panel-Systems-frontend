@@ -52,3 +52,19 @@
   const f=$('#quote-form'); if(f) f.addEventListener('submit',e=>{ e.preventDefault(); f.innerHTML='<p class="lead" style="grid-column:1/-1;color:#fff">Thanks. This is a prototype form, so nothing was sent.</p>'; });
   $$('[data-year]').forEach(el=>{ el.textContent=new Date().getFullYear(); });
 })();
+
+/* mobile menu: the glass nav hides its links under 980px, so add a menu button (also holds the phone number and log-in link) */
+(function(){
+  const nav=document.querySelector('.nav'); if(!nav) return;
+  const right=nav.querySelector('.right'), menu=nav.querySelector('.menu'); if(!right||!menu) return;
+  menu.id='site-menu';
+  const b=document.createElement('button'); b.className='burger'; b.type='button'; b.setAttribute('aria-label','Menu'); b.setAttribute('aria-expanded','false'); b.setAttribute('aria-controls','site-menu');
+  b.innerHTML='<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path class="l1" d="M3 7h16"/><path class="l2" d="M3 15h16"/></svg>';
+  right.appendChild(b);
+  ['tel','login'].forEach(c=>{ const a=nav.querySelector('.'+c); if(a){ const k=a.cloneNode(true); k.className='m'+c; menu.appendChild(k); } });
+  const set=o=>{ nav.classList.toggle('open',o); b.setAttribute('aria-expanded',String(o)); document.documentElement.style.overflow=o?'hidden':''; };
+  b.addEventListener('click',()=>set(!nav.classList.contains('open')));
+  menu.addEventListener('click',e=>{ if(e.target.closest('a')) set(false); });
+  addEventListener('keydown',e=>{ if(e.key==='Escape') set(false); });
+  addEventListener('resize',()=>{ if(innerWidth>980) set(false); });
+})();

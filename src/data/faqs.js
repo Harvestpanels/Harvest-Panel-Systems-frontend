@@ -45,7 +45,7 @@ export const FAQS = [
   },
   {
     question: "What sizes do Panels come in?",
-    answer: "Panel thickness ranges from 2\" to 8\" (4\" is our standard), lengths run 10' to 30' (stock lengths of 10', 12', 14', 16', and 20'), and widths are 39.37\" or 45\". We can also manufacture custom sizes to fit your exact project dimensions.",
+    answer: "Panel thickness ranges from 2\" to 8\" (4\" is our standard), lengths run 10' to 36' (stock lengths of 10', 12', 14', 16', and 20'), and widths are 39.37\" or 45\". We can also manufacture custom sizes to fit your exact project dimensions.",
   },
   {
     question: "Do you offer installation services?",
@@ -53,11 +53,11 @@ export const FAQS = [
   },
   {
     question: "How long does it take to install Panels?",
-    answer: "Installation cuts 60-80% off traditional construction time. A typical crew installs 1,000-1,500 sq ft a day, 5,000 sq ft in 4-5 days, and 10,000 sq ft in 7-10 days.",
+    answer: "Installation can cut an estimated 60-80% off traditional construction time. A typical crew installs 1,000-1,500 sq ft a day, 5,000 sq ft in 4-5 days, and 10,000 sq ft in 7-10 days.",
   },
   {
     question: "Insulation Value?",
-    answer: "A 4\" panel delivers an R-29 insulation value, well above the R-10 to R-19 typical of metal stud and drywall construction. Exact values vary by thickness and core material, our team can recommend the right spec for your climate and use case.",
+    answer: "A 4\" (100 mm) panel delivers an R-30 insulation value, well above the R-10 to R-19 typical of metal stud and drywall construction. Exact values vary by thickness and core material, our team can recommend the right spec for your climate and use case.",
   },
   {
     question: "Can Panels support hanging of equipment?",

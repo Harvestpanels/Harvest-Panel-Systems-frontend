@@ -1,8 +1,8 @@
-﻿import { test, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { mockPortal } from "./portal-fixture.js";
 
 const sizes = [[320, 568], [390, 844], [667, 375], [768, 1024], [1024, 768], [1440, 900]];
-const STATIC_PAGES = ["/", "/products", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim"];
+const STATIC_PAGES = ["/", "/products", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/privacy", "/terms"];
 const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal/admin"];
 
 const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
@@ -115,4 +115,27 @@ test("reduced motion avoids persistent CSS animation loops on the static home pa
   expect(await page.evaluate(() => document.getAnimations().filter(animation =>
     animation.effect.getTiming().iterations === Infinity && animation.playState === "running"
   ).length)).toBe(0);
+});
+
+test("mobile menu reaches every main page", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "load" });
+  const menu = page.getByRole("button", { name: "Menu", exact: true });
+  await expect(menu).toBeVisible();
+  await expect(page.locator("#site-menu a", { hasText: "Products" }).first()).toBeHidden();
+  await menu.click();
+  await expect(menu).toHaveAttribute("aria-expanded", "true");
+  for (const label of ["Products", "3D Showroom", "Specs", "Gallery", "Blog"]) {
+    await expect(page.locator("#site-menu").getByRole("link", { name: label, exact: true })).toBeVisible();
+  }
+  await page.locator("#site-menu").getByRole("link", { name: "Products", exact: true }).click();
+  await expect(page).toHaveURL(/\/products$/);
+});
+
+test("no draft text or dead links on the public pages", async ({ page }) => {
+  for (const path of ["/", "/products", "/gallery", "/blog", "/trim"]) {
+    await page.goto(path, { waitUntil: "load" });
+    expect(await page.locator('a[href="#"]').count(), path).toBe(0);
+    await expect(page.locator("body")).not.toContainText(/draft descriptions|lorem ipsum/i);
+  }
 });

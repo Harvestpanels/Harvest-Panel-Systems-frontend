@@ -443,3 +443,24 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .inst-view.loading::after{content:"Loading 3D model…";position:absolute;inset:0;display:grid;place-items:center;color:#5d6775;font-size:14px}
 .inst-view.mode-3d .ilab{transform:translate(-50%,-135%)}
 .pcard .ph.dr,.pcard3 .ph.dr{background-size:auto 128%;background-position:50% 60%}
+
+/* ---- mobile menu ---- */
+.burger{display:none;width:40px;height:40px;align-items:center;justify-content:center;background:none;border:0;color:#fff;cursor:pointer;border-radius:50%;margin-right:-8px}
+.burger svg path{stroke:currentColor;stroke-width:2;stroke-linecap:round;transition:transform .3s,opacity .3s;transform-origin:11px 11px}
+.menu .mtel,.menu .mlogin{display:none}
+@media(max-width:980px){
+  .burger{display:inline-flex}
+  .nav.open{background:#10233f}
+  .nav.open .burger .l1{transform:translateY(4px) rotate(45deg)}.nav.open .burger .l2{transform:translateY(-4px) rotate(-45deg)}
+  .nav.open .menu{display:flex;flex-direction:column;align-items:stretch;gap:0;position:fixed;top:52px;left:0;right:0;bottom:0;padding:8px 24px 32px;background:#10233f;overflow:auto;z-index:99}
+  .nav.open .menu a{padding:16px 0;font-size:19px;font-weight:500;color:#fff;border-bottom:1px solid rgba(255,255,255,.1)}
+  .nav.open .menu .mtel,.nav.open .menu .mlogin{display:block}
+  .nav .right .login{display:none}
+}
+@media(max-width:420px){.nav .quote{padding:6px 11px;font-size:12px}.nav .right{gap:8px}}
+.site-footer .ft-links{display:flex;flex-wrap:wrap;gap:10px 22px;margin:26px 0 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.12)}
+.site-footer .ft-links a{font-size:13px;color:rgba(255,255,255,.82)}
+.post:not([href]){cursor:default}
+.legal .narrow{max-width:760px}.legal h2{font-size:22px;letter-spacing:-.02em;margin:34px 0 10px}.legal p,.legal li{line-height:1.65;color:var(--mute);font-size:16px}.legal ul{padding-left:20px}.legal li{margin-bottom:8px}.legal a{color:var(--accent)}.legal b{color:var(--ink)}
+
+@media(max-width:560px){.nav .brand{white-space:nowrap;font-size:13px;letter-spacing:.05em}.nav .brand img{height:24px}.nav .quote{white-space:nowrap}}
