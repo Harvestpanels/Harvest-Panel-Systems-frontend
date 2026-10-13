@@ -19,7 +19,7 @@
     if(window.THREE&&THREE.GLTFLoader&&THREE.OrbitControls){
       const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
       renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.outputEncoding=THREE.sRGBEncoding;
-      renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=.5;
+      renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=.85;
       renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
       host.appendChild(renderer.domElement);
       const camera=new THREE.PerspectiveCamera(30,1,20,40000);
@@ -65,8 +65,8 @@
     const data=INSTALL[id][0].model; if(!data) return done(null);
     new THREE.GLTFLoader().load(data,gltf=>{
       const sc=new THREE.Scene(); sc.environment=gl.envTex;
-      sc.add(new THREE.HemisphereLight(0xffffff,0xaeb3bb,.3));
-      const key=new THREE.DirectionalLight(0xffffff,.85); key.position.set(-900,1900,1500); key.castShadow=true; key.shadow.mapSize.set(2048,2048);
+      sc.add(new THREE.HemisphereLight(0xffffff,0xc4c9d0,.55));
+      const key=new THREE.DirectionalLight(0xffffff,1.0); key.position.set(-900,1900,1500); key.castShadow=true; key.shadow.mapSize.set(2048,2048);
       const c=key.shadow.camera; c.left=-1800;c.right=1800;c.top=1800;c.bottom=-1800;c.near=100;c.far=6000; key.shadow.bias=-.0003; key.shadow.normalBias=2; key.shadow.radius=5; sc.add(key);
       const fill=new THREE.DirectionalLight(0xcfd8ff,.3); fill.position.set(1500,700,-900); sc.add(fill);
       const fl=new THREE.Mesh(new THREE.PlaneGeometry(20000,20000),new THREE.ShadowMaterial({opacity:.22})); fl.rotation.x=-Math.PI/2; fl.receiveShadow=true; sc.add(fl);

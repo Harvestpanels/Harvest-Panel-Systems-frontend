@@ -9,7 +9,7 @@
   // ---------------- renderer / scene ----------------
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=.62;
+  renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=.8;
   renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   host.appendChild(renderer.domElement);
   const scene=new THREE.Scene();
@@ -25,16 +25,16 @@
     b(30,18,-25,22,25,5); b(24,14,28,10,12,3); b(40,10,0,40,0,4); b(30,8,0,12,-40,3);
     const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(es,.02).texture; pm.dispose();
   })();
-  scene.add(new THREE.HemisphereLight(0xffffff,0xb4b9c2,.32));
-  const key=new THREE.DirectionalLight(0xffffff,.8); key.position.set(2600,4200,3200); key.castShadow=true;
+  scene.add(new THREE.HemisphereLight(0xffffff,0xb4b9c2,.42)); { const fl=new THREE.DirectionalLight(0xffffff,.35); fl.position.set(-3200,2200,-2600); scene.add(fl); }
+  const key=new THREE.DirectionalLight(0xffffff,1.2); key.position.set(2600,4200,3200); key.castShadow=true;
   key.shadow.mapSize.set(2048,2048); const sc=key.shadow.camera; sc.left=-3500;sc.right=3500;sc.top=3500;sc.bottom=-3500;sc.near=100;sc.far=12000;
   key.shadow.bias=-.0003; key.shadow.normalBias=2; key.shadow.radius=6; scene.add(key);
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),new THREE.ShadowMaterial({opacity:.34})); floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),new THREE.ShadowMaterial({opacity:.38})); floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
 
   // ---------------- shared materials / helpers ----------------
   const COLORS=[['Grey White','#E7EBDA'],['White','#F5F5F2'],['White Aluminum','#A8ABAA'],['Ivory','#E6D2B5'],['Light Blue','#6FA3D6'],
                 ['Gentian Blue','#0E4C92'],['Signal Green','#237F52'],['Colza Yellow','#F3DA0B'],['Pure Orange','#E75B12'],['Flame Red','#AF2B1E']];
-  const steelMat=hex=>new THREE.MeshPhysicalMaterial({color:hex,roughness:.4,metalness:0,clearcoat:.25,clearcoatRoughness:.3});
+  const steelMat=hex=>new THREE.MeshPhysicalMaterial({color:hex,roughness:.4,metalness:0,clearcoat:.25,clearcoatRoughness:.3,envMapIntensity:.6});
   function noiseTex(base,speck,pores,tile){
     const c=document.createElement('canvas'); c.width=c.height=512; const g=c.getContext('2d'); g.fillStyle=base; g.fillRect(0,0,512,512);
     for(let i=0;i<pores;i++){ g.fillStyle=`rgba(120,95,40,${.07+Math.random()*.16})`; g.beginPath(); g.arc(Math.random()*512,Math.random()*512,.6+Math.random()*2.2,0,7); g.fill(); }
@@ -44,7 +44,7 @@
   const bumpNoise=(()=>{ const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d'); const d=g.createImageData(256,256);
     for(let i=0;i<d.data.length;i+=4){ const v=110+Math.random()*90; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; } g.putImageData(d,0,0);
     const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/30,1/30); return t; })();
-  const foamMat=()=>new THREE.MeshStandardMaterial({map:noiseTex('#f1e4b4',40,2600,90),roughness:.92});
+  const foamMat=()=>new THREE.MeshStandardMaterial({map:noiseTex('#f1e4b4',0,0,90),roughness:.92});
   const M={
     alu:new THREE.MeshStandardMaterial({color:0xd0d4d9,metalness:.85,roughness:.32}),
     ss:new THREE.MeshStandardMaterial({color:0xc6cbd2,metalness:.95,roughness:.22}),
@@ -105,7 +105,7 @@
     const rootG=new THREE.Group(), stand=new THREE.Group(), A=new THREE.Group(), B=new THREE.Group(); stand.add(A,B); stand.rotation.z=Math.PI/2; stand.position.y=L/2; rootG.add(stand);
     const parts={A:{},B:{}}; let ex=0, jn=1;
     const printTex=new THREE.TextureLoader().load(TAPE_PRINT_B64); printTex.wrapS=printTex.wrapT=THREE.RepeatWrapping; printTex.anisotropy=16; printTex.encoding=THREE.sRGBEncoding; printTex.flipY=false;
-    const mats={ Steel_top:new THREE.MeshPhysicalMaterial({color:0xe3e7d9,roughness:.38,clearcoat:.25,clearcoatRoughness:.3}), PIR_core:foamMat(),
+    const mats={ Steel_top:new THREE.MeshPhysicalMaterial({color:0xe3e7d9,roughness:.38,clearcoat:.25,clearcoatRoughness:.3,envMapIntensity:.55}), PIR_core:foamMat(),
       Gasket:new THREE.MeshStandardMaterial({map:noiseTex('#2a2a2d',0,3000,60),color:0x9a9a9d,roughness:.95}), Tongue_tape:new THREE.MeshStandardMaterial({color:0xf7f1da,roughness:.42}),
       Tongue_print:new THREE.MeshStandardMaterial({map:printTex,transparent:true,roughness:.45,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}) };
     mats.Steel_bottom=mats.Steel_top;
@@ -191,8 +191,8 @@
      sizes:[['6×7','clean-double-6x7','6′ × 7′','1,800 × 2,100 mm clear opening']],
      rows:[['Leaf','50 mm (1.97″) polyurethane foam, 0.5 mm steel faces (RAL 9002)'],['Frame','Aluminum'],['Hardware','Lever handles, vision windows, door closers']]}];
   const DOOR_MATS={
-    Door_steel_white:()=>new THREE.MeshPhysicalMaterial({color:0xe6e8e4,roughness:.42,metalness:.03,clearcoat:.15,clearcoatRoughness:.4}),
-    Frame_white:()=>new THREE.MeshStandardMaterial({color:0xe2e4e0,roughness:.5}),
+    Door_steel_white:()=>new THREE.MeshPhysicalMaterial({color:0xe6e8e4,roughness:.42,metalness:.03,clearcoat:.15,clearcoatRoughness:.4,envMapIntensity:.55}),
+    Frame_white:()=>new THREE.MeshStandardMaterial({color:0xe2e4e0,roughness:.5,envMapIntensity:.55}),
     Door_aluminum:()=>new THREE.MeshStandardMaterial({color:0xaeb2b6,roughness:.42,metalness:.6}),
     Frame_aluminum_light:()=>new THREE.MeshStandardMaterial({color:0xbfc2c5,roughness:.4,metalness:.6}),
     Hardware_dark:()=>new THREE.MeshStandardMaterial({color:0x2c2d30,roughness:.45,metalness:.1}),

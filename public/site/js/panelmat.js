@@ -16,8 +16,8 @@ window.HPSP=(function(){
   }
   const cache={};
   const make={
-    RAL9002_satin_steel:()=>new THREE.MeshPhysicalMaterial({color:0xe3e7d9,roughness:.38,clearcoat:.25,clearcoatRoughness:.3}),
-    PIR_foam:()=>new THREE.MeshStandardMaterial({map:noiseTex('#f1e4b4',40,2600,90),roughness:.92,polygonOffset:true,polygonOffsetFactor:2,polygonOffsetUnits:2}),
+    RAL9002_satin_steel:()=>new THREE.MeshPhysicalMaterial({color:0xe3e7d9,roughness:.38,clearcoat:.25,clearcoatRoughness:.3,envMapIntensity:.55}),
+    PIR_foam:()=>new THREE.MeshStandardMaterial({map:noiseTex('#f1e4b4',0,0,90),roughness:.92,envMapIntensity:.6,polygonOffset:true,polygonOffsetFactor:2,polygonOffsetUnits:2}),
     Gasket_dark_foam:()=>new THREE.MeshStandardMaterial({map:noiseTex('#2a2a2d',0,3000,60),color:0x9a9a9d,roughness:.95}),
     Tape_cream:()=>new THREE.MeshStandardMaterial({color:0xf7f1da,roughness:.42})
   };
