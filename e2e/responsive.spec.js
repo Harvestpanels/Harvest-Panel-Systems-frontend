@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { mockPortal } from "./portal-fixture.js";
 
 const sizes = [[320, 568], [390, 844], [667, 375], [768, 1024], [1024, 768], [1440, 900]];
-const STATIC_PAGES = ["/", "/products", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/privacy", "/terms", "/portal-paused"];
+const STATIC_PAGES = ["/", "/products", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/portal-paused"];
 const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal/admin"];
 
 const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);

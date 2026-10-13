@@ -140,7 +140,7 @@ The portal is switched off on the public site but fully kept: all of its code (`
 and its browser tests (`e2e/portal.spec.js`) are unchanged, and the build still produces it.
 What was switched off: the "Log in" link on every page, the `/portal` routes (`vercel.json`
 redirects send `/portal`, `/portal/...` and `/portal.html` to `public/portal-paused.html`, a short
-notice with the phone number and email), and the portal wording in the privacy and terms pages.
+notice with the phone number and email), and the portal wording that was in the privacy and terms pages (those two pages have since been removed).
 
 To bring it back, revert the commit titled "Switch the customer portal off for now"
 (`git revert <that commit>`). The `portal-enabled` tag marks the last commit with the portal on,

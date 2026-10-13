@@ -1,5 +1,5 @@
 /* Live room-size calculator: length x width x height -> panel counts, area, budget, install time, plan view.
-   Rules come from Harvest's own published numbers: 1 m (39.37") or 45" cover, 12-36 ft stock lengths,
+   Rules come from Harvest's own published numbers: 1 m (39.37") or 45" cover, 10-36 ft stock lengths,
    $4-$8 per sq ft panel pricing and 1,000-1,500 sq ft/day crew rate (site FAQ). Estimate only, not a quote. */
 (function(){
   const root=document.getElementById('calc'); if(!root) return;
@@ -89,7 +89,7 @@
     const w=[];
     if(S.ceiling && c.span>10.973+1e-6) w.push(`The ${lenTxt(Math.min(S.L,S.W))} ceiling span is longer than our 36 ft maximum panel length. It needs a support beam or custom lengths. Call us.`);
     if(S.H>20) w.push('Walls over 20 ft (6.1 m) need custom-length panels or a panel splice.');
-    if(S.H<12) w.push(`Wall panels ship from 12 ft (3.7 m) stock, so ${lenTxt(S.H)} walls are cut to length. Cut-off may be reusable.`);
+    if(S.H<10) w.push(`Wall panels ship from 10 ft (3.0 m) stock, so ${lenTxt(S.H)} walls are cut to length. Cut-off may be reusable.`);
     if(c.doors>=c.slots.reduce((a,b)=>a+b,0)) w.push('That is more doors than the room has wall panels.');
     el.warn.innerHTML=w.join('<br>'); el.warn.classList.toggle('on',w.length>0);
     window.__calcSummary=()=>`Room: ${lenTxt(S.L)} x ${lenTxt(S.W)} x ${lenTxt(S.H)} high, ${c.doors} door(s)${S.ceiling?', with ceiling':', no ceiling'}. `+
