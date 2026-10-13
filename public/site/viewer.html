@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Harvest Panels 3D Viewer</title>
 <style>
-  :root{--bg1:#f6f7f8;--bg2:#d9dde2;--ink:#1d2430;--mute:#5d6775;--card:rgba(255,255,255,.86);--line:#d3d8df;--accent:#155a96}
+  :root{--bg1:#68717f;--bg2:#222730;--ink:#1d2430;--mute:#5d6775;--card:rgba(255,255,255,.86);--line:#d3d8df;--accent:#155a96}
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);
     background:radial-gradient(ellipse at 50% 35%,var(--bg1),var(--bg2))}
@@ -28,7 +28,7 @@
   .brand{z-index:5;pointer-events:none;position:fixed;right:16px;top:14px;font-size:12px;color:var(--mute);text-align:right}
   .brand b{color:var(--ink);font-family:Georgia,serif;letter-spacing:.08em}
   #load{position:fixed;inset:0;display:grid;place-items:center;font-size:13px;color:var(--mute)}
-  @media (prefers-color-scheme:dark){:root{--bg1:#2a2f37;--bg2:#14171c;--ink:#e8ebf0;--mute:#9aa4b2;--card:rgba(30,34,41,.88);--line:#3a424d}
+  @media (prefers-color-scheme:dark){:root{--bg1:#68717f;--bg2:#222730;--ink:#e8ebf0;--mute:#9aa4b2;--card:rgba(30,34,41,.88);--line:#3a424d}
     button{background:#262b33}.tag{background:rgba(30,34,41,.94)}}
 </style>
 </head>
@@ -41,7 +41,7 @@
   <div class="row"><label for="ex">Layers</label><input id="ex" type="range" min="0" max="100" value="0"><output id="exv">0%</output></div>
   <div class="row"><label for="jn">Joint</label><input id="jn" type="range" min="0" max="100" value="100"><output id="jnv">100%</output></div>
   <div class="btns">
-    <button id="rot" class="on">&#9208; Pause rotation</button>
+    <button id="rot">&#9654; Play rotation</button>
     <button id="aex">Play layers</button>
     <button id="ajn">Play joint</button>
   </div>
@@ -79,7 +79,7 @@ document.body.appendChild(renderer.domElement);
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(32,1,50,40000);
 const controls=new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true; controls.dampingFactor=.08; controls.autoRotate=true; controls.autoRotateSpeed=1.6;
+controls.enableDamping=true; controls.dampingFactor=.08; controls.autoRotate=false; controls.autoRotateSpeed=1.6;
 controls.minDistance=250; controls.maxDistance=9000;
 
 (function(){ // soft studio reflections
@@ -196,7 +196,7 @@ const views={
   end:{pos:[-30,L+3200,MID+20],tgt:[0,L,MID]}
 };
 let camTween=null;
-function fitPos(v){const k=Math.max(1,1.4/camera.aspect),tg=new THREE.Vector3(...v.tgt);return new THREE.Vector3(...v.pos).sub(tg).multiplyScalar(k).add(tg);}
+function fitPos(v){const k=Math.max(1,1.4/camera.aspect)*1.7,tg=new THREE.Vector3(...v.tgt);return new THREE.Vector3(...v.pos).sub(tg).multiplyScalar(k).add(tg);}
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{
   const v=views[b.dataset.view]; camTween={t0:performance.now(),dur:1200,p0:camera.position.clone(),q0:controls.target.clone(),
     p1:fitPos(v),q1:new THREE.Vector3(...v.tgt)};

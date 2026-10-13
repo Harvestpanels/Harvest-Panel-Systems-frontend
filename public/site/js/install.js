@@ -56,7 +56,7 @@
     HL_blue:()=>new THREE.MeshStandardMaterial({color:0x2d7dff,emissive:0x1d5be0,emissiveIntensity:.8,roughness:.4}),
     HL_yellow:()=>new THREE.MeshStandardMaterial({color:0xffc400,emissive:0xe0a000,emissiveIntensity:.8,roughness:.4})
   };
-  const matCache={}; const getMat=(name,orig)=>{ const k=(name||'').replace(/\.\d+$/,''); if(!MT[k]) return orig; return matCache[k]||(matCache[k]=MT[k]()); };
+  const matCache={}; const getMat=(name,orig)=>{ const k=(name||'').replace(/\.\d+$/,''); if(window.HPSP&&HPSP.has(k)) return HPSP.mat(k); if(!MT[k]) return orig; return matCache[k]||(matCache[k]=MT[k]()); };
   const B=p=>new THREE.Vector3(p[0],p[2],-p[1]);       // Blender mm (x, y, z up) -> three mm (x up = z)
 
   const S3={};   // loaded scenes
@@ -74,7 +74,7 @@
       const groups={}, roots={};
       g.traverse(o=>{
         if(o.name==='Mroot'||o.name==='Froot') roots[o.name[0]]=o;
-        if(o.isMesh){ o.castShadow=o.receiveShadow=true; const m=o.material; o.material=Array.isArray(m)?m.map(x=>getMat(x.name,x)):getMat(m.name,m); }
+        if(o.isMesh){ o.castShadow=o.receiveShadow=true; const m=o.material; if(window.HPSP&&!Array.isArray(m)) HPSP.prepare(o,m.name); o.material=Array.isArray(m)?m.map(x=>getMat(x.name,x)):getMat(m.name,m); }
         const n=o.name.split('__'); if(n.length>1&&n[0]!==''){ (groups[n[0]]=groups[n[0]]||[]).push(o); }
       });
       const mroot=roots.M, baseZ=mroot?mroot.position.z:0;

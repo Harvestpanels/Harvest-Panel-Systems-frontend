@@ -15,7 +15,7 @@
   const scene=new THREE.Scene();
   const camera=new THREE.PerspectiveCamera(30,1,20,60000);
   const controls=new THREE.OrbitControls(camera,renderer.domElement);
-  controls.enableDamping=true; controls.dampingFactor=.08; controls.autoRotate=true; controls.autoRotateSpeed=1.4;
+  controls.enableDamping=true; controls.dampingFactor=.08; controls.autoRotate=false; controls.autoRotateSpeed=1.4;
   controls.maxPolarAngle=Math.PI*0.495;
 
   (function(){ // studio reflections
@@ -95,9 +95,9 @@
     const V={'34':[38,20],front:[0,6],side:[90,6],top:[8,80]}[view||'34'];
     const az=V[0]*Math.PI/180, el=V[1]*Math.PI/180;
     controls.target.copy(c); camera.position.set(c.x+Math.sin(az)*Math.cos(el)*dist, c.y+Math.sin(el)*dist, c.z+Math.cos(az)*Math.cos(el)*dist);
-    controls.minDistance=r*.35; controls.maxDistance=r*6; controls.update();
+    controls.minDistance=r*.35; controls.maxDistance=r*6; camera.near=Math.max(20,dist*.02); camera.far=Math.max(60000,dist*40); camera.updateProjectionMatrix(); controls.update();
   }
-  window.__frame=frame;
+  window.__frame=frame; window.__sr={camera,scene,controls};
 
   // ================================================================= PRODUCT 1: 100 mm PIR panel (Blender geometry)
   function buildPir(ctx){
@@ -205,15 +205,18 @@
   const doorCache={};
   function buildDoors(ctx){
     const S={type:'hinged',size:0,hand:'R',open:0,wall:true}; const rootG=new THREE.Group(); let model=null, pivots=[], walls=[];
-    const matc={}; const dm=n=>{ const k=(n||'').replace(/\.\d+$/,''); return DOOR_MATS[k]?(matc[k]||(matc[k]=DOOR_MATS[k]())):null; };
+    const matc={}; const dm=n=>{ const k=(n||'').replace(/\.\d+$/,''); if(window.HPSP&&HPSP.has(k)) return HPSP.mat(k); return DOOR_MATS[k]?(matc[k]||(matc[k]=DOOR_MATS[k]())):null; };
     const T=()=>DOOR_TYPES.find(d=>d.id===S.type), Z=()=>T().sizes[Math.min(S.size,T().sizes.length-1)];
     function apply(){ pivots.forEach(p=>{ p.rotation.y=(p.position.x>0?1:-1)*S.open*Math.PI*.6; }); walls.forEach(w=>{ w.visible=S.wall; }); if(model) model.scale.x=(S.hand==='L'?-1:1)*1000; }
     function place(gltf){
       if(model){ rootG.remove(model); }
       model=gltf.scene.clone(true); model.scale.setScalar(1000); pivots=[]; walls=[];
-      model.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; const m=o.material; o.material=Array.isArray(m)?m.map(x=>dm(x.name)||x):(dm(m.name)||m); }
+      model.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; const m=o.material; if(window.HPSP&&!Array.isArray(m)) HPSP.prepare(o,m.name); o.material=Array.isArray(m)?m.map(x=>dm(x.name)||x):(dm(m.name)||m); }
         if(o.name==='pivotA'||o.name==='pivotB') pivots.push(o); if(/^Wall/.test(o.name)) walls.push(o); });
-      rootG.add(model); apply(); ctx.update(); ctx.view('34'); }
+      rootG.add(model); apply(); ctx.update(); ctx.view('34');
+      // frame the installed door: whole wall in view, 3/4 angle, door at the centre
+      const bb=new THREE.Box3().setFromObject(model), wx=bb.getSize(new THREE.Vector3()).x, dd=Math.max(6200,wx*1.5), az=32*Math.PI/180, el=11*Math.PI/180;
+      controls.target.set(0,1250,0); camera.position.set(Math.sin(az)*Math.cos(el)*dd,1250+Math.sin(el)*dd,Math.cos(az)*Math.cos(el)*dd); camera.near=Math.max(20,dd*.02); camera.far=Math.max(60000,dd*40); camera.updateProjectionMatrix(); controls.minDistance=1200; controls.maxDistance=dd*2.2; controls.update(); }
     function make(){
       const id=Z()[1], url='/site/models/doors/'+id+'.glb';
       if(doorCache[id]) return place(doorCache[id]);
@@ -281,7 +284,7 @@
   $$('.pick .pcard3').forEach(c=>c.addEventListener('click',e=>{ if(c.dataset.id) { e.preventDefault(); show(c.dataset.id); } }));
   $$('[data-view]').forEach(b=>b.addEventListener('click',()=>frame(b.dataset.view)));
   const rot=$('#rotb'); const setRot=on=>{ controls.autoRotate=on; rot.innerHTML=on?'&#9208; Pause rotation':'&#9654; Play rotation'; rot.classList.toggle('on',on); };
-  rot.onclick=()=>setRot(!controls.autoRotate); addEventListener('keydown',e=>{ if(e.code==='Space'&&document.activeElement===document.body){ e.preventDefault(); setRot(!controls.autoRotate); } });
+  setRot(false); rot.onclick=()=>setRot(!controls.autoRotate); addEventListener('keydown',e=>{ if(e.code==='Space'&&document.activeElement===document.body){ e.preventDefault(); setRot(!controls.autoRotate); } });
   function resize(){ renderer.setSize(host.clientWidth,host.clientHeight,false); camera.aspect=host.clientWidth/host.clientHeight; camera.updateProjectionMatrix(); }
   addEventListener('resize',()=>{ resize(); frame('34'); }); resize();
   const start=(location.hash||'').slice(1); show(reg[start]?start:'pir100');
