@@ -399,6 +399,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .inst-tabs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:28px}
 .inst-tabs .pill{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16)}
 .inst-tabs .pill.on{background:#fff;color:var(--ink)}
+.inst-opt{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.inst-opt[hidden]{display:none}
+.inst-opt .pill{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16);font-size:14px;padding:9px 14px}
+.inst-opt .pill.on{background:#fff;color:var(--ink)}
 .inst-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:22px;align-items:start}
 .chip3{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;backdrop-filter:blur(10px)}
 .chip3.on{background:#fff;color:#10233f}.chip3:disabled{opacity:.35;cursor:default}

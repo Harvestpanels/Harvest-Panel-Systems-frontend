@@ -139,6 +139,25 @@ test("mobile menu reaches every main page", async ({ page }) => {
   await expect(page).toHaveURL(/\/products$/);
 });
 
+test("look inside: floor track offers the U-channel and the double L trim, with the guide's single screw", async ({ page }) => {
+  await page.goto("/", { waitUntil: "load" });
+  await page.waitForFunction(() => window.INSTALL && document.querySelector("#inst .inst-steps"));
+  await page.locator("#inst").scrollIntoViewIfNeeded();
+  await page.locator('#inst .inst-tabs button[data-scene="track"]').click();
+  await expect(page.locator("#inst .istep")).toHaveCount(4);
+  const optB = page.getByRole("button", { name: /Option B/ });
+  await expect(optB).toBeVisible();
+  await optB.click();
+  await expect(page.locator("#inst .istep")).toHaveCount(5);
+  await expect(page.locator("#inst .istep").first()).toContainText("Butyl under each angle");
+  await page.locator("#inst .istep").nth(4).click();
+  await expect(page.locator("#inst .inst-detail")).toContainText("7/8");
+  await page.locator('#inst .inst-tabs button[data-scene="joint"]').click();
+  await expect(page.getByRole("button", { name: /Option B/ })).toBeHidden();
+  const old = await page.evaluate(() => JSON.stringify(window.INSTALL).match(/#14|stitch|HH Tek/gi));
+  expect(old).toBeNull();
+});
+
 test("specs page shows the single and double span tables with metric values", async ({ page }) => {
   await page.goto("/specs", { waitUntil: "load" });
   await page.getByRole("button", { name: "Single span", exact: true }).click();

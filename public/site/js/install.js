@@ -8,6 +8,7 @@
   const host=$('.inst-3d'), labelsHost=$('.inst-labels'), ring=$('.inst-ring'), line=$('.inst-line'), inset=$('.inst-inset'), insetImg=$('img',inset);
   const imgA=$('.inst-img img:nth-child(1)'), imgB=$('.inst-img img:nth-child(2)');
   const stepsHost=$('.inst-steps'), detail=$('.inst-detail'), count=$('.inst-count');
+  const optBar=$('.inst-opt'), optBtns=optBar?$$('button',optBar):[];   // floor connection: Option A (U-channel) / Option B (double L trim)
   const playBtn=$('[data-act="play"]'), prevBtn=$('[data-act="prev"]'), nextBtn=$('[data-act="next"]'), modeBtn=$('[data-act="mode"]'), resetBtn=$('[data-act="reset"]');
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   let scene=null, step=0, front=imgA, playing=false, timer=null, mode='3d';
@@ -120,7 +121,13 @@
     inset.style.cssText='width:'+(R*2)+'px;height:'+(R*2)+'px;left:'+(ix-R)+'px;top:'+(iy-R)+'px';
     ring.style.cssText='left:'+ax+'px;top:'+ay+'px';
     const dx=ix-ax, dy=iy-ay, d=Math.hypot(dx,dy), ang=Math.atan2(dy,dx);
-    line.style.cssText='left:'+(ax+Math.cos(ang)*16)+'px;top:'+(ay+Math.sin(ang)*16)+'px;width:'+Math.max(0,d-R-16)+'px;transform:rotate('+ang+'rad)'; }
+    line.style.cssText='left:'+(ax+Math.cos(ang)*16)+'px;top:'+(ay+Math.sin(ang)*16)+'px;width:'+Math.max(0,d-R-16)+'px;transform:rotate('+ang+'rad)'; spread(); }
+  // photo labels that would overlap an earlier one are moved up, so every label stays readable
+  function spread(){ const W=labelsHost.clientWidth, Hh=labelsHost.clientHeight; if(!W||!Hh) return; const boxes=[];
+    $$('.ilab',labelsHost).forEach(el=>{ const ox=+el.dataset.ox, oy=+el.dataset.oy; if(isNaN(ox)||isNaN(oy)) return;
+      const w=el.offsetWidth, h=el.offsetHeight, x=ox/100*W; let y=oy/100*Hh;
+      for(let k=0;k<8;k++){ if(!boxes.some(b=>Math.abs(b.x-x)<(b.w+w)/2+6&&Math.abs(b.y-y)<(b.h+h)/2+4)) break; y-=h+8; }
+      el.style.top=(y/Hh*100)+'%'; boxes.push({x,y,w,h}); }); }
   new ResizeObserver(()=>{ if(scene) place(INSTALL[scene][step]); }).observe(view);
 
   // ------------------------------------------------------------------ shared UI
@@ -140,8 +147,8 @@
       back.onload=()=>{ if(back===front) return; back.classList.add('on'); front.classList.remove('on'); front=back; };
       back.alt=st.title+' - installation detail'; back.src=st.img; if(back.complete&&back.naturalWidth) back.onload();
       insetImg.src=st.det; insetImg.alt=st.title+' - close-up'; inset.classList.remove('on'); place(st); setTimeout(()=>inset.classList.add('on'),reduce?0:250);
-      labelsHost.innerHTML=st.labels.map(l=>`<span class="ilab" style="left:${l.x}%;top:${l.y}%">${l.t.replace(/&/g,'&amp;')}</span>`).join('');
-      requestAnimationFrame(()=>$$('.ilab',labelsHost).forEach((e,i)=>setTimeout(()=>e.classList.add('on'),reduce?0:350+i*120)));
+      labelsHost.innerHTML=st.labels.map(l=>`<span class="ilab" data-ox="${l.x}" data-oy="${l.y}" style="left:${l.x}%;top:${l.y}%">${l.t.replace(/&/g,'&amp;')}</span>`).join('');
+      requestAnimationFrame(()=>{ spread(); $$('.ilab',labelsHost).forEach((e,i)=>setTimeout(()=>e.classList.add('on'),reduce?0:350+i*120)); });
     } else {
       const s3=S3[scene]; if(!s3) return; const s=st.s3d; applyShow(s3,s);
       labelsHost.innerHTML=''; s3.labels=(s.labels||[]).map(([t,p],i)=>{ const el=document.createElement('span'); el.className='ilab on'; el.textContent=t; el.style.marginTop=(-34-i*30)+'px'; labelsHost.appendChild(el); return {el,p:B(p)}; });
@@ -169,8 +176,11 @@
   resetBtn.onclick=()=>{ if(gl){ gl.setUser(false); } };
   root.addEventListener('keydown',e=>{ if(paneScene.hidden) return; if(e.key==='ArrowRight'){ e.preventDefault(); nextBtn.click(); } if(e.key==='ArrowLeft'){ e.preventDefault(); prevBtn.click(); } });
 
+  const setOpt=b=>optBtns.forEach(x=>{ x.classList.toggle('on',x===b); x.setAttribute('aria-pressed',x===b); });
+  optBtns.forEach(b=>b.addEventListener('click',()=>{ if(b.classList.contains('on')) return; setOpt(b); stop(); load(b.dataset.scene); }));
   tabs.forEach(t=>t.addEventListener('click',()=>{
     tabs.forEach(x=>{ x.classList.toggle('on',x===t); x.setAttribute('aria-selected',x===t); });
+    if(optBar){ optBar.hidden=t.dataset.scene!=='track'; if(t.dataset.scene==='track') setOpt(optBtns[0]); }
     if(t.dataset.pane==='panel'){ panePanel.hidden=false; paneScene.hidden=true; stop(); return; }
     panePanel.hidden=true; paneScene.hidden=false; setMode(gl?'3d':'photo'); resize(); load(t.dataset.scene);
   }));
@@ -180,7 +190,7 @@
   if(est){ const sel=$('select',est), out=$('.fe-out',est);
     const calc=()=>{ const ft=+sel.value, joint=Math.floor(ft*12/12)+1, trackPer=Math.floor(39.37/12)+1, pins=Math.ceil(39.37/24)+1;
       out.innerHTML=`<div><b>${joint}</b><span>Screws per joint through the female lip, if the drawings call for them (12&quot; / 305 mm O.C.)</span></div>`+
-        `<div><b>${trackPer*2}</b><span>Floor-track screws per panel (${trackPer} per leg, 12&quot; / 305 mm O.C.)</span></div>`+
+        `<div><b>${trackPer*2}</b><span>Floor screws per panel (${trackPer} per side, 12&quot; / 305 mm O.C.: through both track legs, or the vertical leg of each L)</span></div>`+
         `<div><b>${pins}</b><span>Shot pins per panel at a curb base (24&quot; / 610 mm O.C. alternate)</span></div>`; };
     sel.onchange=calc; calc(); }
 })();

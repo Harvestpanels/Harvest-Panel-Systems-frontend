@@ -98,20 +98,20 @@
 <!-- SCROLL-BUILT ROOM -->
 <section class="build" id="build">
   <div class="sticky">
-    <div id="room" aria-label="A 20 by 20 foot room built from insulated panels as you scroll"></div>
+    <div id="room" aria-label="A 20 by 16 foot room with 12 foot walls, built from insulated panels as you scroll"></div>
 
-    <div class="stage on" data-a="0" data-b="0.08"><h2>Start with 20&prime; &times; 20&prime; (6.1 &times; 6.1 m).</h2><p>Scroll to build a room from insulated panels.</p></div>
+    <div class="stage on" data-a="0" data-b="0.08"><h2>Start with 20&prime; &times; 16&prime; (6.1 &times; 4.9 m).</h2><p>Scroll to build a room from insulated panels.</p></div>
     <div class="stage" data-a="0.08" data-b="0.6"><h2>Walls go up.</h2><p>12-foot (3.66 m) panels, 39.4&quot; (1,000 mm) wide, locking tongue-to-groove.</p></div>
-    <div class="stage" data-a="0.6" data-b="0.86"><h2>Then the ceiling.</h2><p>20-foot (6.1 m) panels span the whole room.</p></div>
+    <div class="stage" data-a="0.6" data-b="0.86"><h2>Then the ceiling.</h2><p>16-foot (4.9 m) panels span the room.</p></div>
     <div class="stage" data-a="0.86" data-b="1.01"><h2>Sealed. Insulated. Done.</h2><p>Illustrative layout. Real installs vary by project.</p></div>
 
-    <div class="hot" data-pos="0.35,2.4,3.2" data-at="0.9">Insulated door</div>
-    <div class="hot" data-pos="-1.15,3.2,3.2" data-at="0.9">Locking joints</div>
-    <div class="hot" data-pos="-2.4,3.85,2.0" data-at="0.9">20 ft (6.1 m) ceiling panels</div>
+    <div class="hot" data-pos="0,2.4,2.62" data-at="0.9">Hinged cooler door</div>
+    <div class="hot" data-pos="-1.5,3.2,2.62" data-at="0.9">Locking joints</div>
+    <div class="hot" data-pos="-2.6,3.85,1.4" data-at="0.9">16 ft (4.9 m) ceiling panels</div>
 
     <div class="rail" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
     <div class="hud">
-      <div><b id="h-panels">0 / 36</b><span>Panels &amp; door placed</span></div>
+      <div><b id="h-panels">0 / 31</b><span>Panels &amp; door placed</span></div>
       <div><b id="h-area">0</b><span id="h-arealab">Sq ft insulated</span></div>
       <div><b id="h-r">R-30</b><span>4&quot; (100 mm) panel</span></div>
     </div>
@@ -199,6 +199,7 @@
             <p class="inst-hint">Drag to orbit &middot; scroll to zoom</p>
           </div>
           <aside class="inst-side">
+            <div class="inst-opt" hidden role="group" aria-label="Floor connection option"><button class="pill on" type="button" data-scene="track" aria-pressed="true">Option A &middot; U-channel</button><button class="pill" type="button" data-scene="trackL" aria-pressed="false">Option B &middot; Double L trim</button></div>
             <div class="inst-steps" role="list"></div>
             <div class="inst-detail" aria-live="polite"></div>
           </aside>
@@ -209,7 +210,8 @@
         <div class="inst-card">
           <h3>Trim and accessories in a typical room</h3>
           <ul>
-            <li><b>Floor track.</b> 20 ga (0.91 mm) galvanized U-track, web sized to the panel thickness.</li>
+            <li><b>Floor connection.</b> Option A: 20 ga (0.91 mm) galvanized U-track, web sized to the panel thickness. Option B: two white HS aluminum L angles, 1.2 mm (16 ga), in 6 m (19&prime;-8.22&quot;) lengths, one on each side of the panel.</li>
+            <li><b>Screws.</b> One screw type throughout: 1/4&quot; &times; 1/4&quot; &times; 7/8&quot; (6.35 &times; 22 mm) Tek.</li>
             <li><b>Inside corner trim.</b> 2&quot; &times; 2&quot; &times; 26 ga (51 &times; 51 &times; 0.46 mm), continuous, on the room side.</li>
             <li><b>Outside corner trim.</b> Continuous 26 ga, on the warm side, over sealant.</li>
             <li><b>Flat batten.</b> 26 ga, 4&quot; (102 mm) wide minimum, over a ceiling-to-ceiling butt joint above a partition.</li>
@@ -392,7 +394,7 @@
 <script>
 /* The 3D room and installation viewer (about 1.4 MB of scripts) load once the page itself is ready, in order, so they never delay the first screen. */
 (function(){
-  var files=["/vendor/three/three.min.js","/vendor/three/GLTFLoader.js","/site/js/panel_assets.js","/site/js/room.js","/vendor/three/OrbitControls.js","/site/js/panelmat.js","/site/js/install_data.js","/site/js/install.js"];
+  var files=["/vendor/three/three.min.js","/vendor/three/GLTFLoader.js","/site/js/panel_assets.js","/site/js/panelmat.js","/site/js/room.js","/vendor/three/OrbitControls.js","/site/js/install_data.js","/site/js/install.js"];
   var i=0;
   function next(){ if(i>=files.length) return; var s=document.createElement("script"); s.src=files[i++]; s.onload=next; s.onerror=next; document.body.appendChild(s); }
   function start(){ setTimeout(next,150); }
