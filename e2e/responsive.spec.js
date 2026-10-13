@@ -139,6 +139,18 @@ test("mobile menu reaches every main page", async ({ page }) => {
   await expect(page).toHaveURL(/\/products$/);
 });
 
+test("specs page shows the single and double span tables with metric values", async ({ page }) => {
+  await page.goto("/specs", { waitUntil: "load" });
+  await page.getByRole("button", { name: "Single span", exact: true }).click();
+  await expect(page.locator(".tpanel.on tbody tr")).toHaveCount(9);
+  await expect(page.locator(".tpanel.on")).toContainText("10'5⅝\"");
+  await expect(page.locator(".tpanel.on")).toContainText("3,191");
+  await expect(page.locator(".tpanel.on")).toContainText("converted from metric to imperial units");
+  await page.getByRole("button", { name: "Double span", exact: true }).click();
+  await expect(page.locator(".tpanel.on tbody tr")).toHaveCount(9);
+  await expect(page.locator(".tpanel.on")).toContainText("12'5⅝\"");
+});
+
 test("no draft text or dead links on the public pages", async ({ page }) => {
   for (const path of ["/", "/products", "/gallery", "/blog", "/trim"]) {
     await page.goto(path, { waitUntil: "load" });
