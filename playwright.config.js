@@ -5,7 +5,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   timeout: 30000,
-  use: { baseURL: "http://127.0.0.1:4173", trace: "retain-on-failure" },
+  // PW_CHANNEL=chrome (or msedge) runs the Chromium projects in an installed browser instead of the downloaded one.
+  use: { baseURL: "http://127.0.0.1:4173", trace: "retain-on-failure", channel: process.env.PW_CHANNEL || undefined },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", use: { ...devices["iPhone 13"], defaultBrowserType: "chromium" } },

@@ -7,6 +7,12 @@ const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal
 
 const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
 
+// Stay offline: third-party hosts (Google Fonts, Pipedrive, analytics) can be slow or blocked and would stall the load event.
+// Registered first, so the portal mock's own route (added later in a test) still answers its requests.
+test.beforeEach(async ({ context }) => {
+  await context.route(/^https?:\/\/(?!(127\.0\.0\.1|localhost)[:/])/, (route) => route.abort());
+});
+
 async function chatRoundTrip(page) {
   await page.getByRole("button", { name: "Open chat assistant" }).click();
   const chat = page.getByRole("dialog", { name: "Harvest Panel Systems assistant" });

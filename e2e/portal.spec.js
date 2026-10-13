@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { mockPortal, user, accountId } from "./portal-fixture.js";
+import { mockPortal, user } from "./portal-fixture.js";
 
 test("portal tab titles are correct before the app loads", async ({ page }) => {
   await page.route(/\/assets\/portal-[^/]*\.js$/, route => route.abort());
@@ -70,7 +70,7 @@ test("sign-in, account-scoped documents, audited download and existing portal de
   await page.screenshot({ path: info.outputPath("documents.png"), fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   const popupPromise = page.waitForEvent("popup");
-  await page.getByRole("button", { name: "Open", exact: true }).click();
+  await page.getByRole("button", { name: "View Project quote.pdf", exact: true }).click();
   const popup = await popupPromise;
   await expect(popup).toHaveURL(/storage\/v1\/object\/sign/);
   await expect(popup.locator("body")).toContainText("Mock document");
@@ -82,14 +82,13 @@ test("admin upload completes and retains themed controls", async ({ page }, info
   await mockPortal(page, { signedIn: true, admin: true });
   await page.goto("/portal/admin");
   await expect(page.locator(".hp-page-loader")).toHaveCount(0);
-  await page.getByLabel("Customer account", { exact: true }).selectOption(accountId);
+  await page.getByRole("button", { name: /^Example Company/ }).click();
   await page.getByLabel("Document title").fill("Specification");
   await page.getByLabel("File", { exact: true }).setInputFiles({ name: "spec.pdf", mimeType: "application/pdf", buffer: Buffer.from("mock document") });
   await page.getByRole("button", { name: "Upload and share" }).click();
-  await expect(page.getByRole("alert")).toHaveText("Uploaded and shared.");
+  await expect(page.getByText("Uploaded and shared with Example Company.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Upload and share" })).toBeEnabled();
   await expect(page.getByLabel("Document title")).toHaveValue("");
-  await expect(page.getByLabel("Customer account", { exact: true })).toHaveValue("");
   await expect(page.locator(".hp-nav__pill--fold")).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath("admin.png"), fullPage: true });
@@ -97,9 +96,13 @@ test("admin upload completes and retains themed controls", async ({ page }, info
 
 test("password recovery reports errors and permits a successful retry", async ({ page }) => {
   await mockPortal(page, { signedIn: true });
-  const rejectUpdate = (route) => route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ msg: "Session expired", code: "session_not_found" }) });
+  // Only the password change is rejected; other calls fall through to the shared mock.
+  const rejectUpdate = (route) => route.request().method() === "PUT"
+    ? route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ msg: "Session expired", code: "session_not_found" }) })
+    : route.fallback();
   await page.route("**/auth/v1/user", rejectUpdate);
-  await page.goto("/portal/reset");
+  // The reset page only accepts a recovery session, which an emailed link marks with type=recovery.
+  await page.goto("/portal/reset#type=recovery");
   await expect(page.locator(".hp-page-loader")).toHaveCount(0);
   await page.getByLabel("New password").fill("example-password");
   await page.getByRole("button", { name: "Save password" }).click();

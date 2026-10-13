@@ -9,7 +9,7 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{margin:0;font-family:var(--font);color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased;line-height:1.47;letter-spacing:-.011em}
-img{max-width:100%;display:block}
+img{max-width:100%;height:auto;display:block}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
 .eyebrow{font-size:14px;font-weight:600;letter-spacing:.02em;color:var(--accent);margin:0 0 12px}
@@ -191,6 +191,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
   .hud div{padding:10px 14px;min-width:0}.rail{display:none}
 }
 @media (max-width:560px){.form{grid-template-columns:1fr}.hud{width:calc(100% - 24px)}.hud div{flex:1}}
+@media (max-width:420px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.stat{padding-left:10px;padding-right:10px}.num{font-size:38px}.spec-hero{grid-template-columns:minmax(0,1fr)}.spec-hero>*{min-width:0}}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}.rv{opacity:1;transform:none;transition:none}.hero .bg{transform:none!important}.scrollcue::after{animation:none}
   .build{height:auto}.sticky{position:relative;height:90vh}

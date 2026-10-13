@@ -103,7 +103,11 @@
     if(goal&&!gl.user){ const cam=gl.camera; cam.position.lerp(goal.pos,.07); gl.controls.target.lerp(goal.tgt,.07); const f=fovFor(goal.lens,cam.aspect); cam.fov+=(f-cam.fov)*.07; cam.updateProjectionMatrix(); }
     gl.controls.update();
     const w=host.clientWidth,h=host.clientHeight;
-    s3.labels.forEach(l=>{ tmp.copy(l.p).project(gl.camera); l.el.style.left=((tmp.x+1)/2*w)+'px'; l.el.style.top=((1-tmp.y)/2*h)+'px'; l.el.style.visibility=tmp.z<1?'':'hidden'; });
+    const boxes=[]; // labels that would overlap an earlier one are stacked upward
+    s3.labels.forEach(l=>{ tmp.copy(l.p).project(gl.camera); const x=(tmp.x+1)/2*w, y=(1-tmp.y)/2*h; l.el.style.left=x+'px'; l.el.style.top=y+'px'; l.el.style.visibility=tmp.z<1?'':'hidden';
+      if(tmp.z>=1) return; const lw=l.el.offsetWidth, lh=l.el.offsetHeight; let mt=-12;
+      for(let k=0;k<8;k++){ const top=y+mt-1.35*lh; if(!boxes.some(b=>Math.abs(b.x-x)<(b.w+lw)/2+6&&top<b.bottom+4&&top+lh>b.top-4)) break; mt-=lh+8; }
+      l.el.style.marginTop=mt+'px'; boxes.push({x,w:lw,top:y+mt-1.35*lh,bottom:y+mt-.35*lh}); });
     if(s.anchor){ tmp.copy(B(s.anchor)).project(gl.camera); ring.style.left=((tmp.x+1)/2*w)+'px'; ring.style.top=((1-tmp.y)/2*h)+'px'; }
     gl.renderer.render(s3.sc,gl.camera);
   }

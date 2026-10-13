@@ -136,7 +136,9 @@ deployment-specific behavior. CI is local-source coverage, not evidence those re
 
 ## Browser regression tests
 
-Run `npx playwright install chromium firefox webkit`, then `npm run test:e2e`. Tests launch a
+Run `npx playwright install chromium firefox webkit`, then `npm run test:e2e`. If the
+browser download is blocked on your network, run only the Chromium projects in an installed
+Chrome or Edge instead (PowerShell: `$env:PW_CHANNEL="chrome"; npx playwright test --project=desktop --project=mobile`). Tests launch a
 local Vite server at port 4173 with a fake Supabase project and intercept all portal
 requests. No production credentials or accounts are used. Desktop and mobile
 Chromium tests exercise sign-in, scoped documents, audited links, uploads, delayed
