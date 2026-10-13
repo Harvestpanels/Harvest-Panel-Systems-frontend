@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { mockPortal } from "./portal-fixture.js";
 
 const sizes = [[320, 568], [390, 844], [667, 375], [768, 1024], [1024, 768], [1440, 900]];
-const STATIC_PAGES = ["/", "/products", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/privacy", "/terms"];
+const STATIC_PAGES = ["/", "/products", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/privacy", "/terms", "/portal-paused"];
 const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal/admin"];
 
 const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
@@ -92,10 +92,11 @@ for (const [width, height] of sizes) {
   });
 }
 
-test("home page: log in link, 20x20 calculator preset and showroom picker work", async ({ page }) => {
+test("home page: 20x20 calculator preset and showroom picker work (portal link is off)", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/", { waitUntil: "load" });
-  await expect(page.locator('a.login[href="/portal/login"]').first()).toBeVisible();
+  // The customer portal is switched off for now; see "Customer portal" in the README to bring the link back.
+  await expect(page.locator('a[href^="/portal"]')).toHaveCount(0);
   await page.locator("#calculator").scrollIntoViewIfNeeded();
   await page.locator('#c-presets [data-l="20"][data-w="20"]').click();
   await expect(page.locator("#o-total")).toHaveText("35");
@@ -142,6 +143,7 @@ test("no draft text or dead links on the public pages", async ({ page }) => {
   for (const path of ["/", "/products", "/gallery", "/blog", "/trim"]) {
     await page.goto(path, { waitUntil: "load" });
     expect(await page.locator('a[href="#"]').count(), path).toBe(0);
+    expect(await page.locator('a[href^="/portal/"]').count(), `${path} portal link`).toBe(0);
     await expect(page.locator("body")).not.toContainText(/draft descriptions|lorem ipsum/i);
   }
 });

@@ -41,8 +41,9 @@
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
     }
   ],
-  "rewrites": [
-    { "source": "/portal", "destination": "/portal.html" },
-    { "source": "/portal/(.*)", "destination": "/portal.html" }
+  "redirects": [
+    { "source": "/portal", "destination": "/portal-paused", "permanent": false },
+    { "source": "/portal/:path*", "destination": "/portal-paused", "permanent": false },
+    { "source": "/portal.html", "destination": "/portal-paused", "permanent": false }
   ]
 }

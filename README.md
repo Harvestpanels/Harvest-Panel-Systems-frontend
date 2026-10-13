@@ -134,6 +134,20 @@ headers/API routing; exercise real email recovery, Pipedrive submission, documen
 flows, mobile/keyboard behavior, reduced motion, and loading transitions; review
 deployment-specific behavior. CI is local-source coverage, not evidence those remote checks passed.
 
+## Customer portal (switched off for now)
+
+The portal is switched off on the public site but fully kept: all of its code (`src/`, `portal.html`)
+and its browser tests (`e2e/portal.spec.js`) are unchanged, and the build still produces it.
+What was switched off: the "Log in" link on every page, the `/portal` routes (`vercel.json`
+redirects send `/portal`, `/portal/...` and `/portal.html` to `public/portal-paused.html`, a short
+notice with the phone number and email), and the portal wording in the privacy and terms pages.
+
+To bring it back, revert the commit titled "Switch the customer portal off for now"
+(`git revert <that commit>`). The `portal-enabled` tag marks the last commit with the portal on,
+for comparison (`git diff portal-enabled`). Before relaunching,
+make sure the Supabase project is not paused (free projects pause after inactivity) and that
+Vercel has `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` set for the environment.
+
 ## Browser regression tests
 
 Run `npx playwright install chromium firefox webkit`, then `npm run test:e2e`. If the
