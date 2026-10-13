@@ -442,3 +442,4 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .inst-hint{position:absolute;left:0;right:0;bottom:56px;text-align:center;font-size:12px;color:rgba(255,255,255,.7);margin:0;pointer-events:none}
 .inst-view.loading::after{content:"Loading 3D model…";position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.75);font-size:14px}
 .inst-view.mode-3d .ilab{transform:translate(-50%,-135%)}
+.pcard .ph.dr,.pcard3 .ph.dr{background-size:auto 128%;background-position:50% 60%}
