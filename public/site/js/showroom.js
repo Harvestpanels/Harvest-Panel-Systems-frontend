@@ -170,66 +170,66 @@
       note:()=>PROFILES[S.profile].d };
   }
 
-  // ================================================================= PRODUCT 3: cooler doors
+  // ================================================================= PRODUCT 3: doors (Blender-built models, doors/glb)
+  const DOOR_TYPES=[
+    {id:'hinged',label:'Hinged cold-room',blurb:'Insulated hinged door with a flush leaf, aluminum edge frame, gasketed rebate, heavy hinges and a key latch.',
+     sizes:[['3×7','hinged-3x7','3′ × 7′','900 × 2,100 mm clear opening'],['4×7','hinged-4x7','4′ × 7′','1,200 × 2,100 mm clear opening'],['5×7','hinged-5x7','5′ × 7′','1,500 × 2,100 mm clear opening']],
+     rows:[['Leaf','100 mm (3.94″) insulated, 0.5 mm steel faces'],['Frame','Aluminum edge frame, white door frame'],['Hardware','Hinges + key latch']]},
+    {id:'double',label:'Double cold-room',blurb:'Two hinged leaves meeting at a gasketed center, with a key latch on the active leaf.',
+     sizes:[['6×7','double-6x7','6′ × 7′','1,800 × 2,100 mm clear opening'],['8×7','double-8x7','8′ × 7′','2,400 × 2,100 mm clear opening'],['6×7 unequal','double-unequal-6x7','6′ × 7′, one-third / two-thirds leaves','1,800 × 2,100 mm clear opening']],
+     rows:[['Leaf','100 mm (3.94″) insulated, 0.5 mm steel faces'],['Frame','Aluminum edge frame, white door frame'],['Hardware','Hinges + key latch on the active leaf']]},
+    {id:'office',label:'Office',blurb:'Flush insulated office door in an aluminum frame with a lever handle and key cylinder.',
+     sizes:[['2.5×7','office-25x7','2.5′ × 7′','762 × 2,100 mm clear opening'],['3×7','office-3x7','3′ × 7′','900 × 2,100 mm clear opening'],['4×7','office-4x7','4′ × 7′','1,200 × 2,100 mm clear opening']],
+     rows:[['Leaf','0.5 mm steel faces, aluminum frame'],['Hardware','Lever handle + key cylinder, hinged, door closer']]},
+    {id:'clean',label:'Clean room',blurb:'Flush clean-room door with a round vision window, aluminum frame and lever handle.',
+     sizes:[['3×7','clean-3x7','3′ × 7′','900 × 2,100 mm clear opening']],
+     rows:[['Leaf','50 mm (1.97″) polyurethane foam, 0.5 mm steel faces (RAL 9002)'],['Frame','Aluminum'],['Hardware','Lever handle, vision window, door closer']]},
+    {id:'officed',label:'Double office',blurb:'Two flush office leaves in an aluminum frame.',
+     sizes:[['6×7','office-double-6x7','6′ × 7′','1,800 × 2,100 mm clear opening']],
+     rows:[['Leaf','0.5 mm steel faces, aluminum frame'],['Hardware','Lever handles, hinged, door closers']]},
+    {id:'cleand',label:'Double clean room',blurb:'Two flush clean-room leaves with round vision windows.',
+     sizes:[['6×7','clean-double-6x7','6′ × 7′','1,800 × 2,100 mm clear opening']],
+     rows:[['Leaf','50 mm (1.97″) polyurethane foam, 0.5 mm steel faces (RAL 9002)'],['Frame','Aluminum'],['Hardware','Lever handles, vision windows, door closers']]}];
+  const DOOR_MATS={
+    Door_steel_white:()=>new THREE.MeshPhysicalMaterial({color:0xe6e8e4,roughness:.42,metalness:.03,clearcoat:.15,clearcoatRoughness:.4}),
+    Frame_white:()=>new THREE.MeshStandardMaterial({color:0xe2e4e0,roughness:.5}),
+    Door_aluminum:()=>new THREE.MeshStandardMaterial({color:0xaeb2b6,roughness:.42,metalness:.6}),
+    Frame_aluminum_light:()=>new THREE.MeshStandardMaterial({color:0xbfc2c5,roughness:.4,metalness:.6}),
+    Hardware_dark:()=>new THREE.MeshStandardMaterial({color:0x2c2d30,roughness:.45,metalness:.1}),
+    Hardware_light:()=>new THREE.MeshStandardMaterial({color:0x8d9298,roughness:.38,metalness:.5}),
+    Stainless:()=>new THREE.MeshStandardMaterial({color:0xb7bbbf,roughness:.28,metalness:1}),
+    Gasket_black:()=>new THREE.MeshStandardMaterial({color:0x111214,roughness:.7}),
+    PIR_foam:()=>new THREE.MeshStandardMaterial({color:0xe9dcae,roughness:.9}),
+    Release_green:()=>new THREE.MeshStandardMaterial({color:0x14a04a,roughness:.4}),
+    Glass:()=>new THREE.MeshPhysicalMaterial({color:0xd8e9f2,roughness:.04,metalness:0,transparent:true,opacity:.22,depthWrite:false,envMapIntensity:1.6})};
+  const doorCache={};
   function buildDoors(ctx){
-    const S={type:'hinged',open:0,xray:false,color:'#F5F5F2'}; const rootG=new THREE.Group(); let inner=null, mover=null, faceMats=[], apply=()=>{};
-    const OW=1000, OH=2150, WH=2600, WT=100;
-    function leaf(w,h,d,color){
-      const g=new THREE.Group(), mat=steelMat(color); faceMats=[mat];
-      const t=2, core=box(w-8,h-8,d-2*t-1,foamMat()); g.add(core);
-      [[0,0,d/2-t/2],[0,0,-d/2+t/2]].forEach(p=>g.add(box(w,h,t,mat,p[0],p[1],p[2])));
-      g.add(box(w,t,d,mat,0,h/2-t/2,0),box(w,t,d,mat,0,-h/2+t/2,0),box(t,h,d,mat,w/2-t/2,0,0),box(t,h,d,mat,-w/2+t/2,0,0));
-      g.userData.core=core; return g; }
+    const S={type:'hinged',size:0,hand:'R',open:0,wall:true}; const rootG=new THREE.Group(); let model=null, pivots=[], walls=[];
+    const matc={}; const dm=n=>{ const k=(n||'').replace(/\.\d+$/,''); return DOOR_MATS[k]?(matc[k]||(matc[k]=DOOR_MATS[k]())):null; };
+    const T=()=>DOOR_TYPES.find(d=>d.id===S.type), Z=()=>T().sizes[Math.min(S.size,T().sizes.length-1)];
+    function apply(){ pivots.forEach(p=>{ p.rotation.y=(p.position.x>0?1:-1)*S.open*Math.PI*.6; }); walls.forEach(w=>{ w.visible=S.wall; }); if(model) model.scale.x=(S.hand==='L'?-1:1)*1000; }
+    function place(gltf){
+      if(model){ rootG.remove(model); }
+      model=gltf.scene.clone(true); model.scale.setScalar(1000); pivots=[]; walls=[];
+      model.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; const m=o.material; o.material=Array.isArray(m)?m.map(x=>dm(x.name)||x):(dm(m.name)||m); }
+        if(o.name==='pivotA'||o.name==='pivotB') pivots.push(o); if(/^Wall/.test(o.name)) walls.push(o); });
+      rootG.add(model); apply(); ctx.update(); ctx.view('34'); }
     function make(){
-      if(inner){ rootG.remove(inner); inner.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-      inner=new THREE.Group();
-      // wall section: 2 panels each side + header
-      const wm=M.wall; [-1,1].forEach(s=>[0,1].forEach(i=>inner.add(box(996,WH,WT,wm,s*(OW/2+500+i*1000),WH/2,0))));
-      inner.add(box(OW,WH-OH,WT,wm,0,OH+(WH-OH)/2,0));
-      // frame + threshold
-      const fr=steelMat(0xf2f2ee); inner.add(box(45,OH,WT+10,fr,-(OW/2-22.5),OH/2,0),box(45,OH,WT+10,fr,(OW/2-22.5),OH/2,0),box(OW,45,WT+10,fr,0,OH-22.5,0),box(OW-90,10,WT+10,M.alu,0,5,0));
-      const dc=S.color;
-      if(S.type==='hinged'||S.type==='metal'){
-        const W=906,H=OH-45-14, hingeRight=S.type==='hinged', px=(hingeRight?1:-1)*(OW/2-45);
-        const lf=leaf(W,H,WT-14,dc); lf.position.set((hingeRight?-1:1)*W/2,14+H/2,0);
-        const pivot=new THREE.Group(); pivot.position.set(px,0,0); pivot.add(lf);
-        // gasket on the frame (perimeter)
-        [[-(OW/2-45),OH/2-22,8,OH-45],[(OW/2-45),OH/2-22,8,OH-45]].forEach(g=>inner.add(box(g[2],g[3],10,M.rubber,g[0]+(g[0]<0?4:-4),g[1]+22,WT/2-3)));
-        inner.add(box(OW-90,8,10,M.rubber,0,OH-45-4,WT/2-3));
-        // hinges on the hinge side (static knuckles)
-        [300,1075,1850].forEach(y=>inner.add(cyl(11,95,M.ss,px+(hingeRight?-1:1)*0,y,WT/2+6)));
-        const frontZ=(WT-14)/2;                                  // front face of the leaf (local)
-        if(S.type==='hinged'){ // black cam-lock handle
-          const hd=new THREE.Group(); hd.add(box(115,58,34,M.black,0,0,0), box(70,16,22,M.black,-8,0,22));
-          hd.position.set(hingeRight?(-W/2+95):(W/2-95),1000-lf.position.y,frontZ+10); lf.add(hd);
-        } else { // lever handle + door closer
-          const hx=hingeRight?(-W/2+80):(W/2-80), lv=new THREE.Group();
-          const rose=cyl(22,12,M.ss,0,0,0,24); rose.rotation.x=Math.PI/2; const bar=cyl(8,125,M.ss,hx>0?-55:55,0,16,16); bar.rotation.z=Math.PI/2; lv.add(rose,bar);
-          lv.position.set(hx,1000-lf.position.y,frontZ+8); lf.add(lv);
-          const cl=new THREE.Group(); cl.add(box(260,46,42,M.zinc,0,0,0)); cl.position.set(hingeRight?(W/2-150):(-W/2+150),H/2-40,frontZ+24); lf.add(cl);
-        }        inner.add(pivot); mover=pivot;
-        apply=()=>{ pivot.rotation.y=(hingeRight?1:-1)*S.open*1.75; };
-      } else { // sliding: leaf hangs in front of the wall from an aluminium track
-        const W=1200,H=OH+20, lz=WT/2+12+(WT-14)/2; const lf=leaf(W,H,WT-14,dc); lf.position.set(0,20+H/2,lz);
-        const track=box(2900,52,64,M.alu,-450,OH+240,lz+14); inner.add(track);
-        [-OW*.35,OW*.35].forEach(dx=>{ lf.add(box(36,170,8,M.zinc,dx,H/2+85,(WT-14)/2+6)); const r=cyl(36,22,M.black,dx,H/2+160,(WT-14)/2+6,24); r.rotation.x=Math.PI/2; lf.add(r); });
-        const hb=new THREE.Group(); hb.add(cyl(11,380,M.ss,0,0,0,18),box(40,40,26,M.ss,0,-120,0),box(36,36,20,M.ss,0,120,0),box(70,26,16,M.ss,24,-10,18)); hb.position.set(W/2-190,1000-lf.position.y,(WT-14)/2+34); lf.add(hb);
-        inner.add(box(60,OH,WT+20,fr,-(OW/2+30),OH/2,8),box(60,OH,WT+20,fr,(OW/2+30),OH/2,8)); inner.add(box(22,70,150,M.zinc,0,35,lz+4));
-        inner.add(lf); mover=lf; apply=()=>{ lf.position.x=-S.open*1250; };
-      }
-      rootG.add(inner); setXray(); apply(); ctx.update(); }
-    function setXray(){ faceMats.forEach(m=>{ m.transparent=S.xray; m.opacity=S.xray?.14:1; m.depthWrite=!S.xray; m.needsUpdate=true; }); }
-    return { root:rootG, build:make,
-      controls:[
-        {type:'chips',label:'Door type',value:'hinged',options:[{v:'hinged',label:'Hinged cooler'},{v:'sliding',label:'Sliding cooler'},{v:'metal',label:'Metal'}],onChange:v=>{S.type=v;S.open=0;ctx.controls[1].setValue&&ctx.controls[1].setValue(0);make();ctx.view('34');}},
-        {type:'slider',label:'Open',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{S.open=v/100;apply();}},
-        {type:'button',text:'Open / close',onClick:()=>{ const a=S.open>.5?0:1; tween(S.open,a,1800,v=>{S.open=v;apply();ctx.controls[1].setValue&&ctx.controls[1].setValue(Math.round(v*100));}); }},
-        {type:'toggle',label:'See inside',text:'X-ray: show the insulated core',value:false,onChange:v=>{S.xray=v;setXray();}},
-        {type:'swatches',label:'Door color',value:'#F5F5F2',options:COLORS.slice(0,6).map(c=>({v:c[1],label:c[0]})),onChange:v=>{S.color=v;const o=S.open;make();S.open=o;apply();}}],
-      stats:()=>({hinged:[['Type','Hinged cooler'],['Use','Cold storage entries'],['Leaf','Insulated, gasketed'],['Opening','1,000 × 2,150 mm (39.4 × 84.6 in)']],
-                   sliding:[['Type','Sliding cooler'],['Use','Heavy-duty track'],['Leaf','Insulated, overlaps frame'],['Opening','1,000 × 2,150 mm (39.4 × 84.6 in)']],
-                   metal:[['Type','Insulated metal'],['Use','Personnel doors'],['Hardware','Lever + closer'],['Opening','1,000 × 2,150 mm (39.4 × 84.6 in)']]})[S.type],
-      note:()=>'Illustrative model. Sizes and hardware vary by order.' };
+      const id=Z()[1], url='/site/models/doors/'+id+'.glb';
+      if(doorCache[id]) return place(doorCache[id]);
+      new THREE.GLTFLoader().load(url,g=>{ doorCache[id]=g; if(Z()[1]===id) place(g); }); }
+    function sizeOptions(){ return T().sizes.map((s,i)=>({v:i,label:s[0]})); }
+    const ctl={
+      type:{type:'chips',label:'Door',value:'hinged',options:DOOR_TYPES.map(d=>({v:d.id,label:d.label})),onChange:v=>{ S.type=v; S.size=0; S.open=0; ctl.size.options=sizeOptions(); ctl.size.value=0; ctl.open.value=0; renderControls(controls); make(); }},
+      size:{type:'chips',label:'Size (ft)',value:0,options:sizeOptions(),onChange:v=>{ S.size=+v; make(); ctx.update(); }},
+      hand:{type:'chips',label:'Hinge side',value:'R',options:[{v:'R',label:'Right'},{v:'L',label:'Left'}],onChange:v=>{ S.hand=v; apply(); }},
+      open:{type:'slider',label:'Open',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{ S.open=v/100; apply(); }}};
+    const controls=[ctl.type,ctl.size,ctl.hand,ctl.open,
+      {type:'button',text:'Open / close',onClick:()=>{ const a=S.open>.5?0:1; tween(S.open,a,1800,v=>{ S.open=v; apply(); ctl.open.setValue&&ctl.open.setValue(Math.round(v*100)); }); }},
+      {type:'toggle',label:'Wall',text:'Show the wall',value:true,onChange:v=>{ S.wall=v; apply(); }}];
+    return { root:rootG, build:make, controls,
+      stats:()=>{ const z=Z(); return [['Door',T().label],['Size',z[2]+' nominal ('+z[3]+')']].concat(T().rows); },
+      note:()=>'Sizes shown are nominal. Full specifications are provided with every quote.' };
   }
 
   // ================================================================= PRODUCT 4: trim & hardware
@@ -266,7 +266,7 @@
   const meta={
     pir100:{t:'4" (100 mm) PIR panel',b:'The real Blender-built model. Lift the steel off the core and slide two panels together to see the locking joint.'},
     designer:{t:'Wall & roof panels',b:'Pick a profile, a thickness and a color. The insulation value and weight update with your choice.'},
-    doors:{t:'Cooler doors',b:'Open each door type and switch on X-ray to see the insulated core.'},
+    doors:{t:'Doors',b:'Pick a door and a size, swing it open, and look at the hardware up close.'},
     trim:{t:'Trim & accessories',b:'Aluminum and steel trim, strut channel, PVC wall panel and PVC trim. Pick an item and orbit it to see the profile up close.'}
   };
   let tickList=[], autoView=null;
