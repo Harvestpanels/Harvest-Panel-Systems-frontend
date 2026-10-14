@@ -98,6 +98,9 @@ test("home page: 20x20 calculator preset and showroom picker work (portal link i
   // The customer portal is switched off for now; see "Customer portal" in the README to bring the link back.
   await expect(page.locator('a[href^="/portal"]')).toHaveCount(0);
   await page.locator("#calculator").scrollIntoViewIfNeeded();
+  // the calculator starts with the same 20 x 16 ft room as the scroll-built one
+  await expect(page.locator("#c-presets .pill.on")).toHaveText("20 × 16 ft");
+  await expect(page.locator("#c-wv")).toContainText("16 ft");
   await page.locator('#c-presets [data-l="20"][data-w="20"]').click();
   await expect(page.locator("#o-total")).toHaveText("35");
   await page.goto("/showroom", { waitUntil: "load" });

@@ -6,7 +6,7 @@
   const $=id=>document.getElementById(id);
   const FT=0.3048, DOOR_W=3*FT, DOOR_H=7*FT, SQFT=10.7639;
   const COVERS={std:{m:1.0,label:'39.37" (1,000 mm)'},wide:{m:1.143,label:'45"'}};
-  const S={unit:'ft',L:20,W:20,H:12,cover:'std',doors:1,ceiling:true};     // L,W,H stored in feet
+  const S={unit:'ft',L:20,W:16,H:12,cover:'std',doors:1,ceiling:true};     // L,W,H stored in feet
 
   const el={l:$('c-l'),w:$('c-w'),lr:$('c-lr'),wr:$('c-wr'),h:$('c-h'),doors:$('c-doors'),ceil:$('c-ceil'),
     lv:$('c-lv'),wv:$('c-wv'),plan:$('c-plan'),warn:$('c-warn')};
