@@ -219,9 +219,15 @@
       model.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; const m=o.material; if(window.HPSP&&!Array.isArray(m)) HPSP.prepare(o,m.name); o.material=Array.isArray(m)?m.map(x=>dm(x.name)||x):(dm(m.name)||m); }
         if(o.name==='pivotA'||o.name==='pivotB') pivots.push(o); if(o.name==='slideA') slideNode=o; if(/^Wall/.test(o.name)) walls.push(o); });
       rootG.add(model); apply(); ctx.update(); ctx.view('34');
-      // frame the installed door: whole wall in view, 3/4 angle, door at the centre (sliding doors sit off-centre on a longer wall)
-      const bb=new THREE.Box3().setFromObject(model), wx=bb.getSize(new THREE.Vector3()).x, cx=(bb.min.x+bb.max.x)/2, fitD=.55*wx/(Math.tan(camera.fov*Math.PI/360)*Math.max(.6,camera.aspect)), dd=Math.max(6200,wx*1.5,fitD), az=32*Math.PI/180, el=11*Math.PI/180;
-      controls.target.set(cx,1250,0); camera.position.set(cx+Math.sin(az)*Math.cos(el)*dd,1250+Math.sin(el)*dd,Math.cos(az)*Math.cos(el)*dd); camera.near=Math.max(20,dd*.02); camera.far=Math.max(60000,dd*40); camera.updateProjectionMatrix(); controls.minDistance=1200; controls.maxDistance=dd*2.2; controls.update(); }
+      // start view for every door: from slightly left of the wall at eye level, the wall filling about two thirds of the width
+      // (and always fully in view vertically), so the door and its hardware read clearly
+      const bb=new THREE.Box3().setFromObject(model), size=bb.getSize(new THREE.Vector3()), cx=(bb.min.x+bb.max.x)/2;
+      const az=-24*Math.PI/180, el=3*Math.PI/180, th=Math.tan(camera.fov*Math.PI/360), aspect=Math.max(.3,host.clientWidth/Math.max(1,host.clientHeight));
+      const proj=size.x*Math.cos(az)+size.z*Math.abs(Math.sin(az));
+      const dd=Math.max(proj/(.67*2*th*aspect), 2600/(.88*2*th));
+      controls.target.set(cx,1250,0); camera.position.set(cx+Math.sin(az)*Math.cos(el)*dd,1250+Math.sin(el)*dd,Math.cos(az)*Math.cos(el)*dd);
+      camera.near=Math.max(20,dd*.02); camera.far=Math.max(60000,dd*40); camera.updateProjectionMatrix(); controls.minDistance=1200; controls.maxDistance=dd*2.4; controls.update();
+    }
     function make(){
       const id=Z()[1], url='/site/models/doors/'+id+'.glb';
       if(doorCache[id]) return place(doorCache[id]);
