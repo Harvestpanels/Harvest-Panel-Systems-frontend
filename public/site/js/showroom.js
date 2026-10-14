@@ -178,6 +178,9 @@
     {id:'double',label:'Double cold-room',blurb:'Two hinged leaves meeting at a gasketed center, with a key latch on the active leaf.',
      sizes:[['6×7','double-6x7','6′ × 7′','1,800 × 2,100 mm clear opening'],['8×7','double-8x7','8′ × 7′','2,400 × 2,100 mm clear opening'],['6×7 unequal','double-unequal-6x7','6′ × 7′, one-third / two-thirds leaves','1,800 × 2,100 mm clear opening']],
      rows:[['Leaf','100 mm (3.94″) insulated, 0.5 mm steel faces'],['Frame','Aluminum edge frame, white door frame'],['Hardware','Hinges + key latch on the active leaf']]},
+    {id:'sliding',label:'Sliding cooler',blurb:'Heavy-duty insulated sliding door hung from a top rail on roller hangers, in a gasketed U-shape frame, with a stainless pull handle and lock.',
+     sizes:[['5×7','sliding-5x7','5′ × 7′','1,500 × 2,100 mm clear opening',1670],['6×7','sliding-6x7','6′ × 7′','1,800 × 2,100 mm clear opening',1970]],
+     rows:[['Leaf','100 mm (3.94″) insulated, 0.5 mm steel faces'],['Frame','U-shape frame with gasket'],['Hardware','Top rail with roller hangers, floor guide, stainless pull handle + lock']]},
     {id:'office',label:'Office',blurb:'Flush insulated office door in an aluminum frame with a lever handle and key cylinder.',
      sizes:[['2.5×7','office-25x7','2.5′ × 7′','762 × 2,100 mm clear opening'],['3×7','office-3x7','3′ × 7′','900 × 2,100 mm clear opening'],['4×7','office-4x7','4′ × 7′','1,200 × 2,100 mm clear opening']],
      rows:[['Leaf','0.5 mm steel faces, aluminum frame'],['Hardware','Lever handle + key cylinder, hinged, door closer']]},
@@ -204,33 +207,38 @@
     Glass:()=>new THREE.MeshPhysicalMaterial({color:0xd8e9f2,roughness:.04,metalness:0,transparent:true,opacity:.22,depthWrite:false,envMapIntensity:1.6})};
   const doorCache={};
   function buildDoors(ctx){
-    const S={type:'hinged',size:0,hand:'R',open:0,wall:true}; const rootG=new THREE.Group(); let model=null, pivots=[], walls=[];
+    const S={type:'hinged',size:0,hand:'R',open:0,wall:true}; const rootG=new THREE.Group(); let model=null, pivots=[], walls=[], slideNode=null;
     const matc={}; const dm=n=>{ const k=(n||'').replace(/\.\d+$/,''); if(window.HPSP&&HPSP.has(k)) return HPSP.mat(k); return DOOR_MATS[k]?(matc[k]||(matc[k]=DOOR_MATS[k]())):null; };
     const T=()=>DOOR_TYPES.find(d=>d.id===S.type), Z=()=>T().sizes[Math.min(S.size,T().sizes.length-1)];
-    function apply(){ pivots.forEach(p=>{ p.rotation.y=(p.position.x>0?1:-1)*S.open*Math.PI*.6; }); walls.forEach(w=>{ w.visible=S.wall; }); if(model) model.scale.x=(S.hand==='L'?-1:1)*1000; }
+    function apply(){ pivots.forEach(p=>{ p.rotation.y=(p.position.x>0?1:-1)*S.open*Math.PI*.6; });
+      if(slideNode) slideNode.position.x=-S.open*(Z()[4]||0)/1000;   // sliding doors: the leaf runs along the wall (travel in mm)
+      walls.forEach(w=>{ w.visible=S.wall; }); if(model) model.scale.x=(S.hand==='L'?-1:1)*1000; }
     function place(gltf){
       if(model){ rootG.remove(model); }
-      model=gltf.scene.clone(true); model.scale.setScalar(1000); pivots=[]; walls=[];
+      model=gltf.scene.clone(true); model.scale.setScalar(1000); pivots=[]; walls=[]; slideNode=null;
       model.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; const m=o.material; if(window.HPSP&&!Array.isArray(m)) HPSP.prepare(o,m.name); o.material=Array.isArray(m)?m.map(x=>dm(x.name)||x):(dm(m.name)||m); }
-        if(o.name==='pivotA'||o.name==='pivotB') pivots.push(o); if(/^Wall/.test(o.name)) walls.push(o); });
+        if(o.name==='pivotA'||o.name==='pivotB') pivots.push(o); if(o.name==='slideA') slideNode=o; if(/^Wall/.test(o.name)) walls.push(o); });
       rootG.add(model); apply(); ctx.update(); ctx.view('34');
-      // frame the installed door: whole wall in view, 3/4 angle, door at the centre
-      const bb=new THREE.Box3().setFromObject(model), wx=bb.getSize(new THREE.Vector3()).x, dd=Math.max(6200,wx*1.5), az=32*Math.PI/180, el=11*Math.PI/180;
-      controls.target.set(0,1250,0); camera.position.set(Math.sin(az)*Math.cos(el)*dd,1250+Math.sin(el)*dd,Math.cos(az)*Math.cos(el)*dd); camera.near=Math.max(20,dd*.02); camera.far=Math.max(60000,dd*40); camera.updateProjectionMatrix(); controls.minDistance=1200; controls.maxDistance=dd*2.2; controls.update(); }
+      // frame the installed door: whole wall in view, 3/4 angle, door at the centre (sliding doors sit off-centre on a longer wall)
+      const bb=new THREE.Box3().setFromObject(model), wx=bb.getSize(new THREE.Vector3()).x, cx=(bb.min.x+bb.max.x)/2, fitD=.55*wx/(Math.tan(camera.fov*Math.PI/360)*Math.max(.6,camera.aspect)), dd=Math.max(6200,wx*1.5,fitD), az=32*Math.PI/180, el=11*Math.PI/180;
+      controls.target.set(cx,1250,0); camera.position.set(cx+Math.sin(az)*Math.cos(el)*dd,1250+Math.sin(el)*dd,Math.cos(az)*Math.cos(el)*dd); camera.near=Math.max(20,dd*.02); camera.far=Math.max(60000,dd*40); camera.updateProjectionMatrix(); controls.minDistance=1200; controls.maxDistance=dd*2.2; controls.update(); }
     function make(){
       const id=Z()[1], url='/site/models/doors/'+id+'.glb';
       if(doorCache[id]) return place(doorCache[id]);
       new THREE.GLTFLoader().load(url,g=>{ doorCache[id]=g; if(Z()[1]===id) place(g); }); }
     function sizeOptions(){ return T().sizes.map((s,i)=>({v:i,label:s[0]})); }
+    // sliding doors have no hinge: the same control says which way the leaf slides
+    function syncHand(){ const sl=S.type==='sliding'; ctl.hand.label=sl?'Slides to':'Hinge side';
+      ctl.hand.options=sl?[{v:'R',label:'Left'},{v:'L',label:'Right'}]:[{v:'R',label:'Right'},{v:'L',label:'Left'}]; S.hand='R'; ctl.hand.value='R'; }
     const ctl={
-      type:{type:'chips',label:'Door',value:'hinged',options:DOOR_TYPES.map(d=>({v:d.id,label:d.label})),onChange:v=>{ S.type=v; S.size=0; S.open=0; ctl.size.options=sizeOptions(); ctl.size.value=0; ctl.open.value=0; renderControls(controls); make(); }},
+      type:{type:'chips',label:'Door',value:'hinged',options:DOOR_TYPES.map(d=>({v:d.id,label:d.label})),onChange:v=>{ S.type=v; S.size=0; S.open=0; syncHand(); ctl.size.options=sizeOptions(); ctl.size.value=0; ctl.open.value=0; renderControls(ctlList); make(); }},
       size:{type:'chips',label:'Size (ft)',value:0,options:sizeOptions(),onChange:v=>{ S.size=+v; make(); ctx.update(); }},
       hand:{type:'chips',label:'Hinge side',value:'R',options:[{v:'R',label:'Right'},{v:'L',label:'Left'}],onChange:v=>{ S.hand=v; apply(); }},
       open:{type:'slider',label:'Open',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{ S.open=v/100; apply(); }}};
-    const controls=[ctl.type,ctl.size,ctl.hand,ctl.open,
+    const ctlList=[ctl.type,ctl.size,ctl.hand,ctl.open,   // (not named `controls`: that is the camera's OrbitControls used in place())
       {type:'button',text:'Open / close',onClick:()=>{ const a=S.open>.5?0:1; tween(S.open,a,1800,v=>{ S.open=v; apply(); ctl.open.setValue&&ctl.open.setValue(Math.round(v*100)); }); }},
       {type:'toggle',label:'Wall',text:'Show the wall',value:true,onChange:v=>{ S.wall=v; apply(); }}];
-    return { root:rootG, build:make, controls,
+    return { root:rootG, build:make, controls:ctlList,
       stats:()=>{ const z=Z(); return [['Door',T().label],['Size',z[2]+' nominal ('+z[3]+')']].concat(T().rows); },
       note:()=>'Sizes shown are nominal. Full specifications are provided with every quote.' };
   }

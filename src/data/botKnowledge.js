@@ -130,7 +130,7 @@ export const BOT_INTENTS = [
   {
     id: "doors",
     keywords: ["door", "doors", "hinged door", "sliding door", "roll up", "rollup", "cooler door", "freezer door", "entry", "metal door", "insulated door"],
-    answer: "Yes, we supply insulated doors to match the thermal performance of the panels around them: hinged and double cold-room doors, sliding doors, office doors, clean-room doors with vision windows, and roll-up doors. You can swing the doors open in our 3D showroom, installed in a real panel wall.",
+    answer: "Yes, we supply insulated doors to match the thermal performance of the panels around them: hinged and double cold-room doors, sliding doors, office doors, clean-room doors with vision windows, and roll-up doors. You can swing or slide the doors open in our 3D showroom, installed in a real panel wall.",
     links: [{ label: "See the doors in 3D", href: "/showroom#doors" }, { label: "Browse doors", href: "/products#doors" }],
   },
   {

@@ -161,6 +161,17 @@ test("look inside: floor track offers the U-channel and the double L trim, with 
   expect(old).toBeNull();
 });
 
+test("3D showroom: the sliding cooler door comes in 5x7 and 6x7 and slides instead of swinging", async ({ page }) => {
+  await page.goto("/showroom#doors", { waitUntil: "load" });
+  await page.getByRole("button", { name: "Sliding cooler", exact: true }).click();
+  await expect(page.getByRole("button", { name: "5×7", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "6×7", exact: true })).toBeVisible();
+  await expect(page.getByText("Slides to", { exact: true })).toBeVisible();
+  await expect(page.locator("body")).toContainText("1,500 × 2,100 mm clear opening");
+  await page.getByRole("button", { name: "6×7", exact: true }).click();
+  await expect(page.locator("body")).toContainText("1,800 × 2,100 mm clear opening");
+});
+
 test("specs page shows the single and double span tables with metric values", async ({ page }) => {
   await page.goto("/specs", { waitUntil: "load" });
   await page.getByRole("button", { name: "Single span", exact: true }).click();
