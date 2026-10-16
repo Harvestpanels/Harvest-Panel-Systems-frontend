@@ -257,7 +257,7 @@
 
     // HUD + stages + rail
     if(hP) hP.textContent=placed+' / '+totalItems;
-    if(hA){ const a=Math.round(area/totalArea*targetArea); hA.textContent=a.toLocaleString('en-US'); const hl=document.getElementById('h-arealab'); if(hl) hl.textContent='Sq ft insulated ('+Math.round(a/SQFT).toLocaleString('en-US')+' m²)'; }
+    if(hA){ const a=Math.round(area/totalArea*targetArea); hA.textContent=a.toLocaleString('en-US'); const hl=document.getElementById('h-arealab'); if(hl) hl.textContent='Sq Ft Insulated ('+Math.round(a/SQFT).toLocaleString('en-US')+' m²)'; }
     if(hR) hR.textContent='R-30';
     stages.forEach(s=>s.classList.toggle('on', p>=+s.dataset.a && p<+s.dataset.b));
     dots.forEach((d,i)=>d.classList.toggle('on', p>=phases[i][0] && p<phases[i][1]));

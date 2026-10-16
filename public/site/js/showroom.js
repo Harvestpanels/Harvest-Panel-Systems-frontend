@@ -127,9 +127,9 @@
       controls:[
         {type:'slider',label:'Layers',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{ex=v/100;apply();}},
         {type:'slider',label:'Joint',min:0,max:100,value:100,fmt:v=>v+'%',onChange:v=>{jn=v/100;apply();}},
-        {type:'button',text:'Play layers',onClick:()=>{ const a=ex>.5?0:1; tween(ex,a,2400,v=>{ex=v;apply();},()=>{ctx.controls[0].setValue&&ctx.controls[0].setValue(a*100);}); }},
-        {type:'button',text:'Play joint',onClick:()=>{ const a=jn>.5?0:1; tween(jn,a,2400,v=>{jn=v;apply();}); }}],
-      stats:()=>[['Thickness','100 mm (3.94 in)'],['Cover width','1,000 mm (39.37 in)'],['Steel faces','0.5 mm (0.020 in)'],['Insulation','R-30 (RSI 5.3)']],
+        {type:'button',text:'Play Layers',onClick:()=>{ const a=ex>.5?0:1; tween(ex,a,2400,v=>{ex=v;apply();},()=>{ctx.controls[0].setValue&&ctx.controls[0].setValue(a*100);}); }},
+        {type:'button',text:'Play Joint',onClick:()=>{ const a=jn>.5?0:1; tween(jn,a,2400,v=>{jn=v;apply();}); }}],
+      stats:()=>[['Thickness','100 mm (3.94 in)'],['Cover Width','1,000 mm (39.37 in)'],['Steel Faces','0.5 mm (0.020 in)'],['Insulation','R-30 (RSI 5.3)']],
       views:'34' };
   }
 
@@ -140,8 +140,8 @@
     box:{n:'Box',kind:'wall',d:'Flat pans separated by narrow ribs.',pts:()=>{ const p=[[-500,0]]; [-375,-125,125,375].forEach(c=>p.push([c-12,0],[c-8,8],[c+8,8],[c+12,0])); p.push([500,0]); return p; }},
     trap:{n:'Trapezoidal',kind:'wall',d:'Repeating angular ribs for added rigidity.',pts:()=>{ const p=[[-500,0]]; [-375,-125,125,375].forEach(c=>p.push([c-35,0],[c-15,28],[c+15,28],[c+35,0])); p.push([500,0]); return p; }},
     emb:{n:'Embossed',kind:'wall',d:'Subtle stucco-like texture that hides minor surface flaws.',pts:()=>[[-500,0],[500,0]],emboss:true},
-    cop:{n:'Cop roof',kind:'roof',d:'Double-steel roof profile with standing ribs.',pts:()=>{ const p=[[-500,0]]; [-250,250].forEach(c=>{ p.push([c-45,0],[c-20,38],[c+20,38],[c+45,0]); }); p.push([500,0]); return p; }},
-    grec:{n:'Grecata roof',kind:'roof',d:'U-rib corrugated roof profile.',pts:()=>{ const p=[]; for(let x=-500;x<=500;x+=4){ const s=Math.sin(x/125*2*Math.PI); p.push([x,15*.5*(1+Math.tanh(2.6*s))]); } return p; }}
+    cop:{n:'Cop Roof',kind:'roof',d:'Double-steel roof profile with standing ribs.',pts:()=>{ const p=[[-500,0]]; [-250,250].forEach(c=>{ p.push([c-45,0],[c-20,38],[c+20,38],[c+45,0]); }); p.push([500,0]); return p; }},
+    grec:{n:'Grecata Roof',kind:'roof',d:'U-rib corrugated roof profile.',pts:()=>{ const p=[]; for(let x=-500;x<=500;x+=4){ const s=Math.sin(x/125*2*Math.PI); p.push([x,15*.5*(1+Math.tanh(2.6*s))]); } return p; }}
   };
   function buildDesigner(ctx){
     const S={profile:'trap',thick:2,color:'#E7EBDA'}; const rootG=new THREE.Group(); let inner=null;
@@ -166,31 +166,31 @@
         {type:'chips',label:'Profile',value:'trap',options:Object.keys(PROFILES).map(k=>({v:k,label:PROFILES[k].n})),onChange:v=>{S.profile=v;make();ctx.view('34');}},
         {type:'chips',label:'Thickness',value:2,options:THICK.map((t,i)=>({v:i,label:t[0]})),onChange:v=>{S.thick=v;make();}},
         {type:'swatches',label:'Color',value:'#E7EBDA',options:COLORS.map(c=>({v:c[1],label:c[0]})),onChange:v=>{S.color=v;make();}}],
-      stats:()=>{ const T=THICK[S.thick]; return [['Profile',PROFILES[S.profile].n],['Thickness',T[0]+' ('+T[1].toFixed(0)+' mm)'],['Insulation','R-'+T[2].toFixed(1)+' (RSI '+(T[2]*0.1761).toFixed(1)+')'],['Weight (24/24 steel)',T[3].toFixed(2)+' psf ('+(T[3]*4.8824).toFixed(1)+' kg/m²)']]; },
+      stats:()=>{ const T=THICK[S.thick]; return [['Profile',PROFILES[S.profile].n],['Thickness',T[0]+' ('+T[1].toFixed(0)+' mm)'],['Insulation','R-'+T[2].toFixed(1)+' (RSI '+(T[2]*0.1761).toFixed(1)+')'],['Weight (24/24 Steel)',T[3].toFixed(2)+' psf ('+(T[3]*4.8824).toFixed(1)+' kg/m²)']]; },
       note:()=>PROFILES[S.profile].d };
   }
 
   // ================================================================= PRODUCT 3: doors (Blender-built models, doors/glb)
   const DOOR_TYPES=[
-    {id:'hinged',label:'Hinged cold-room',blurb:'Insulated hinged door with a flush leaf, aluminum edge frame, gasketed rebate, heavy hinges and a key latch.',
+    {id:'hinged',label:'Hinged Cold-Room',blurb:'Insulated hinged door with a flush leaf, aluminum edge frame, gasketed rebate, heavy hinges and a key latch.',
      sizes:[['3×7','hinged-3x7','3′ × 7′','900 × 2,100 mm clear opening'],['4×7','hinged-4x7','4′ × 7′','1,200 × 2,100 mm clear opening'],['5×7','hinged-5x7','5′ × 7′','1,500 × 2,100 mm clear opening']],
      rows:[['Leaf','100 mm (3.94″) insulated, 0.5 mm steel faces'],['Frame','Aluminum edge frame, white door frame'],['Hardware','Hinges + key latch']]},
-    {id:'double',label:'Double cold-room',blurb:'Two hinged leaves meeting at a gasketed center, with a key latch on the active leaf.',
+    {id:'double',label:'Double Cold-Room',blurb:'Two hinged leaves meeting at a gasketed center, with a key latch on the active leaf.',
      sizes:[['6×7','double-6x7','6′ × 7′','1,800 × 2,100 mm clear opening'],['8×7','double-8x7','8′ × 7′','2,400 × 2,100 mm clear opening'],['6×7 unequal','double-unequal-6x7','6′ × 7′, one-third / two-thirds leaves','1,800 × 2,100 mm clear opening']],
      rows:[['Leaf','100 mm (3.94″) insulated, 0.5 mm steel faces'],['Frame','Aluminum edge frame, white door frame'],['Hardware','Hinges + key latch on the active leaf']]},
-    {id:'sliding',label:'Sliding cooler',blurb:'Heavy-duty insulated sliding door hung from a top rail on roller hangers, in a gasketed U-shape frame, with a stainless pull handle and lock.',
+    {id:'sliding',label:'Sliding Cooler',blurb:'Heavy-duty insulated sliding door hung from a top rail on roller hangers, in a gasketed U-shape frame, with a stainless pull handle and lock.',
      sizes:[['5×7','sliding-5x7','5′ × 7′','1,500 × 2,100 mm clear opening',1670],['6×7','sliding-6x7','6′ × 7′','1,800 × 2,100 mm clear opening',1970]],
      rows:[['Leaf','100 mm (3.94″) insulated, 0.5 mm steel faces'],['Frame','U-shape frame with gasket'],['Hardware','Top rail with roller hangers, floor guide, stainless pull handle + lock']]},
     {id:'office',label:'Office',blurb:'Flush insulated office door in an aluminum frame with a lever handle and key cylinder.',
      sizes:[['2.5×7','office-25x7','2.5′ × 7′','762 × 2,100 mm clear opening'],['3×7','office-3x7','3′ × 7′','900 × 2,100 mm clear opening'],['4×7','office-4x7','4′ × 7′','1,200 × 2,100 mm clear opening']],
      rows:[['Leaf','0.5 mm steel faces, aluminum frame'],['Hardware','Lever handle + key cylinder, hinged, door closer']]},
-    {id:'clean',label:'Clean room',blurb:'Flush clean-room door with a round vision window, aluminum frame and lever handle.',
+    {id:'clean',label:'Clean Room',blurb:'Flush clean-room door with a round vision window, aluminum frame and lever handle.',
      sizes:[['3×7','clean-3x7','3′ × 7′','900 × 2,100 mm clear opening']],
      rows:[['Leaf','50 mm (1.97″) polyurethane foam, 0.5 mm steel faces (RAL 9002)'],['Frame','Aluminum'],['Hardware','Lever handle, vision window, door closer']]},
-    {id:'officed',label:'Double office',blurb:'Two flush office leaves in an aluminum frame.',
+    {id:'officed',label:'Double Office',blurb:'Two flush office leaves in an aluminum frame.',
      sizes:[['6×7','office-double-6x7','6′ × 7′','1,800 × 2,100 mm clear opening']],
      rows:[['Leaf','0.5 mm steel faces, aluminum frame'],['Hardware','Lever handles, hinged, door closers']]},
-    {id:'cleand',label:'Double clean room',blurb:'Two flush clean-room leaves with round vision windows.',
+    {id:'cleand',label:'Double Clean Room',blurb:'Two flush clean-room leaves with round vision windows.',
      sizes:[['6×7','clean-double-6x7','6′ × 7′','1,800 × 2,100 mm clear opening']],
      rows:[['Leaf','50 mm (1.97″) polyurethane foam, 0.5 mm steel faces (RAL 9002)'],['Frame','Aluminum'],['Hardware','Lever handles, vision windows, door closers']]}];
   const DOOR_MATS={
@@ -234,16 +234,16 @@
       new THREE.GLTFLoader().load(url,g=>{ doorCache[id]=g; if(Z()[1]===id) place(g); }); }
     function sizeOptions(){ return T().sizes.map((s,i)=>({v:i,label:s[0]})); }
     // sliding doors have no hinge: the same control says which way the leaf slides
-    function syncHand(){ const sl=S.type==='sliding'; ctl.hand.label=sl?'Slides to':'Hinge side';
+    function syncHand(){ const sl=S.type==='sliding'; ctl.hand.label=sl?'Slides to':'Hinge Side';
       ctl.hand.options=sl?[{v:'R',label:'Left'},{v:'L',label:'Right'}]:[{v:'R',label:'Right'},{v:'L',label:'Left'}]; S.hand='R'; ctl.hand.value='R'; }
     const ctl={
       type:{type:'chips',label:'Door',value:'hinged',options:DOOR_TYPES.map(d=>({v:d.id,label:d.label})),onChange:v=>{ S.type=v; S.size=0; S.open=0; syncHand(); ctl.size.options=sizeOptions(); ctl.size.value=0; ctl.open.value=0; renderControls(ctlList); make(); }},
       size:{type:'chips',label:'Size (ft)',value:0,options:sizeOptions(),onChange:v=>{ S.size=+v; make(); ctx.update(); }},
-      hand:{type:'chips',label:'Hinge side',value:'R',options:[{v:'R',label:'Right'},{v:'L',label:'Left'}],onChange:v=>{ S.hand=v; apply(); }},
+      hand:{type:'chips',label:'Hinge Side',value:'R',options:[{v:'R',label:'Right'},{v:'L',label:'Left'}],onChange:v=>{ S.hand=v; apply(); }},
       open:{type:'slider',label:'Open',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{ S.open=v/100; apply(); }}};
     const ctlList=[ctl.type,ctl.size,ctl.hand,ctl.open,   // (not named `controls`: that is the camera's OrbitControls used in place())
-      {type:'button',text:'Open / close',onClick:()=>{ const a=S.open>.5?0:1; tween(S.open,a,1800,v=>{ S.open=v; apply(); ctl.open.setValue&&ctl.open.setValue(Math.round(v*100)); }); }},
-      {type:'toggle',label:'Wall',text:'Show the wall',value:true,onChange:v=>{ S.wall=v; apply(); }}];
+      {type:'button',text:'Open / Close',onClick:()=>{ const a=S.open>.5?0:1; tween(S.open,a,1800,v=>{ S.open=v; apply(); ctl.open.setValue&&ctl.open.setValue(Math.round(v*100)); }); }},
+      {type:'toggle',label:'Wall',text:'Show the Wall',value:true,onChange:v=>{ S.wall=v; apply(); }}];
     return { root:rootG, build:make, controls:ctlList,
       stats:()=>{ const z=Z(); return [['Door',T().label],['Size',z[2]+' nominal ('+z[3]+')']].concat(T().rows); },
       note:()=>'Sizes shown are nominal. Full specifications are provided with every quote.' };
@@ -281,10 +281,10 @@
   // ---------------- registry + switching ----------------
   const reg={pir100:buildPir,designer:buildDesigner,doors:buildDoors,trim:buildTrim};
   const meta={
-    pir100:{t:'4" (100 mm) PIR panel',b:'The real Blender-built model. Lift the steel off the core and slide two panels together to see the locking joint.'},
-    designer:{t:'Wall & roof panels',b:'Pick a profile, a thickness and a color. The insulation value and weight update with your choice.'},
+    pir100:{t:'4" (100 mm) PIR Insulated Metal Panel (IMP)',b:'The real Blender-built model. Lift the steel off the core and slide two panels together to see the locking joint.'},
+    designer:{t:'Wall & Roof Panels',b:'Pick a profile, a thickness and a color. The insulation value and weight update with your choice.'},
     doors:{t:'Doors',b:'Pick a door and a size, swing it open, and look at the hardware up close.'},
-    trim:{t:'Trim & accessories',b:'Aluminum and steel trim, strut channel, PVC wall panel and PVC trim. Pick an item and orbit it to see the profile up close.'}
+    trim:{t:'Trim & Accessories',b:'Aluminum and steel trim, strut channel, PVC wall panel and PVC trim. Pick an item and orbit it to see the profile up close.'}
   };
   let tickList=[], autoView=null;
   function show(id){

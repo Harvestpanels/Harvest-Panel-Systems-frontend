@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { mockPortal } from "./portal-fixture.js";
 
 const sizes = [[320, 568], [390, 844], [667, 375], [768, 1024], [1024, 768], [1440, 900]];
-const STATIC_PAGES = ["/", "/products", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/portal-paused"];
+const STATIC_PAGES = ["/", "/products", "/industries", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/portal-paused"];
 const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal/admin"];
 
 const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
@@ -152,7 +152,7 @@ test("look inside: floor track offers the U-channel and the double L trim, with 
   await expect(optB).toBeVisible();
   await optB.click();
   await expect(page.locator("#inst .istep")).toHaveCount(5);
-  await expect(page.locator("#inst .istep").first()).toContainText("Butyl under each angle");
+  await expect(page.locator("#inst .istep").first()).toContainText("Butyl Under Each Angle");
   await page.locator("#inst .istep").nth(4).click();
   await expect(page.locator("#inst .inst-detail")).toContainText("7/8");
   await page.locator('#inst .inst-tabs button[data-scene="joint"]').click();
@@ -163,7 +163,7 @@ test("look inside: floor track offers the U-channel and the double L trim, with 
 
 test("3D showroom: the sliding cooler door comes in 5x7 and 6x7 and slides instead of swinging", async ({ page }) => {
   await page.goto("/showroom#doors", { waitUntil: "load" });
-  await page.getByRole("button", { name: "Sliding cooler", exact: true }).click();
+  await page.getByRole("button", { name: "Sliding Cooler", exact: true }).click();
   await expect(page.getByRole("button", { name: "5×7", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "6×7", exact: true })).toBeVisible();
   await expect(page.getByText("Slides to", { exact: true })).toBeVisible();
@@ -174,12 +174,12 @@ test("3D showroom: the sliding cooler door comes in 5x7 and 6x7 and slides inste
 
 test("specs page shows the single and double span tables with metric values", async ({ page }) => {
   await page.goto("/specs", { waitUntil: "load" });
-  await page.getByRole("button", { name: "Single span", exact: true }).click();
+  await page.getByRole("button", { name: "Single Span", exact: true }).click();
   await expect(page.locator(".tpanel.on tbody tr")).toHaveCount(9);
   await expect(page.locator(".tpanel.on")).toContainText("10'5⅝\"");
   await expect(page.locator(".tpanel.on")).toContainText("3,191");
   await expect(page.locator(".tpanel.on")).toContainText("converted from metric to imperial units");
-  await page.getByRole("button", { name: "Double span", exact: true }).click();
+  await page.getByRole("button", { name: "Double Span", exact: true }).click();
   await expect(page.locator(".tpanel.on tbody tr")).toHaveCount(9);
   await expect(page.locator(".tpanel.on")).toContainText("12'5⅝\"");
 });
@@ -191,4 +191,53 @@ test("no draft text or dead links on the public pages", async ({ page }) => {
     expect(await page.locator('a[href^="/portal/"]').count(), `${path} portal link`).toBe(0);
     await expect(page.locator("body")).not.toContainText(/draft descriptions|lorem ipsum/i);
   }
+});
+
+test("home page order: industries, the scroll-built room, how a room goes together, then the calculator", async ({ page }) => {
+  await page.goto("/", { waitUntil: "load" });
+  const tops = await page.evaluate(() => ["industries", "build", "inside", "calculator", "products", "what-is-imp", "faq"].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
+  expect(tops).toEqual([...tops].sort((a, b) => a - b));
+  await expect(page.locator("#industries h2")).toHaveText("Built for Controlled Environments.");
+  await expect(page.locator("#inside h2")).toHaveText("See How a Room Goes Together.");
+});
+
+test("wording: no 'envelope', every Insulated Metal Panel mention carries (IMP), no bare 'insulated panels'", async ({ page }) => {
+  for (const path of ["/", "/products", "/industries", "/specs", "/trim", "/gallery", "/blog", "/showroom", "/product-100mm-pir"]) {
+    await page.goto(path, { waitUntil: "load" });
+    const text = await page.evaluate(() => document.body.innerText);
+    expect(text, `${path} envelope`).not.toMatch(/envelope/i);
+    expect(text, `${path} bare insulated panels`).not.toMatch(/\binsulated panels?\b/i);
+    expect([...text.matchAll(/.{0,30}insulated metal panels?\b(?! \(IMP\)).{0,30}/gi)].map(m => m[0]), `${path} Insulated Metal Panel without (IMP)`).toEqual([]);
+  }
+});
+
+test("industries page lists every industry with its own anchor", async ({ page }) => {
+  await page.goto("/industries", { waitUntil: "load" });
+  await expect(page.locator("h1")).toContainText("Built for Every");
+  for (const id of ["cold-storage", "cultivation", "food-processing", "cleanrooms", "data-centers", "warehouses", "hangars", "metal-buildings"]) {
+    await expect(page.locator(`section#${id} h2`)).toBeVisible();
+  }
+  await expect(page).toHaveTitle(/Insulated Metal Panels \(IMP\)/);
+  expect(await page.locator('script[type="application/ld+json"]').count()).toBeGreaterThan(0);
+});
+
+test("home page structured data includes the FAQ and parses as JSON", async ({ page }) => {
+  await page.goto("/", { waitUntil: "load" });
+  const types = await page.evaluate(() => [...document.querySelectorAll('script[type="application/ld+json"]')].map(s => JSON.parse(s.textContent)["@type"]));
+  expect(types.flat()).toEqual(expect.arrayContaining(["Organization", "WebSite", "FAQPage"]));
+});
+
+test("fasteners: 15 screws per panel (walls and roofs), 4 drive pins per wall panel, totals follow the calculator", async ({ page }) => {
+  await page.goto("/", { waitUntil: "load" });
+  await page.waitForFunction(() => window.INSTALL && document.querySelector("#fast-est .fe-out b"));
+  const rows = page.locator("#fast-est .fe-out > div");
+  await expect(rows.nth(0).locator("b")).toHaveText("15");
+  await expect(rows.nth(0)).toContainText("wall and roof panels");
+  await expect(rows.nth(1).locator("b")).toHaveText("4");
+  await expect(rows.nth(1)).toContainText("wall panels only");
+  await page.locator('#c-presets [data-l="20"][data-w="20"]').click();
+  await expect(page.locator("#o-total")).toHaveText("35");
+  const wall = Number(await page.locator("#o-wall").innerText()), ceil = Number(await page.locator("#o-ceil").innerText());
+  await expect(rows.nth(2).locator("b")).toHaveText(String((wall + ceil) * 15));
+  await expect(rows.nth(3).locator("b")).toHaveText(String(wall * 4));
 });

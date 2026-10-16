@@ -1,11 +1,11 @@
 export const FAQS = [
   {
     question: "Tell me about Harvest Panel Systems?",
-    answer: "Harvest Panel Systems is a global distributor of Insulated Metal Panels and Doors, based in Piedmont, Oklahoma, and serving the cultivation, cold storage, data center, industrial, commercial, and residential markets with a modern, energy-efficient alternative to traditional construction.",
+    answer: "Harvest Panel Systems is a global distributor of Insulated Metal Panels (IMP) and Doors, based in Piedmont, Oklahoma, and serving the cultivation, cold storage, data center, industrial, commercial, and residential markets with a modern, energy-efficient alternative to traditional construction.",
   },
   {
     question: "What kind of services does Harvest Panel Systems offer?",
-    answer: "We offer design assistance, budgeting, and free estimates on every Insulated Metal Panel and Door project, plus installation through our in-house crew and nationwide contractor partnerships.",
+    answer: "We offer design assistance, budgeting, and free estimates on every Insulated Metal Panel (IMP) and Door project, plus installation through our in-house crew and nationwide contractor partnerships.",
   },
   {
     question: "Does Harvest Panel Systems provide free estimates?",
@@ -16,8 +16,8 @@ export const FAQS = [
     answer: "Yes, Harvest Panel Systems is fully licensed and insured for panel and door installation projects nationwide.",
   },
   {
-    question: "Who uses Insulated Metal Panels?",
-    answer: "Industrial and commercial builders, general contractors, and residential developers all rely on insulated metal panels for fast, energy-efficient interior spaces.",
+    question: "Who uses Insulated Metal Panels (IMP)?",
+    answer: "Industrial and commercial builders, general contractors, and residential developers all rely on Insulated Metal Panels for fast, energy-efficient interior spaces.",
   },
   {
     question: "How are Panels constructed?",
@@ -33,11 +33,11 @@ export const FAQS = [
   },
   {
     question: "Are Panels safe and easy to maintain?",
-    answer: "Yes. Insulated metal panels are low-maintenance, moisture-resistant, and built to hold up over decades of use.",
+    answer: "Yes. Insulated Metal Panels (IMP) are low-maintenance, moisture-resistant, and built to hold up over decades of use.",
   },
   {
     question: "What products, other than Panels do you provide?",
-    answer: "Alongside Insulated Metal Panels, we supply and install Insulated Metal Doors, plus the mounting hardware (unistrut, all-thread, C-channel) and trim (flashing, corner angles, floor track) to finish an install.",
+    answer: "Alongside Insulated Metal Panels (IMP), we supply and install Insulated Metal Doors, plus the mounting hardware (unistrut, all-thread, C-channel) and trim (flashing, corner angles, floor track) to finish an install.",
   },
   {
     question: "How much do Panels Cost?",

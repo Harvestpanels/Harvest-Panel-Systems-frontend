@@ -19,7 +19,7 @@ export const BOT_INTENTS = [
     // a visitor who re-opens the chat, or says hi again mid-conversation,
     // doesn't hear the exact same opening line twice in a row.
     answer: [
-      "Hi! I'm the Harvest Panel Systems assistant. I can answer questions about our insulated metal panels and doors, products, specs, pricing, certifications, delivery, and more. What would you like to know?",
+      "Hi! I'm the Harvest Panel Systems assistant. I can answer questions about our Insulated Metal Panels (IMP) and doors, products, specs, pricing, certifications, delivery, and more. What would you like to know?",
       "Hey there! Happy to help with anything about our panels or doors, products, pricing, specs, certifications, colors, delivery, you name it. What can I help with?",
       "Hello! I'm here to help with questions about Harvest Panel Systems, products, pricing, specs, certifications, delivery, and more. What are you working on?",
     ],
@@ -36,7 +36,7 @@ export const BOT_INTENTS = [
   {
     id: "bot-identity",
     keywords: ["who are you", "what are you", "are you a bot", "are you human", "are you real", "what is this", "chatbot", "assistant"],
-    answer: "I'm the Harvest Panel Systems virtual assistant, an automated helper for common questions about our insulated metal panels and doors. For anything I can't answer, I'll point you to our team.",
+    answer: "I'm the Harvest Panel Systems virtual assistant, an automated helper for common questions about our Insulated Metal Panels (IMP) and doors. For anything I can't answer, I'll point you to our team.",
   },
   {
     id: "small-talk",
@@ -100,7 +100,7 @@ export const BOT_INTENTS = [
   {
     id: "products-overview",
     keywords: ["products", "what do you sell", "what do you offer", "product line", "catalog", "panel types", "types of panels", "what panels", "browse products", "your products"],
-    answer: "We supply insulated metal panels in PIR, EPS, PVC, mineral wool, and HarvestBoxx cores, insulated metal doors (hinged, sliding, roll-up), and the mounting hardware and trim to finish an install. You can browse the full catalog on our Products page.",
+    answer: "We supply Insulated Metal Panels (IMP) in PIR, EPS, PVC, mineral wool, and HarvestBoxx cores, Insulated Metal Doors (hinged, sliding, roll-up), and the mounting hardware and trim to finish an install. You can browse the full catalog on our Products page.",
     links: [{ label: "Browse products", href: "/products" }],
   },
   {
@@ -163,7 +163,7 @@ export const BOT_INTENTS = [
   {
     id: "warranty",
     keywords: ["warranty", "guarantee", "guaranteed", "how long do panels last", "lifespan", "durability"],
-    answer: "Insulated metal panels are built to hold up over decades of use, low-maintenance, moisture-resistant, and durable. For specific warranty terms on your product and project, our team can walk you through the exact coverage.",
+    answer: "Insulated Metal Panels (IMP) are built to hold up over decades of use, low-maintenance, moisture-resistant, and durable. For specific warranty terms on your product and project, our team can walk you through the exact coverage.",
     links: [{ label: "Ask about warranty", href: "/#contact" }],
   },
   {
@@ -206,12 +206,12 @@ export const BOT_INTENTS = [
       "data center", "data centers", "cold storage", "cold room", "refrigeration", "freezer",
       "pre engineered", "pre-engineered", "pemb", "metal building", "clean room", "cleanroom",
       "industrial building", "commercial building", "residential", "what industries",
-      "cultivation", "cannabis", "grow room", "indoor agriculture", "walk in cooler", "walk-in cooler",
+      "cultivation", "cannabis", "grow room", "indoor agriculture", "walk in cooler", "walk-in cooler", "hangar", "hangars", "aircraft hangar", "warehouse", "distribution center", "food processing", "brewery",
       "pharmaceutical", "pharma", "gmp", "gmp compliant", "drug manufacturing",
       "laboratory", "laboratories", "lab", "research lab", "testing lab",
     ],
-    answer: "We work across a wide range of building types: indoor cultivation & cannabis facilities, data centers, cold storage & refrigeration, walk-in freezers and coolers, clean rooms, pharmaceutical manufacturing facilities, research and testing laboratories, pre-engineered metal buildings, and industrial, commercial, and residential construction. Each has its own recommended panel specs (fire rating, insulation, and finish), our team can match one to your project.",
-    links: [{ label: "See building types", href: "/#industries" }],
+    answer: "We work across a wide range of building types: indoor cultivation & cannabis facilities, data centers, cold storage & refrigeration (cold rooms, walk-in freezers and coolers), clean rooms, pharmaceutical manufacturing facilities, food and beverage processing, research and testing laboratories, aircraft hangars, warehouses and distribution centers, pre-engineered metal buildings, and industrial, commercial, and residential construction. Each has its own recommended panel specs (fire rating, insulation, and finish), our team can match one to your project.",
+    links: [{ label: "See all industries", href: "/industries" }],
   },
   {
     id: "trim-hardware",

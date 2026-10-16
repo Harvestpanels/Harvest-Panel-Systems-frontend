@@ -133,7 +133,7 @@
   // ------------------------------------------------------------------ shared UI
   function setMode(m){
     mode=m; view.classList.toggle('mode-photo',m==='photo'); view.classList.toggle('mode-3d',m==='3d');
-    modeBtn.innerHTML=m==='3d'?'&#128247; Photo view':'&#9741; 3D view'; resetBtn.style.display=(m==='3d'&&gl)?'':'none';
+    modeBtn.innerHTML=m==='3d'?'&#128247; Photo View':'&#9741; 3D View'; resetBtn.style.display=(m==='3d'&&gl)?'':'none';
     line.style.display=ring.style.display=''; inset.classList.remove('on');
     if(scene) show(step,true);
   }
@@ -165,7 +165,7 @@
     if(mode==='3d'&&gl){ view.classList.add('loading'); build3D(sc,s3=>{ view.classList.remove('loading'); if(!s3){ setMode('photo'); return; } if(scene===sc){ resize(); show(0); } }); }
     else show(0);
   }
-  function stop(){ playing=false; clearInterval(timer); playBtn.innerHTML='&#9654; Play steps'; playBtn.classList.remove('on'); }
+  function stop(){ playing=false; clearInterval(timer); playBtn.innerHTML='&#9654; Play Steps'; playBtn.classList.remove('on'); }
   function play(){ playing=true; playBtn.innerHTML='&#9208; Pause'; playBtn.classList.add('on'); if(gl) gl.setUser(false);
     if(step>=INSTALL[scene].length-1) show(0);
     timer=setInterval(()=>{ if(step<INSTALL[scene].length-1){ if(gl) gl.setUser(false); show(step+1); } else stop(); },5200); }
@@ -185,12 +185,12 @@
     panePanel.hidden=true; paneScene.hidden=false; setMode(gl?'3d':'photo'); resize(); load(t.dataset.scene);
   }));
 
-  // fastener estimator (guide spacings)
+  // fastener estimator: 15 screws per panel (wall and roof panels), 4 drive pins per wall panel (walls only); totals follow the room calculator
   const est=$('#fast-est');
-  if(est){ const sel=$('select',est), out=$('.fe-out',est);
-    const calc=()=>{ const ft=+sel.value, joint=Math.floor(ft*12/12)+1, trackPer=Math.floor(39.37/12)+1, pins=Math.ceil(39.37/24)+1;
-      out.innerHTML=`<div><b>${joint}</b><span>Screws per joint through the female lip, if the drawings call for them (12&quot; / 305 mm O.C.)</span></div>`+
-        `<div><b>${trackPer*2}</b><span>Floor screws per panel (${trackPer} per side, 12&quot; / 305 mm O.C.: through both track legs, or the vertical leg of each L)</span></div>`+
-        `<div><b>${pins}</b><span>Shot pins per panel at a curb base (24&quot; / 610 mm O.C. alternate)</span></div>`; };
-    sel.onchange=calc; calc(); }
+  if(est){ const out=$('.fe-out',est), SCREWS=15, PINS=4, n=id=>{ const el=document.getElementById(id); return el?(parseInt(String(el.textContent).replace(/,/g,''),10)||0):0; }, f=v=>v.toLocaleString('en-US');
+    const calc=()=>{ const wall=n('o-wall'), ceil=n('o-ceil');
+      out.innerHTML='<div><b>'+SCREWS+'</b><span>Screws per panel, wall and roof panels</span></div>'+
+        '<div><b>'+PINS+'</b><span>Drive pins per wall panel (wall panels only, none on roof panels)</span></div>'+
+        (wall+ceil?'<div><b>'+f((wall+ceil)*SCREWS)+'</b><span>Screws for the room in the calculator ('+f(wall)+' wall + '+f(ceil)+' ceiling panels)</span></div><div><b>'+f(wall*PINS)+'</b><span>Drive pins for those '+f(wall)+' wall panels</span></div>':''); };
+    calc(); const cc=document.getElementById('calc'); if(cc) ['input','click','change'].forEach(ev=>cc.addEventListener(ev,()=>setTimeout(calc,0))); }
 })();

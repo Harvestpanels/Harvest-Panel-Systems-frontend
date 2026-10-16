@@ -80,7 +80,7 @@
     $('o-wall').textContent=fmt(c.wallPanels+c.headers);
     $('o-ceil').textContent=fmt(c.ceilPanels);
     $('o-door').textContent=c.doors;
-    $('o-area').textContent=fmt(c.area); $('o-arealab').textContent='Sq ft insulated ('+fmt(c.area/SQFT)+' m²)';
+    $('o-area').textContent=fmt(c.area); $('o-arealab').textContent='Sq Ft Insulated ('+fmt(c.area/SQFT)+' m²)';
     $('o-days').textContent=c.lowD===c.highD?`${c.lowD} day${c.lowD>1?'s':''}`:`${c.lowD}–${c.highD} days`;
     $('o-cost').textContent=`$${fmt(c.area*4)} – $${fmt(c.area*8)}`;
     $('o-len').textContent=`${c.wallLenFt} ft (${+(c.wallLenFt*FT).toFixed(2)} m) walls${S.ceiling?` · ${c.ceilLenFt} ft (${+(c.ceilLenFt*FT).toFixed(2)} m) ceiling`:''}`;
@@ -127,8 +127,8 @@
   el.ceil.addEventListener('change',()=>{ S.ceiling=el.ceil.checked; render(); });
   $('c-presets').addEventListener('click',e=>{ const b=e.target.closest('[data-l]'); if(!b) return;
     S.L=+b.dataset.l; S.W=+b.dataset.w; S.H=+(b.dataset.h||12); syncInputs(); render(); });
-  $('c-copy').addEventListener('click',async e=>{ try{ await navigator.clipboard.writeText(window.__calcSummary()); e.target.textContent='Copied'; }catch(_){ e.target.textContent='Copy failed'; } setTimeout(()=>e.target.textContent='Copy summary',1600); });
-  $('c-quote').addEventListener('click',()=>{ const s=window.__calcSummary(); location.href='mailto:Sales@harvestpanels.com?subject='+encodeURIComponent('Panel estimate request')+'&body='+encodeURIComponent(s+'\n\nPlease send me a free estimate.'); });
+  $('c-copy').addEventListener('click',async e=>{ try{ await navigator.clipboard.writeText(window.__calcSummary()); e.target.textContent='Copied'; }catch(_){ e.target.textContent='Copy Failed'; } setTimeout(()=>e.target.textContent='Copy Summary',1600); });
+  $('c-quote').addEventListener('click',()=>{ const s=window.__calcSummary(); location.href='mailto:Sales@harvestpanels.com?subject='+encodeURIComponent('Insulated Metal Panel (IMP) Estimate Request')+'&body='+encodeURIComponent(s+'\n\nPlease send me a free estimate.'); });
 
   syncInputs(); render();
 })();
