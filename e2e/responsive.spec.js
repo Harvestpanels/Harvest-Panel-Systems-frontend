@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { mockPortal } from "./portal-fixture.js";
 
 const sizes = [[320, 568], [390, 844], [667, 375], [768, 1024], [1024, 768], [1440, 900]];
-const STATIC_PAGES = ["/", "/products", "/industries", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/portal-paused"];
+const STATIC_PAGES = ["/", "/products", "/industries", "/calculator", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/portal-paused"];
 const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal/admin"];
 
 const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
@@ -92,12 +92,13 @@ for (const [width, height] of sizes) {
   });
 }
 
-test("home page: 20x20 calculator preset and showroom picker work (portal link is off)", async ({ page }) => {
+test("home page has no calculator section; /calculator: 20x20 preset works; showroom picker works (portal link is off)", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/", { waitUntil: "load" });
   // The customer portal is switched off for now; see "Customer portal" in the README to bring the link back.
   await expect(page.locator('a[href^="/portal"]')).toHaveCount(0);
-  await page.locator("#calculator").scrollIntoViewIfNeeded();
+  await expect(page.locator("#calculator")).toHaveCount(0);
+  await page.goto("/calculator", { waitUntil: "load" });
   // the calculator starts with the same 20 x 16 ft room as the scroll-built one
   await expect(page.locator("#c-presets .pill.on")).toHaveText("20 × 16 ft");
   await expect(page.locator("#c-wv")).toContainText("16 ft");
@@ -193,16 +194,28 @@ test("no draft text or dead links on the public pages", async ({ page }) => {
   }
 });
 
-test("home page order: industries, the scroll-built room, how a room goes together, then the calculator", async ({ page }) => {
+test("home page order: industries, one call, how a room goes together, ..., flooring, the scroll-built room, projects, FAQ, standards", async ({ page }) => {
   await page.goto("/", { waitUntil: "load" });
-  const tops = await page.evaluate(() => ["industries", "build", "inside", "calculator", "products", "what-is-imp", "faq"].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
+  const tops = await page.evaluate(() => ["industries", "why", "inside", "products", "what-is-imp", "flooring", "build", "projects", "faq", "standards"].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
   expect(tops).toEqual([...tops].sort((a, b) => a - b));
   await expect(page.locator("#industries h2")).toHaveText("Built for Controlled Environments.");
   await expect(page.locator("#inside h2")).toHaveText("See How a Room Goes Together.");
+  await expect(page.locator("#why h2")).toHaveText("One Call. Start to Finish.");
+  await expect(page.locator("#flooring h2")).toHaveText("Floors to Match Your Room.");
+  await expect(page.locator("#projects h2")).toHaveText("Projects from the Field.");
+  // the standards sit under the FAQ with big, full-colour logos and large certification cards
+  const logo = page.locator("#standards .member img").first();
+  await logo.scrollIntoViewIfNeeded();
+  expect(await logo.evaluate(el => ({ h: el.getBoundingClientRect().height, filter: getComputedStyle(el).filter }))).toEqual({ h: expect.any(Number), filter: "none" });
+  expect(await logo.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(100);
+  await expect(page.locator("#standards .cert")).toHaveCount(5);
+  await expect(page.locator("#industries")).toContainText("ISO 14644");
+  await expect(page.locator("#industries")).toContainText("USDA");
+  await expect(page.locator("#industries")).toContainText("BSL-3");
 });
 
 test("wording: no 'envelope', every Insulated Metal Panel mention carries (IMP), no bare 'insulated panels'", async ({ page }) => {
-  for (const path of ["/", "/products", "/industries", "/specs", "/trim", "/gallery", "/blog", "/showroom", "/product-100mm-pir"]) {
+  for (const path of ["/", "/products", "/industries", "/calculator", "/specs", "/trim", "/gallery", "/blog", "/showroom", "/product-100mm-pir"]) {
     await page.goto(path, { waitUntil: "load" });
     const text = await page.evaluate(() => document.body.innerText);
     expect(text, `${path} envelope`).not.toMatch(/envelope/i);
@@ -227,17 +240,33 @@ test("home page structured data includes the FAQ and parses as JSON", async ({ p
   expect(types.flat()).toEqual(expect.arrayContaining(["Organization", "WebSite", "FAQPage"]));
 });
 
-test("fasteners: 15 screws per panel (walls and roofs), 4 drive pins per wall panel, totals follow the calculator", async ({ page }) => {
+test("fasteners: 15 screws per panel (walls and roofs), 4 drive pins per wall panel only; totals live on the calculator page", async ({ page }) => {
   await page.goto("/", { waitUntil: "load" });
   await page.waitForFunction(() => window.INSTALL && document.querySelector("#fast-est .fe-out b"));
   const rows = page.locator("#fast-est .fe-out > div");
+  await expect(rows).toHaveCount(2);
   await expect(rows.nth(0).locator("b")).toHaveText("15");
   await expect(rows.nth(0)).toContainText("wall and roof panels");
   await expect(rows.nth(1).locator("b")).toHaveText("4");
   await expect(rows.nth(1)).toContainText("wall panels only");
+  await page.goto("/calculator", { waitUntil: "load" });
   await page.locator('#c-presets [data-l="20"][data-w="20"]').click();
   await expect(page.locator("#o-total")).toHaveText("35");
   const wall = Number(await page.locator("#o-wall").innerText()), ceil = Number(await page.locator("#o-ceil").innerText());
-  await expect(rows.nth(2).locator("b")).toHaveText(String((wall + ceil) * 15));
-  await expect(rows.nth(3).locator("b")).toHaveText(String(wall * 4));
+  await expect(page.locator("#o-screws")).toHaveText(String((wall + ceil) * 15));
+  await expect(page.locator("#o-pins")).toHaveText(String(wall * 4));
+});
+
+test("the calculator is reached only from the menu bar", async ({ page }) => {
+  for (const path of ["/", "/products", "/industries", "/specs", "/trim", "/gallery", "/blog", "/showroom", "/product-100mm-pir", "/calculator"]) {
+    await page.goto(path, { waitUntil: "load" });
+    expect(await page.locator('a[href*="calculator"]').count(), path).toBe(1);
+    expect(await page.locator('nav.menu a[href="/calculator"]').count(), path + " menu link").toBe(1);
+  }
+  await page.goto("/", { waitUntil: "load" });
+  const burger = page.getByRole("button", { name: "Menu", exact: true });
+  if (await burger.isVisible()) await burger.click();
+  await page.locator('nav.menu a[href="/calculator"]').click();
+  await expect(page).toHaveURL(/\/calculator$/);
+  await expect(page.locator("h1")).toHaveText("Size Your Room.");
 });

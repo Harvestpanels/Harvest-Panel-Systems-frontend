@@ -84,6 +84,8 @@
     $('o-days').textContent=c.lowD===c.highD?`${c.lowD} day${c.lowD>1?'s':''}`:`${c.lowD}–${c.highD} days`;
     $('o-cost').textContent=`$${fmt(c.area*4)} – $${fmt(c.area*8)}`;
     $('o-len').textContent=`${c.wallLenFt} ft (${+(c.wallLenFt*FT).toFixed(2)} m) walls${S.ceiling?` · ${c.ceilLenFt} ft (${+(c.ceilLenFt*FT).toFixed(2)} m) ceiling`:''}`;
+    const wallP=c.wallPanels+c.headers, screws=(wallP+c.ceilPanels)*15, pins=wallP*4;   // 15 screws per panel (walls and roof), 4 drive pins per wall panel only
+    $('o-screws').textContent=fmt(screws); $('o-pins').textContent=fmt(pins);
     $('o-trim').textContent=`${4} corner angles · ${fmt(c.perim/FT)} ft (${fmt(c.perim)} m) ceiling-edge trim`;
     // warnings
     const w=[];
@@ -94,7 +96,8 @@
     el.warn.innerHTML=w.join('<br>'); el.warn.classList.toggle('on',w.length>0);
     window.__calcSummary=()=>`Room: ${lenTxt(S.L)} x ${lenTxt(S.W)} x ${lenTxt(S.H)} high, ${c.doors} door(s)${S.ceiling?', with ceiling':', no ceiling'}. `+
       `Panels: ${c.total} (${c.wallPanels} wall + ${c.headers} door headers + ${c.ceilPanels} ceiling), ${COVERS[S.cover].label} cover. `+
-      `Wall length ${c.wallLenFt} ft (${+(c.wallLenFt*FT).toFixed(2)} m)${S.ceiling?', ceiling length '+c.ceilLenFt+' ft ('+(c.ceilLenFt*FT).toFixed(2)+' m)':''}. Insulated area about ${fmt(c.area)} sq ft (${fmt(c.area/SQFT)} m²).`;
+      `Wall length ${c.wallLenFt} ft (${+(c.wallLenFt*FT).toFixed(2)} m)${S.ceiling?', ceiling length '+c.ceilLenFt+' ft ('+(c.ceilLenFt*FT).toFixed(2)+' m)':''}. Insulated area about ${fmt(c.area)} sq ft (${fmt(c.area/SQFT)} m²). `+
+      `Fasteners: about ${fmt(screws)} screws (15 per panel) and ${fmt(pins)} drive pins (4 per wall panel).`;
   }
 
   function render(){
