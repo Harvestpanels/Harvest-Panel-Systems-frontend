@@ -210,7 +210,7 @@ export const BOT_INTENTS = [
       "pharmaceutical", "pharma", "gmp", "gmp compliant", "drug manufacturing",
       "laboratory", "laboratories", "lab", "research lab", "testing lab",
     ],
-    answer: "We work across a wide range of building types: indoor cultivation & cannabis facilities, data centers, cold storage & refrigeration (cold rooms, walk-in freezers and coolers), clean rooms, pharmaceutical manufacturing facilities, food and beverage processing, research and testing laboratories, aircraft hangars, warehouses and distribution centers, pre-engineered metal buildings, and industrial, commercial, and residential construction. Each has its own recommended panel specs (fire rating, insulation, and finish), our team can match one to your project.",
+    answer: "We work across a wide range of building types: indoor cultivation facilities, data centers, cold storage & refrigeration (cold rooms, walk-in freezers and coolers), clean rooms, pharmaceutical manufacturing facilities, food and beverage processing, research and testing laboratories, aircraft hangars, warehouses and distribution centers, pre-engineered metal buildings, and industrial, commercial, and residential construction. Each has its own recommended panel specs (fire rating, insulation, and finish), our team can match one to your project.",
     links: [{ label: "See all industries", href: "/industries" }],
   },
   {
