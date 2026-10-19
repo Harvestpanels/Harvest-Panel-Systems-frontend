@@ -191,7 +191,7 @@
   [[OUTX,0,1],[OUTX,0,-1],[OUTZ,1,0],[OUTZ,-1,0]].forEach(([len,nx,nz],i)=>{   // top edge: 220 mm down the wall, 160 mm across the ceiling
     const along=nx===0, g=new THREE.Group();
     for(let s=-len/2; s<len/2-1e-6; ){
-      const l=Math.min(FLASH_LEN,len/2-s), c=s+l/2, w=l-.006; s+=l;                  // 6 mm between pieces so the joints read
+      const l=Math.min(FLASH_LEN,len/2-s), c=s+l/2, w=l+.0006; s+=l;                // pieces butt together with no visible gap: once fitted the run reads as one piece
       const v=new THREE.Mesh(new THREE.BoxGeometry(along?w:TK,0.22,along?TK:w),trimMat); v.position.set(along?c:nx*(TK/2+.0004),H+T-.11,along?nz*(TK/2+.0004):c);
       const h=new THREE.Mesh(new THREE.BoxGeometry(along?w:.16,TK,along?.16:w),trimMat); h.position.set(along?c:-nx*.08,H+T+TK/2+.0004,along?-nz*.08:c);
       g.add(v,h);
@@ -205,7 +205,7 @@
   const lTrimMat=new THREE.MeshStandardMaterial({color:0xc4c9ce,roughness:.32,metalness:.9});   // natural aluminum
   const FL_LONG=.15, FL_SHORT=.05, CUT=10*FT;                    // flashing legs 150 mm and 50 mm; first piece 10 ft
   [-1,1].forEach(sx=>[-1,1].forEach((sz,j)=>{
-    [[0,CUT-.003,.88+j*.01,.95],[CUT+.003,H,.9+j*.01,.97]].forEach(([y0,y1,t0,t1])=>{
+    [[0,CUT+.0006,.88+j*.01,.95],[CUT,H,.9+j*.01,.97]].forEach(([y0,y1,t0,t1])=>{
       const hh=y1-y0, off=TK+.0006, g=new THREE.Group();
       const a=new THREE.Mesh(new THREE.BoxGeometry(FL_LONG,hh,TK),trimMat); a.position.set(-sx*(FL_LONG/2-.0004),y0+hh/2,sz*(off+TK/2));
       const b=new THREE.Mesh(new THREE.BoxGeometry(TK,hh,FL_SHORT),trimMat); b.position.set(sx*(off+TK/2),y0+hh/2,-sz*(FL_SHORT/2-.0004));
@@ -224,7 +224,7 @@
   [[WX,0,1],[WX,0,-1],[WZ,1,0],[WZ,-1,0]].forEach(([len,nx,nz],i)=>{   // wall-to-ceiling inside corners
     const along=nx===0, g=new THREE.Group();
     for(let s=-len/2; s<len/2-1e-6; ){
-      const l=Math.min(LT_LEN,len/2-s), c=s+l/2, w=l-.006; s+=l;
+      const l=Math.min(LT_LEN,len/2-s), c=s+l/2, w=l+.0006; s+=l;
       const v=new THREE.Mesh(new THREE.BoxGeometry(along?w:TK,TL,along?TK:w),lTrimMat); v.position.set(along?c:-nx*(TK/2+.0004),H-TL/2-.0004,along?-nz*(TK/2+.0004):c);
       const h=new THREE.Mesh(new THREE.BoxGeometry(along?w:TL,TK,along?TL:w),lTrimMat); h.position.set(along?c:-nx*(TL/2-.0004),H-TK/2-.0004,along?-nz*(TL/2-.0004):c);
       g.add(v,h);
