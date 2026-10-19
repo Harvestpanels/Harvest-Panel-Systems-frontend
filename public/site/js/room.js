@@ -74,7 +74,7 @@
   const slabMat=new THREE.MeshStandardMaterial({map:concreteTex(),color:0xdadada,roughness:.93,metalness:0});
   const epoxyMat=new THREE.MeshStandardMaterial({color:0x7e858c,roughness:.26,metalness:.04});
   const galvMat=new THREE.MeshStandardMaterial({color:0xc2c7cc,roughness:.36,metalness:.88});
-  const trimMat=(HP&&HP.mat('RAL9002_satin_steel'))||new THREE.MeshStandardMaterial({color:0xe3e7d9,roughness:.38,metalness:.1});
+  const trimMat=new THREE.MeshStandardMaterial({color:0x969da4,roughness:.4,metalness:.9});                       // the corner trim and the flashing keep their own finish (bare galvanized steel, like the floor track), so they show against the white panels
   const ledMat=new THREE.MeshBasicMaterial({color:0xffffff});
 
   // ---- build list ----
@@ -187,11 +187,16 @@
     g.children.forEach(c=>{ c.castShadow=true; c.receiveShadow=true; });
     addExtra(g,new THREE.Vector3(sx*OUTX/2,0,sz*OUTZ/2),new THREE.Vector3(sx*OUTX/2,4,sz*OUTZ/2),.84+j*.01,.93);
   }));
+  const FLASH_LEN=3.048;                       // the top-edge flashing comes in 10 ft (3,048 mm) lengths: full lengths plus one cut piece per run
   [[OUTX,0,1],[OUTX,0,-1],[OUTZ,1,0],[OUTZ,-1,0]].forEach(([len,nx,nz],i)=>{   // top edge: 220 mm down the wall, 160 mm across the ceiling
     const along=nx===0, g=new THREE.Group();
-    const v=new THREE.Mesh(new THREE.BoxGeometry(along?len:TK,0.22,along?TK:len),trimMat); v.position.set(nx*(TK/2+.0004),H+T-.11,nz*(TK/2+.0004));
-    const h=new THREE.Mesh(new THREE.BoxGeometry(along?len:.16,TK,along?.16:len),trimMat); h.position.set(-nx*.08,H+T+TK/2+.0004,-nz*.08);
-    g.add(v,h); g.children.forEach(c=>{ c.castShadow=true; c.receiveShadow=true; });
+    for(let s=-len/2; s<len/2-1e-6; ){
+      const l=Math.min(FLASH_LEN,len/2-s), c=s+l/2, w=l-.006; s+=l;                  // 6 mm between pieces so the joints read
+      const v=new THREE.Mesh(new THREE.BoxGeometry(along?w:TK,0.22,along?TK:w),trimMat); v.position.set(along?c:nx*(TK/2+.0004),H+T-.11,along?nz*(TK/2+.0004):c);
+      const h=new THREE.Mesh(new THREE.BoxGeometry(along?w:.16,TK,along?.16:w),trimMat); h.position.set(along?c:-nx*.08,H+T+TK/2+.0004,along?-nz*.08:c);
+      g.add(v,h);
+    }
+    g.children.forEach(c=>{ c.castShadow=true; c.receiveShadow=true; });
     const px=along?0:nx*OUTX/2, pz=along?nz*OUTZ/2:0;     // the wall face this piece sits on
     addExtra(g,new THREE.Vector3(px,0,pz),new THREE.Vector3(px,3,pz),.86+i*.01,.95);
   });
