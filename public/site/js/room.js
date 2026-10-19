@@ -200,7 +200,39 @@
     const px=along?0:nx*OUTX/2, pz=along?nz*OUTZ/2:0;     // the wall face this piece sits on
     addExtra(g,new THREE.Vector3(px,0,pz),new THREE.Vector3(px,3,pz),.86+i*.01,.95);
   });
-  // two light fixtures under the ceiling, seen through the open door
+  // ---- flashing on the four outside corners (a 12 ft wall takes a 10 ft piece plus the 2 ft piece on its own),
+  //      and L trim on the inside corners as the walls go up and again under the ceiling (20 ft lengths) ----
+  const lTrimMat=new THREE.MeshStandardMaterial({color:0xc4c9ce,roughness:.32,metalness:.9});   // natural aluminum
+  const FL_LONG=.15, FL_SHORT=.05, CUT=10*FT;                    // flashing legs 150 mm and 50 mm; first piece 10 ft
+  [-1,1].forEach(sx=>[-1,1].forEach((sz,j)=>{
+    [[0,CUT-.003,.88+j*.01,.95],[CUT+.003,H,.9+j*.01,.97]].forEach(([y0,y1,t0,t1])=>{
+      const hh=y1-y0, off=TK+.0006, g=new THREE.Group();
+      const a=new THREE.Mesh(new THREE.BoxGeometry(FL_LONG,hh,TK),trimMat); a.position.set(-sx*(FL_LONG/2-.0004),y0+hh/2,sz*(off+TK/2));
+      const b=new THREE.Mesh(new THREE.BoxGeometry(TK,hh,FL_SHORT),trimMat); b.position.set(sx*(off+TK/2),y0+hh/2,-sz*(FL_SHORT/2-.0004));
+      g.add(a,b); g.children.forEach(c=>{ c.castShadow=true; c.receiveShadow=true; });
+      addExtra(g,new THREE.Vector3(sx*OUTX/2,0,sz*OUTZ/2),new THREE.Vector3(sx*OUTX/2,4,sz*OUTZ/2),t0,t1);
+    });
+  }));
+  [-1,1].forEach(sx=>[-1,1].forEach((sz,j)=>{                    // vertical inside corners, put up with the walls
+    const g=new THREE.Group();
+    const a=new THREE.Mesh(new THREE.BoxGeometry(TL,H,TK),lTrimMat); a.position.set(-sx*(TL/2-.0004),H/2,-sz*(TK/2+.0004));
+    const b=new THREE.Mesh(new THREE.BoxGeometry(TK,H,TL),lTrimMat); b.position.set(-sx*(TK/2+.0004),H/2,-sz*(TL/2-.0004));
+    g.add(a,b); g.children.forEach(c=>{ c.castShadow=true; c.receiveShadow=true; });
+    addExtra(g,new THREE.Vector3(sx*WX/2,0,sz*WZ/2),new THREE.Vector3(sx*WX/2,3,sz*WZ/2),.5+j*.015,.62);
+  }));
+  const LT_LEN=20*FT;                                            // L trim comes in 20 ft lengths (one piece per wall here)
+  [[WX,0,1],[WX,0,-1],[WZ,1,0],[WZ,-1,0]].forEach(([len,nx,nz],i)=>{   // wall-to-ceiling inside corners
+    const along=nx===0, g=new THREE.Group();
+    for(let s=-len/2; s<len/2-1e-6; ){
+      const l=Math.min(LT_LEN,len/2-s), c=s+l/2, w=l-.006; s+=l;
+      const v=new THREE.Mesh(new THREE.BoxGeometry(along?w:TK,TL,along?TK:w),lTrimMat); v.position.set(along?c:-nx*(TK/2+.0004),H-TL/2-.0004,along?-nz*(TK/2+.0004):c);
+      const h=new THREE.Mesh(new THREE.BoxGeometry(along?w:TL,TK,along?TL:w),lTrimMat); h.position.set(along?c:-nx*(TL/2-.0004),H-TK/2-.0004,along?-nz*(TL/2-.0004):c);
+      g.add(v,h);
+    }
+    g.children.forEach(c=>{ c.castShadow=true; c.receiveShadow=true; });
+    const px=along?0:nx*WX/2, pz=along?nz*WZ/2:0;
+    addExtra(g,new THREE.Vector3(px,0,pz),new THREE.Vector3(px,3,pz),.8+i*.01,.88);
+  });  // two light fixtures under the ceiling, seen through the open door
   const fixtures=[-1.25,1.25].map(x=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(.12,.025,1.3),ledMat); m.position.set(x,H-.02,0); m.visible=false; scene.add(m); return m; });
 
   const totalItems=items.length, totalArea=items.reduce((a,b)=>a+b.area,0);
