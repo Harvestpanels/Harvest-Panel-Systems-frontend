@@ -178,15 +178,8 @@
   strip(OUTX).forEach((s,i)=>{ const m=pbox(s.w,T,OUTZ,'ceil'); const t0=.62+i*.03;
     add(m,new THREE.Vector3(s.c,H+T/2,0),new THREE.Vector3(s.c,H+T/2+6.5,0),t0,t0+.15,s.w*OUTZ*SQFT); });
 
-  // ---- trim (installation guide): outside corner trim on the four corners, outside trim along the top edge ----
+  // ---- trim: flashing on the outside (corners and the top edge), L trim on the inside; no separate outside corner trim piece ----
   const TL=0.0508, TK=0.002;
-  [-1,1].forEach(sx=>[-1,1].forEach((sz,j)=>{
-    const g=new THREE.Group();
-    const a=new THREE.Mesh(new THREE.BoxGeometry(TL,H,TK),trimMat); a.position.set(-sx*(TL/2-.0004),H/2,sz*(TK/2+.0004)); g.add(a);
-    const b=new THREE.Mesh(new THREE.BoxGeometry(TK,H,TL),trimMat); b.position.set(sx*(TK/2+.0004),H/2,-sz*(TL/2-.0004)); g.add(b);
-    g.children.forEach(c=>{ c.castShadow=true; c.receiveShadow=true; });
-    addExtra(g,new THREE.Vector3(sx*OUTX/2,0,sz*OUTZ/2),new THREE.Vector3(sx*OUTX/2,4,sz*OUTZ/2),.84+j*.01,.93);
-  }));
   const FLASH_LEN=3.048;                       // the top-edge flashing comes in 10 ft (3,048 mm) lengths: full lengths plus one cut piece per run
   [[OUTX,0,1],[OUTX,0,-1],[OUTZ,1,0],[OUTZ,-1,0]].forEach(([len,nx,nz],i)=>{   // top edge: 220 mm down the wall, 160 mm across the ceiling
     const along=nx===0, g=new THREE.Group();
@@ -202,11 +195,11 @@
   });
   // ---- flashing on the four outside corners (a 12 ft wall takes a 10 ft piece plus the 2 ft piece on its own),
   //      and L trim on the inside corners as the walls go up and again under the ceiling (20 ft lengths) ----
-  const lTrimMat=new THREE.MeshStandardMaterial({color:0xc4c9ce,roughness:.32,metalness:.9});   // natural aluminum
+  const lTrimMat=new THREE.MeshStandardMaterial({color:0xd0d4d8,roughness:.5,metalness:.55});   // natural aluminum (less mirror-like so it never reads black)
   const FL_LONG=.15, FL_SHORT=.05, CUT=10*FT;                    // flashing legs 150 mm and 50 mm; first piece 10 ft
   [-1,1].forEach(sx=>[-1,1].forEach((sz,j)=>{
-    [[0,CUT+.0006,.88+j*.01,.95],[CUT,H,.9+j*.01,.97]].forEach(([y0,y1,t0,t1])=>{
-      const hh=y1-y0, off=TK+.0006, g=new THREE.Group();
+    [[0,CUT+.0006,.84+j*.01,.93],[CUT,H,.88+j*.01,.95]].forEach(([y0,y1,t0,t1])=>{
+      const hh=y1-y0, off=.0004, g=new THREE.Group();            // the flashing goes straight onto the panels
       const a=new THREE.Mesh(new THREE.BoxGeometry(FL_LONG,hh,TK),trimMat); a.position.set(-sx*(FL_LONG/2-.0004),y0+hh/2,sz*(off+TK/2));
       const b=new THREE.Mesh(new THREE.BoxGeometry(TK,hh,FL_SHORT),trimMat); b.position.set(sx*(off+TK/2),y0+hh/2,-sz*(FL_SHORT/2-.0004));
       g.add(a,b); g.children.forEach(c=>{ c.castShadow=true; c.receiveShadow=true; });
