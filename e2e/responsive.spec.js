@@ -194,9 +194,9 @@ test("no draft text or dead links on the public pages", async ({ page }) => {
   }
 });
 
-test("home page order: industries, one call, how a room goes together, ..., flooring, the scroll-built room, projects, FAQ, standards", async ({ page }) => {
+test("home page order: the scroll-built room, industries, one call, ..., flooring, how a room goes together, projects, FAQ, standards", async ({ page }) => {
   await page.goto("/", { waitUntil: "load" });
-  const tops = await page.evaluate(() => ["industries", "why", "inside", "products", "what-is-imp", "flooring", "build", "projects", "faq", "standards"].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
+  const tops = await page.evaluate(() => ["build", "industries", "why", "products", "what-is-imp", "flooring", "inside", "projects", "faq", "standards"].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
   expect(tops).toEqual([...tops].sort((a, b) => a - b));
   await expect(page.locator("#industries h2")).toHaveText("Built for Controlled Environments.");
   await expect(page.locator("#inside h2")).toHaveText("See How a Room Goes Together.");
