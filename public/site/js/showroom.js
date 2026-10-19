@@ -7,8 +7,15 @@
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)), ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 
   // ---------------- renderer / scene ----------------
+  const lowGPU=(()=>{ try{ const c=document.createElement('canvas'), g=c.getContext('webgl')||c.getContext('experimental-webgl'); if(!g) return false; const d=g.getExtension('WEBGL_debug_renderer_info'), n=d?String(g.getParameter(d.UNMASKED_RENDERER_WEBGL)):''; const lose=g.getExtension('WEBGL_lose_context'); if(lose) lose.loseContext(); return /Intel|Mesa|llvmpipe|SwiftShader|Basic Render|Adreno \(?[0-4]|Mali-[T4]|PowerVR/i.test(n); }catch(e){ return false; } })();
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const baseRatio=Math.min(devicePixelRatio,lowGPU?1.25:1.75), moveRatio=Math.min(baseRatio,1);   // sharp when still, at most 1 pixel per CSS pixel while moving
+  renderer.setPixelRatio(baseRatio);
+  // render only while something is moving or the visitor is interacting (the GPU idles otherwise)
+  let wakeUntil=performance.now()+4000, lastMove=0, lastBeat=0;   // lastBeat: a slow idle refresh (about 2 per second) so late-loading models and textures still appear
+  const wake=(ms=3000,motion=false)=>{ const t=performance.now(); wakeUntil=Math.max(wakeUntil,t+ms); if(motion) lastMove=t; };
+  const setRes=r=>{ if(renderer.getPixelRatio()!==r){ renderer.setPixelRatio(r); renderer.setSize(host.clientWidth,host.clientHeight,false); } };
+  ['pointerdown','pointermove','wheel','keydown','click','input','change','touchstart'].forEach(ev=>addEventListener(ev,()=>wake(ev==='pointermove'?500:3000),{passive:true,capture:true}));
   renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=.8;
   renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   host.appendChild(renderer.domElement);
@@ -27,7 +34,7 @@
   })();
   scene.add(new THREE.HemisphereLight(0xffffff,0xb4b9c2,.42)); { const fl=new THREE.DirectionalLight(0xffffff,.35); fl.position.set(-3200,2200,-2600); scene.add(fl); }
   const key=new THREE.DirectionalLight(0xffffff,1.2); key.position.set(2600,4200,3200); key.castShadow=true;
-  key.shadow.mapSize.set(2048,2048); const sc=key.shadow.camera; sc.left=-3500;sc.right=3500;sc.top=3500;sc.bottom=-3500;sc.near=100;sc.far=12000;
+  key.shadow.mapSize.set(lowGPU?1024:2048,lowGPU?1024:2048); const sc=key.shadow.camera; sc.left=-3500;sc.right=3500;sc.top=3500;sc.bottom=-3500;sc.near=100;sc.far=12000;
   key.shadow.bias=-.0003; key.shadow.normalBias=2; key.shadow.radius=6; scene.add(key);
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),new THREE.ShadowMaterial({opacity:.38})); floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
 
@@ -84,7 +91,7 @@
     });
   }
   function renderStats(rows){ ui.stats.innerHTML=rows.map(([k,v])=>`<div><b>${v}</b><span>${k}</span></div>`).join(''); }
-  function tween(from,to,ms,cb,done){ const t0=performance.now(); (function f(n){ const k=clamp((n-t0)/ms,0,1); cb(from+(to-from)*ease(k)); if(k<1) requestAnimationFrame(f); else done&&done(); })(t0); }
+  function tween(from,to,ms,cb,done){ const t0=performance.now(); (function f(n){ wake(300,true); const k=clamp((n-t0)/ms,0,1); cb(from+(to-from)*ease(k)); if(k<1) requestAnimationFrame(f); else done&&done(); })(t0); }
 
   // ---------------- camera framing ----------------
   let root=null, current=null;
@@ -299,8 +306,8 @@
   $$('[data-view]').forEach(b=>b.addEventListener('click',()=>frame(b.dataset.view)));
   const rot=$('#rotb'); const setRot=on=>{ controls.autoRotate=on; rot.innerHTML=on?'&#9208; Pause rotation':'&#9654; Play rotation'; rot.classList.toggle('on',on); };
   setRot(false); rot.onclick=()=>setRot(!controls.autoRotate); addEventListener('keydown',e=>{ if(e.code==='Space'&&document.activeElement===document.body){ e.preventDefault(); setRot(!controls.autoRotate); } });
-  function resize(){ renderer.setSize(host.clientWidth,host.clientHeight,false); camera.aspect=host.clientWidth/host.clientHeight; camera.updateProjectionMatrix(); }
+  function resize(){ wake(1200); renderer.setSize(host.clientWidth,host.clientHeight,false); camera.aspect=host.clientWidth/host.clientHeight; camera.updateProjectionMatrix(); }
   addEventListener('resize',()=>{ resize(); frame('34'); }); resize();
   const start=(location.hash||'').slice(1); show(reg[start]?start:'pir100');
-  (function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene,camera); })();
+  (function loop(now){ requestAnimationFrame(loop); if(document.hidden) return; if(controls.update()) wake(300,true); if(now>wakeUntil && now-lastBeat<600) return; lastBeat=now; setRes(now-lastMove<220?moveRatio:baseRatio); renderer.render(scene,camera); })();
 })();

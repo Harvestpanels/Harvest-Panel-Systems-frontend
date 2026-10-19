@@ -270,3 +270,17 @@ test("the calculator is reached only from the menu bar", async ({ page }) => {
   await expect(page).toHaveURL(/\/calculator$/);
   await expect(page.locator("h1")).toHaveText("Size Your Room.");
 });
+
+test("panel viewer: Play joint and Play layers run to their ends, and the viewer draws almost nothing while idle", async ({ page }) => {
+  await page.goto("/site/viewer.html", { waitUntil: "load" });
+  await page.waitForFunction(() => window.THREE && document.getElementById("jnv"));
+  await page.locator("#ajn").click();
+  await expect(page.locator("#jnv")).toHaveText("0%", { timeout: 8000 });
+  await page.locator("#aex").click();
+  await expect(page.locator("#exv")).toHaveText("100%", { timeout: 8000 });
+  await page.waitForTimeout(1500);
+  const f0 = await page.evaluate("renderer.info.render.frame");
+  await page.waitForTimeout(1500);
+  const f1 = await page.evaluate("renderer.info.render.frame");
+  expect(f1 - f0).toBeLessThanOrEqual(4);   // only the slow refresh (about two per second)
+});
