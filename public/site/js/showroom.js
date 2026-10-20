@@ -263,6 +263,8 @@
     const mats={
       Alu:new THREE.MeshPhysicalMaterial({color:0xa9aeb0,metalness:.4,roughness:.3,clearcoat:.08}),
       Galv:new THREE.MeshStandardMaterial({color:0x9ea6af,metalness:.9,roughness:.34}),
+      Mill:new THREE.MeshStandardMaterial({color:0xc2c7cb,metalness:.9,roughness:.34}),
+      Cover:new THREE.MeshStandardMaterial({color:0xe6e8e6,metalness:.05,roughness:.42}),
       PVC:new THREE.MeshStandardMaterial({color:0xdfe1df,roughness:.38}),
       Steel:steelMat(0xe7ebda) };
     const b64=s=>{ const a=atob(s),u=new Uint8Array(a.length); for(let i=0;i<a.length;i++)u[i]=a.charCodeAt(i); return u.buffer; };
