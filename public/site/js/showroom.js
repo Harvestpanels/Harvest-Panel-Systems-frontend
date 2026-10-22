@@ -106,11 +106,12 @@
   }
   window.__frame=frame; window.__sr={camera,scene,controls};
 
-  // ================================================================= PRODUCT 1: 100 mm PIR panel (Blender geometry)
+  // ================================================================= PRODUCT 1: PIR insulated metal panel (the real 100 mm Blender model; other thicknesses scale its thickness)
   function buildPir(ctx){
     const L=1875, COVER=1000, JOINED=COVER-.9, GAP=380, MAXLIFT=170;
     const rootG=new THREE.Group(), stand=new THREE.Group(), A=new THREE.Group(), B=new THREE.Group(); stand.add(A,B); stand.rotation.z=Math.PI/2; stand.position.y=L/2; rootG.add(stand);
-    const parts={A:{},B:{}}; let ex=0, jn=1;
+    const parts={A:{},B:{}}; let ex=0, jn=1, T=100;   // T: panel thickness in mm
+    const PIR_T=[['2″',50,15],['4″',100,30],['6″',150,45],['8″',200,60]];   // label, mm, R-value (same values as the Wall & Roof designer)
     const printTex=new THREE.TextureLoader().load(TAPE_PRINT_B64); printTex.wrapS=printTex.wrapT=THREE.RepeatWrapping; printTex.anisotropy=16; printTex.encoding=THREE.sRGBEncoding; printTex.flipY=false;
     const mats={ Steel_top:new THREE.MeshPhysicalMaterial({color:0xe3e7d9,roughness:.38,clearcoat:.25,clearcoatRoughness:.3,envMapIntensity:.55}), PIR_core:foamMat(),
       Gasket:new THREE.MeshStandardMaterial({map:noiseTex('#2a2a2d',0,3000,60),color:0x9a9a9d,roughness:.95}), Tongue_tape:new THREE.MeshStandardMaterial({color:0xf7f1da,roughness:.42}),
@@ -120,23 +121,35 @@
       for(let i=0;i<p.count;i++){ const ax=Math.abs(n.getX(i)),ay=Math.abs(n.getY(i)),az=Math.abs(n.getZ(i)); let u,v;
         if(ax>=ay&&ax>=az){u=p.getY(i);v=p.getZ(i);} else if(ay>=az){u=p.getX(i);v=p.getZ(i);} else {u=p.getX(i);v=p.getY(i);} uv[2*i]=u*s; uv[2*i+1]=v*s; }
       g.setAttribute('uv',new THREE.BufferAttribute(uv,2)); };
-    function apply(){ if(!parts.A.Steel_top) return; const lift=ex*MAXLIFT/1000;
-      ['A','B'].forEach(id=>{ const p=parts[id]; p.Steel_top.position.y=p.Steel_top.userData.base.y+lift; p.Steel_bottom.position.y=p.Steel_bottom.userData.base.y-lift; });
+    function apply(){ if(!parts.A.Steel_top) return; const lift=ex*MAXLIFT/1000, f=T/100;
+      ['A','B'].forEach(id=>{ const p=parts[id]; p.Steel_top.position.y=p.Steel_top.userData.base.y*f+lift; p.Steel_bottom.position.y=p.Steel_bottom.userData.base.y*f-lift; });
       B.position.z=-(JOINED+(1-jn)*GAP); }
+    // Thickness: every part keeps its 100 mm geometry (p0, n0) and is stretched along the thickness axis (local Y); normals follow, and the foam and gasket textures are re-mapped so they do not stretch.
+    function setThick(mm){ T=mm; const f=mm/100;
+      ['A','B'].forEach(id=>Object.keys(parts[id]).forEach(nm=>{ const o=parts[id][nm], g=o.geometry, p=g.attributes.position, n=g.attributes.normal, p0=o.userData.p0, n0=o.userData.n0;
+        for(let i=0;i<p.count;i++){ const j=3*i, ny=n0[j+1]/f, l=Math.hypot(n0[j],ny,n0[j+2])||1; p.setXYZ(i,p0[j],p0[j+1]*f,p0[j+2]); n.setXYZ(i,n0[j]/l,ny/l,n0[j+2]/l); }
+        p.needsUpdate=n.needsUpdate=true; g.computeBoundingBox(); g.computeBoundingSphere();
+        if(nm==='PIR_core'||nm==='Gasket') boxUV(g,nm==='PIR_core'?90:60); }));
+      apply(); }
     const b64=s=>{ const a=atob(s),u=new Uint8Array(a.length); for(let i=0;i<a.length;i++)u[i]=a.charCodeAt(i); return u.buffer; };
     new THREE.GLTFLoader().parse(b64(PANEL_GLB_B64),'',gltf=>{
       ['A','B'].forEach(id=>{ const r=id==='A'?A:B, model=gltf.scene.clone(true); model.scale.setScalar(1000); r.add(model);
         model.traverse(o=>{ if(!o.isMesh) return; const nm=o.name.replace(/\.\d+$/,''), m=mats[nm]; if(!m) return; o.geometry=o.geometry.clone(); o.material=m;
           o.castShadow=nm!=='Tongue_print'; o.receiveShadow=nm!=='Tongue_print'; if(nm==='PIR_core'||nm==='Gasket') boxUV(o.geometry,nm==='PIR_core'?90:60); if(nm==='Tongue_print') o.renderOrder=2;
+          o.userData.p0=o.geometry.attributes.position.array.slice(); o.userData.n0=o.geometry.attributes.normal.array.slice();
           o.userData.base=o.position.clone(); parts[id][nm]=o; }); });
       apply(); ctx.ready(); });
+    const layersCtl={type:'slider',label:'Layers',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{ex=v/100;apply();}};
+    const jointCtl={type:'slider',label:'Joint',min:0,max:100,value:100,fmt:v=>v+'%',onChange:v=>{jn=v/100;apply();}};
     return { root:rootG,
       controls:[
-        {type:'slider',label:'Layers',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{ex=v/100;apply();}},
-        {type:'slider',label:'Joint',min:0,max:100,value:100,fmt:v=>v+'%',onChange:v=>{jn=v/100;apply();}},
-        {type:'button',text:'Play Layers',onClick:()=>{ const a=ex>.5?0:1; tween(ex,a,2400,v=>{ex=v;apply();},()=>{ctx.controls[0].setValue&&ctx.controls[0].setValue(a*100);}); }},
-        {type:'button',text:'Play Joint',onClick:()=>{ const a=jn>.5?0:1; tween(jn,a,2400,v=>{jn=v;apply();}); }}],
-      stats:()=>[['Thickness','100 mm (3.94 in)'],['Cover Width','1,000 mm (39.37 in)'],['Steel Faces','0.5 mm (0.020 in)'],['Insulation','R-30 (RSI 5.3)']],
+        {type:'chips',label:'Thickness',value:100,options:PIR_T.map(t=>({v:t[1],label:t[0]})),onChange:v=>{ setThick(+v); ctx.update(); }},
+        {type:'swatches',label:'Color',value:COLORS[0][1],options:COLORS.map(c=>({v:c[1],label:c[0]})),onChange:v=>{ mats.Steel_top.color.set(v); wake(); }},
+        layersCtl, jointCtl,
+        {type:'button',text:'Play Layers',onClick:()=>{ const a=ex>.5?0:1; tween(ex,a,2400,v=>{ ex=v; apply(); layersCtl.setValue&&layersCtl.setValue(Math.round(v*100)); }); }},
+        {type:'button',text:'Play Joint',onClick:()=>{ const a=jn>.5?0:1; tween(jn,a,2400,v=>{ jn=v; apply(); jointCtl.setValue&&jointCtl.setValue(Math.round(v*100)); }); }}],
+      stats:()=>{ const t=PIR_T.find(x=>x[1]===T)||PIR_T[1]; return [['Thickness',t[0]+' ('+t[1]+' mm)'],['Cover Width','1,000 mm (39.37 in)'],['Steel Faces','0.5 mm (0.020 in)'],['Insulation','R-'+t[2]+' (RSI '+(t[2]*.1761).toFixed(1)+')']]; },
+      note:()=>T===100?'':'The other thicknesses use the 4″ (100 mm) panel\'s joint, scaled to size.',
       views:'34' };
   }
 
@@ -260,6 +273,15 @@
   function buildTrim(ctx){
     // Real Blender-built models (acc_assets.js). Shown at a short display length; true stock length is in the spec rows.
     const rootG=new THREE.Group(); let inner=null, item=ACC_META[0].id; const cache={};
+    // Inside curved angle (two pieces): the model shows the white cover lifted above the metal base. Play Joint lowers it straight down
+    // over the fins until the barbs sit in the grooves between the teeth. SNAP = that drop in metres (33.5 mm, the lift in hps_accessories.py).
+    const SNAP=.0335; let jn=0, cover=[];
+    const applyJoint=()=>{ cover.forEach(o=>{ o.position.y=o.userData.baseY-SNAP*jn; }); };
+    const jointCtl={type:'slider',label:'Joint',min:0,max:100,value:0,fmt:v=>v+'%',onChange:v=>{ jn=v/100; applyJoint(); }};
+    const playCtl={type:'button',text:'Play Joint',onClick:()=>{ const a=jn>.5?0:1; tween(jn,a,2600,v=>{ jn=v; applyJoint(); jointCtl.setValue&&jointCtl.setValue(Math.round(v*100)); }); }};
+    const itemCtl={type:'chips',label:'Item',value:item,options:ACC_META.map(a=>({v:a.id,label:a.label})),onChange:v=>{ item=v; syncControls(); make(); }};
+    const ctlList=[itemCtl];
+    function syncControls(){ jn=0; jointCtl.value=0; ctlList.length=1; if(item==='al-inside-curved') ctlList.push(jointCtl,playCtl); renderControls(ctlList); }
     const mats={
       Alu:new THREE.MeshPhysicalMaterial({color:0xa9aeb0,metalness:.4,roughness:.3,clearcoat:.08}),
       Galv:new THREE.MeshStandardMaterial({color:0x9ea6af,metalness:.9,roughness:.34}),
@@ -271,26 +293,25 @@
     function load(id,cb){
       if(cache[id]) return cb(cache[id].clone(true));
       new THREE.GLTFLoader().parse(b64(ACC_GLB[id]),'',g=>{ const m=g.scene; m.scale.setScalar(1000);
-        m.traverse(o=>{ if(!o.isMesh) return; o.material=mats[o.name.replace(/\.\d+$/,'')]||mats.Alu; o.castShadow=o.receiveShadow=true; });
+        m.traverse(o=>{ if(!o.isMesh) return; o.material=mats[o.name.replace(/\.?\d+$/,'')]||mats.Alu; o.castShadow=o.receiveShadow=true; });
         cache[id]=m; cb(m.clone(true)); }); }
     function make(){
       if(inner){ rootG.remove(inner); inner=null; }
       const id=item;
       load(id,m=>{ if(id!==item) return; const g=new THREE.Group(); g.add(m);
+        cover=[]; m.traverse(o=>{ if(o.isMesh&&/^Cover\d*$/.test(o.name)){ o.userData.baseY=o.position.y; cover.push(o); } }); applyJoint();
         const bb=new THREE.Box3().setFromObject(m), c=bb.getCenter(new THREE.Vector3()); m.position.set(-c.x,-bb.min.y,-c.z);   // stand on the floor, centred
         inner=g; rootG.add(g); ctx.update(); ctx.view('34');
         camera.position.lerpVectors(controls.target,camera.position,.62); controls.update(); });
     }
-    return { root:rootG, build:make,
-      controls:[
-        {type:'chips',label:'Item',value:item,options:ACC_META.map(a=>({v:a.id,label:a.label})),onChange:v=>{item=v;make();}}],
+    return { root:rootG, build:make, controls:ctlList,
       stats:()=>ACC_META.find(a=>a.id===item).stats,
-      note:()=>'Built from supplier drawings and photos, shown at a short length. Metric and imperial values are rounded conversions.' };
+      note:()=>'Custom sizes and colors are available.' };
   }
   // ---------------- registry + switching ----------------
   const reg={pir100:buildPir,designer:buildDesigner,doors:buildDoors,trim:buildTrim};
   const meta={
-    pir100:{t:'4" (100 mm) PIR Insulated Metal Panel (IMP)',b:'The real Blender-built model. Lift the steel off the core and slide two panels together to see the locking joint.'},
+    pir100:{t:'PIR Insulated Metal Panel (IMP)',b:'Pick a thickness and a color, lift the steel off the core and slide two panels together to see the locking joint.'},
     designer:{t:'Wall & Roof Panels',b:'Pick a profile, a thickness and a color. The insulation value and weight update with your choice.'},
     doors:{t:'Doors',b:'Pick a door and a size, swing it open, and look at the hardware up close.'},
     trim:{t:'Trim & Accessories',b:'Aluminum and steel trim, strut channel, PVC wall panel and PVC trim. Pick an item and orbit it to see the profile up close.'}

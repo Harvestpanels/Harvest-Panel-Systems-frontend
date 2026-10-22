@@ -284,3 +284,38 @@ test("panel viewer: Play joint and Play layers run to their ends, and the viewer
   const f1 = await page.evaluate("renderer.info.render.frame");
   expect(f1 - f0).toBeLessThanOrEqual(4);   // only the slow refresh (about two per second)
 });
+test("3D showroom: the PIR Insulated Metal Panel (IMP) comes in 2, 4, 6 and 8 inch thicknesses and the steel colors", async ({ page }) => {
+  await page.goto("/showroom#pir100", { waitUntil: "load" });
+  await expect(page.locator("#ptitle")).toHaveText("PIR Insulated Metal Panel (IMP)");
+  await expect(page.locator("#stats")).toContainText("4″ (100 mm)");
+  await expect(page.locator("#stats")).toContainText("R-30");
+  for (const [label, mm, r] of [["2″", "50", "R-15"], ["6″", "150", "R-45"], ["8″", "200", "R-60"]]) {
+    await page.locator("#ctl .pill", { hasText: label }).click();
+    await expect(page.locator("#stats")).toContainText(`${label} (${mm} mm)`);
+    await expect(page.locator("#stats")).toContainText(r);
+  }
+  // the 3D model really gets thicker: the core spans about 200 mm at 8 inches
+  await page.locator("#ctl .pill", { hasText: "8″" }).click();
+  const span = await page.evaluate(() => { let m = 0; window.__sr.scene.traverse(o => { if (o.isMesh && o.name === "PIR_core") { o.geometry.computeBoundingBox(); m = Math.max(m, (o.geometry.boundingBox.max.y - o.geometry.boundingBox.min.y) * 1000); } }); return m; });
+  expect(span).toBeGreaterThan(190);
+  await page.locator('#ctl .sw2[title="Flame Red"]').click();
+  const hex = await page.evaluate(() => { let h = ""; window.__sr.scene.traverse(o => { if (o.isMesh && o.name === "Steel_top") h = o.material.color.getHexString(); }); return h; });
+  expect(hex).toBe("af2b1e");
+  // Play Joint now moves the Joint slider with the animation and ends at 0%
+  await page.getByRole("button", { name: "Play Joint", exact: true }).click();
+  await expect(page.locator("#ctl input[type=range]").nth(1)).toHaveValue("0", { timeout: 8000 });
+});
+
+test("3D showroom trim: the inside curved angle is two pieces and Play Joint snaps the white cover down onto the metal base", async ({ page }) => {
+  await page.goto("/showroom#trim", { waitUntil: "load" });
+  await page.locator("#ctl .pill", { hasText: "Inside curved angle" }).click();
+  await expect(page.locator("#stats")).toContainText("2: base + snap-on curved cover");
+  await expect(page.locator("#pnote")).toHaveText("Custom sizes and colors are available.");
+  const coverY = () => page.evaluate(() => { const ys = []; window.__sr.scene.traverse(o => { if (o.isMesh && /^Cover\d*$/.test(o.name)) ys.push(+(o.position.y * 1000).toFixed(1)); }); return ys; });
+  expect(await coverY()).toEqual([0, 0, 0]);
+  await page.getByRole("button", { name: "Play Joint", exact: true }).click();
+  await expect(page.locator("#ctl input[type=range]")).toHaveValue("100", { timeout: 8000 });
+  expect(await coverY()).toEqual([-33.5, -33.5, -33.5]);
+  await page.getByRole("button", { name: "Play Joint", exact: true }).click();
+  await expect(page.locator("#ctl input[type=range]")).toHaveValue("0", { timeout: 8000 });
+});
