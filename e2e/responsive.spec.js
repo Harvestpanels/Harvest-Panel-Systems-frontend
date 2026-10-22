@@ -319,3 +319,19 @@ test("3D showroom trim: the inside curved angle is two pieces and Play Joint sna
   await page.getByRole("button", { name: "Play Joint", exact: true }).click();
   await expect(page.locator("#ctl input[type=range]")).toHaveValue("0", { timeout: 8000 });
 });
+test("panel viewer (home page and PIR product page): thickness 2 to 8 inches and the steel colors", async ({ page }) => {
+  await page.goto("/site/viewer.html", { waitUntil: "load" });
+  await page.waitForFunction("window.THREE && typeof parts !== 'undefined' && parts.A.Steel_top");
+  await expect(page.locator(".brand")).toContainText("PIR Insulated Metal Panel (IMP)");
+  const span = () => page.evaluate("(() => { const g = parts.A.PIR_core.geometry; g.computeBoundingBox(); return (g.boundingBox.max.y - g.boundingBox.min.y) * 1000; })()");
+  expect(await span()).toBeGreaterThan(95);
+  expect(await span()).toBeLessThan(105);
+  await page.locator('#thk [data-t="200"]').click();
+  await expect(page.locator("#thv")).toHaveText("R-60");
+  expect(await span()).toBeGreaterThan(190);
+  await page.locator('#thk [data-t="50"]').click();
+  await expect(page.locator("#thv")).toHaveText("R-15");
+  expect(await span()).toBeLessThan(55);
+  await page.locator('.sws .sw[title="Flame Red"]').click();
+  expect(await page.evaluate("mats.Steel_top.color.getHexString()")).toBe("af2b1e");
+});

@@ -28,14 +28,20 @@
   .brand{z-index:5;pointer-events:none;position:fixed;right:16px;top:14px;font-size:12px;color:var(--mute);text-align:right}
   .brand b{color:var(--ink);font-family:Georgia,serif;letter-spacing:.08em}
   #load{position:fixed;inset:0;display:grid;place-items:center;font-size:13px;color:var(--mute)}
+  .chips{display:flex;gap:6px}
+  .sws{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+  .sws .sw{width:20px;height:20px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
+  .sws .sw.on{box-shadow:0 0 0 2px var(--accent)}
   </style>
 </head>
 <body>
-<div class="brand"><b>HARVEST PANELS</b><br>100&nbsp;mm PIR wall &amp; ceiling panel</div>
+<div class="brand"><b>HARVEST PANELS</b><br>PIR Insulated Metal Panel (IMP)</div>
 <div id="load">Loading panel model&hellip;</div>
 <div class="ui">
   <h1>Panel &amp; joint explorer</h1>
   <p>Drag to orbit, scroll to zoom, right-drag to pan. Space pauses rotation.</p>
+  <div class="row"><label>Thickness</label><div class="chips" id="thk"><button data-t="50">2&Prime;</button><button data-t="100" class="on">4&Prime;</button><button data-t="150">6&Prime;</button><button data-t="200">8&Prime;</button></div><output id="thv" style="width:auto;margin-left:auto">R-30</output></div>
+  <div class="row"><label>Color</label><div class="sws" id="sws"></div></div>
   <div class="row"><label for="ex">Layers</label><input id="ex" type="range" min="0" max="100" value="0"><output id="exv">0%</output></div>
   <div class="row"><label for="jn">Joint</label><input id="jn" type="range" min="0" max="100" value="100"><output id="jnv">100%</output></div>
   <div class="btns">
@@ -151,6 +157,7 @@ new THREE.GLTFLoader().parse(b64ToBuf(GLB_B64),'',gltf=>{
       o.material=m; o.castShadow=nm!=='Tongue_print'; o.receiveShadow=nm!=='Tongue_print';
       if(nm==='PIR_core'||nm==='Gasket') boxUV(o.geometry,m.map.userData.tile);
       if(nm==='Tongue_print') o.renderOrder=2;
+      o.userData.p0=o.geometry.attributes.position.array.slice(); o.userData.n0=o.geometry.attributes.normal.array.slice();
       o.userData.base=o.position.clone(); parts[id][nm]=o;
     });
   });
@@ -158,19 +165,36 @@ new THREE.GLTFLoader().parse(b64ToBuf(GLB_B64),'',gltf=>{
 });
 
 // ---------- state / animation ----------
-let ex=0, jn=1;
+let ex=0, jn=1, TH=100;   // TH: panel thickness in mm
 const _tx={}, setTxt=(id,v)=>{ if(_tx[id]!==v){ _tx[id]=v; document.getElementById(id).textContent=v; } };
 function apply(){ wake(400,true);
   if(!parts.A.Steel_top)return;
   const lift=ex*MAXLIFT/1000;
   ['A','B'].forEach(id=>{
     const p=parts[id], sT=p.Steel_top, sB=p.Steel_bottom;
-    sT.position.y=sT.userData.base.y+lift; sB.position.y=sB.userData.base.y-lift;
+    const f=TH/100; sT.position.y=sT.userData.base.y*f+lift; sB.position.y=sB.userData.base.y*f-lift;
   });
   A.position.z=0; B.position.z=-(JOINED+(1-jn)*JOIN_GAP);
   setTxt('exv',Math.round(ex*100)+'%'); setTxt('jnv',Math.round(jn*100)+'%');
 }
 const exEl=document.getElementById('ex'), jnEl=document.getElementById('jn');
+// ---------- thickness and color: the real 100 mm model; the other thicknesses stretch it along its thickness ----------
+const PIR_T=[[50,'R-15'],[100,'R-30'],[150,'R-45'],[200,'R-60']];   // mm, R-value (same as the 3D showroom and the designer)
+const COLORS=[['Grey White','#E7EBDA'],['White','#F5F5F2'],['White Aluminum','#A8ABAA'],['Ivory','#E6D2B5'],['Light Blue','#6FA3D6'],
+              ['Gentian Blue','#0E4C92'],['Signal Green','#237F52'],['Colza Yellow','#F3DA0B'],['Pure Orange','#E75B12'],['Flame Red','#AF2B1E']];
+function setThick(mm){ TH=mm; const f=mm/100;
+  ['A','B'].forEach(id=>Object.keys(parts[id]).forEach(nm=>{ const o=parts[id][nm], g=o.geometry, p=g.attributes.position, n=g.attributes.normal, p0=o.userData.p0, n0=o.userData.n0;
+    for(let i=0;i<p.count;i++){ const j=3*i, ny=n0[j+1]/f, l=Math.hypot(n0[j],ny,n0[j+2])||1; p.setXYZ(i,p0[j],p0[j+1]*f,p0[j+2]); n.setXYZ(i,n0[j]/l,ny/l,n0[j+2]/l); }
+    p.needsUpdate=n.needsUpdate=true; g.computeBoundingBox(); g.computeBoundingSphere();
+    if(nm==='PIR_core'||nm==='Gasket') boxUV(g,mats[nm].map.userData.tile); }));
+  apply(); }
+document.querySelectorAll('#thk button').forEach(b=>b.onclick=()=>{ if(!parts.A.Steel_top) return; const mm=+b.dataset.t;
+  document.querySelectorAll('#thk button').forEach(x=>x.classList.toggle('on',x===b)); setThick(mm); setTxt('thv',PIR_T.find(t=>t[0]===mm)[1]); });
+const swBox=document.getElementById('sws'), steelTag=document.getElementById('t_steel'), steelTagText=steelTag.innerHTML;
+COLORS.forEach(([name,hex],i)=>{ const b=document.createElement('button'); b.className='sw'+(i===0?' on':''); b.style.background=hex; b.title=name; b.setAttribute('aria-label',name);
+  b.onclick=()=>{ swBox.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x===b)); mats.Steel_top.color.set(hex);
+    steelTag.innerHTML=i===0?steelTagText:'0.5&nbsp;mm steel facing, '+name; wake(); };
+  swBox.appendChild(b); });
 exEl.oninput=()=>{ex=exEl.value/100;anim.ex=null;apply();};
 jnEl.oninput=()=>{jn=jnEl.value/100;anim.jn=null;apply();};
 const anim={ex:null,jn:null};
@@ -209,7 +233,7 @@ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{
 let labelsOn=true; const labBtn=document.getElementById('lab'); labBtn.onclick=()=>{labelsOn=!labelsOn;labBtn.classList.toggle('on',labelsOn);};
 // label anchor points in panel-A model coordinates (mm): x=height, y=thickness, z=width
 const tags=[
- {el:'t_steel', p:()=>new THREE.Vector3(L*0.25,T/2+ex*MAXLIFT,-250), min:.25},
+ {el:'t_steel', p:()=>new THREE.Vector3(L*0.25,TH/2+ex*MAXLIFT,-250), min:.25},
  {el:'t_core',  p:()=>new THREE.Vector3(L/2,0,-150), min:0},
  {el:'t_gasket',p:()=>new THREE.Vector3(L/2,0,-(COVER/2-GD-GT/2)), min:0},
  {el:'t_tape',  p:()=>new THREE.Vector3(L*0.2,0,COVER/2+TL), min:0}
