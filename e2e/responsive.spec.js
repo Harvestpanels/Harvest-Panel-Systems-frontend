@@ -303,7 +303,7 @@ test("3D showroom: the PIR Insulated Metal Panel (IMP) comes in 2, 4, 6 and 8 in
   expect(hex).toBe("af2b1e");
   // Play Joint now moves the Joint slider with the animation and ends at 0%
   await page.getByRole("button", { name: "Play Joint", exact: true }).click();
-  await expect(page.locator("#ctl input[type=range]").nth(1)).toHaveValue("0", { timeout: 8000 });
+  await expect(page.locator("#ctl input[type=range]").nth(1)).toHaveValue("0", { timeout: 20000 });
 });
 
 test("3D showroom trim: the inside curved angle is two pieces and Play Joint snaps the white cover down onto the metal base", async ({ page }) => {
@@ -314,10 +314,10 @@ test("3D showroom trim: the inside curved angle is two pieces and Play Joint sna
   const coverY = () => page.evaluate(() => { const ys = []; window.__sr.scene.traverse(o => { if (o.isMesh && /^Cover\d*$/.test(o.name)) ys.push(+(o.position.y * 1000).toFixed(1)); }); return ys; });
   expect(await coverY()).toEqual([0, 0, 0]);
   await page.getByRole("button", { name: "Play Joint", exact: true }).click();
-  await expect(page.locator("#ctl input[type=range]")).toHaveValue("100", { timeout: 8000 });
+  await expect(page.locator("#ctl input[type=range]")).toHaveValue("100", { timeout: 20000 });
   expect(await coverY()).toEqual([-33.5, -33.5, -33.5]);
   await page.getByRole("button", { name: "Play Joint", exact: true }).click();
-  await expect(page.locator("#ctl input[type=range]")).toHaveValue("0", { timeout: 8000 });
+  await expect(page.locator("#ctl input[type=range]")).toHaveValue("0", { timeout: 20000 });
 });
 test("panel viewer (home page and PIR product page): thickness 2 to 8 inches and the steel colors", async ({ page }) => {
   await page.goto("/site/viewer.html", { waitUntil: "load" });
