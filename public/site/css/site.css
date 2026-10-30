@@ -454,9 +454,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .menu .mtel,.menu .mlogin{display:none}
 @media(max-width:980px){
   .burger{display:inline-flex}
-  .nav.open{background:#10233f}
+  .nav.open{background:#10233f;-webkit-backdrop-filter:none;backdrop-filter:none;transition:background .35s,border-color .35s}   /* a blur on .nav would make it the box the fixed menu is measured against (the menu then only fills the 52px bar) */
   .nav.open .burger .l1{transform:translateY(4px) rotate(45deg)}.nav.open .burger .l2{transform:translateY(-4px) rotate(-45deg)}
-  .nav.open .menu{display:flex;flex-direction:column;align-items:stretch;gap:0;position:fixed;top:52px;left:0;right:0;bottom:0;padding:8px 24px 32px;background:#10233f;overflow:auto;z-index:99}
+  .nav.open .menu{display:flex;flex-direction:column;align-items:stretch;gap:0;position:fixed;top:52px;left:0;right:0;bottom:0;padding:8px 24px 32px;background:#10233f;overflow:auto;overscroll-behavior:contain;z-index:99}
   .nav.open .menu a{padding:16px 0;font-size:19px;font-weight:500;color:#fff;border-bottom:1px solid rgba(255,255,255,.1)}
   .nav.open .menu .mtel,.nav.open .menu .mlogin{display:block}
   .nav .right .login{display:none}

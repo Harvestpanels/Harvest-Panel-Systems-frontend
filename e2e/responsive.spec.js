@@ -335,3 +335,21 @@ test("panel viewer (home page and PIR product page): thickness 2 to 8 inches and
   await page.locator('.sws .sw[title="Flame Red"]').click();
   expect(await page.evaluate("mats.Steel_top.color.getHexString()")).toBe("af2b1e");
 });
+test("mobile menu fills the screen even after the page is scrolled (the blurred bar used to shrink it to a sliver)", async ({ page }) => {
+  for (const [w, h] of [[390, 844], [375, 560]]) {
+    await page.setViewportSize({ width: w, height: h });
+    for (const path of ["/", "/products", "/showroom", "/trim"]) {
+      await page.goto(path, { waitUntil: "load" });
+      await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; window.scrollTo(0, 900); });
+      await expect(page.locator(".nav.solid")).toHaveCount(1);
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      const box = await page.locator("#site-menu").boundingBox();
+      expect(box.height, `${path} at ${w}x${h}`).toBeGreaterThan(h - 52 - 4);   // from under the bar to the bottom of the screen
+      const last = page.locator("#site-menu a").last();
+      await last.scrollIntoViewIfNeeded();
+      const lb = await last.boundingBox();
+      expect(lb.y + lb.height, `${path} at ${w}x${h}: last item on screen`).toBeLessThanOrEqual(h + 1);
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+    }
+  }
+});
