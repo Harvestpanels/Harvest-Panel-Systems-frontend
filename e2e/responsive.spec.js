@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { mockPortal } from "./portal-fixture.js";
 
 const sizes = [[320, 568], [390, 844], [667, 375], [768, 1024], [1024, 768], [1440, 900]];
-const STATIC_PAGES = ["/", "/products", "/industries", "/calculator", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/architectural", "/portal-paused"];
+const STATIC_PAGES = ["/", "/products", "/industries", "/calculator", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/portal-paused"];
 const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal/admin"];
 
 const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
@@ -215,7 +215,7 @@ test("home page order: the scroll-built room, industries, one call, ..., floorin
 });
 
 test("wording: no 'envelope', every Insulated Metal Panel mention carries (IMP), no bare 'insulated panels'", async ({ page }) => {
-  for (const path of ["/", "/products", "/industries", "/calculator", "/specs", "/trim", "/architectural", "/gallery", "/blog", "/showroom", "/product-100mm-pir"]) {
+  for (const path of ["/", "/products", "/industries", "/calculator", "/specs", "/trim", "/gallery", "/blog", "/showroom", "/product-100mm-pir"]) {
     await page.goto(path, { waitUntil: "load" });
     const text = await page.evaluate(() => document.body.innerText);
     expect(text, `${path} envelope`).not.toMatch(/envelope/i);
@@ -258,7 +258,7 @@ test("fasteners: 15 screws per panel (walls and roofs), 4 drive pins per wall pa
 });
 
 test("the calculator is reached only from the menu bar", async ({ page }) => {
-  for (const path of ["/", "/products", "/industries", "/specs", "/trim", "/architectural", "/gallery", "/blog", "/showroom", "/product-100mm-pir", "/calculator"]) {
+  for (const path of ["/", "/products", "/industries", "/specs", "/trim", "/gallery", "/blog", "/showroom", "/product-100mm-pir", "/calculator"]) {
     await page.goto(path, { waitUntil: "load" });
     expect(await page.locator('a[href*="calculator"]').count(), path).toBe(1);
     expect(await page.locator('nav.menu a[href="/calculator"]').count(), path + " menu link").toBe(1);
@@ -353,10 +353,9 @@ test("mobile menu fills the screen even after the page is scrolled (the blurred 
     }
   }
 });
-test("architectural page: four profiles, solid or perforated, steel or aluminum, and a shareable look", async ({ page }) => {
-  await page.goto("/architectural", { waitUntil: "load" });
-  await expect(page.locator("h1")).toContainText("Metal Panels");
-  await expect(page.locator(".ar-card")).toHaveCount(4);
+test("Products page, Architectural section: four profiles, solid or perforated, steel or aluminum, and a shareable look", async ({ page }) => {
+  await page.goto("/products", { waitUntil: "load" });
+  await expect(page.locator("#architectural .ar-card")).toHaveCount(4);
   await expect(page.locator("#arch-specs .ar-speccard li")).toHaveCount(8);
   await expect(page.locator("#arch-specs .ar-speccard li span").first()).toHaveText("Call or reach out for more details");
   await expect(page.locator("#arch-specs a[href^='tel:']")).toBeVisible();
@@ -379,19 +378,24 @@ test("architectural page: four profiles, solid or perforated, steel or aluminum,
   await expect(page.locator("#ar-look")).toHaveValue(/Pinstripe · Medium perforation · Aluminum · Flame Red/);
   expect(await page.evaluate("location.hash")).toContain("c=flame-red");
   // a pasted link restores the look, and the copy button carries it
-  await page.evaluate("location.hash = 'p=flute&f=bold&m=steel&c=gentian-blue&d=v'");
+  await page.evaluate("location.hash = 'look/p=flute&f=bold&m=steel&c=gentian-blue&d=v'");
   await expect(page.locator("#ar-look")).toHaveValue("Flute · Bold perforation · Steel · Gentian Blue · Vertical");
   await page.evaluate("navigator.clipboard.writeText = t => { window.__copied = t; return Promise.resolve(); }");
   await page.locator("#ar-copy").click();
   expect(await page.evaluate("window.__copied")).toContain("Flute · Bold perforation");
 });
 
-test("architectural panels are reachable from the menu and shown on the Products page", async ({ page }) => {
+test("architectural panels have no page of their own: they live under Products and Industries", async ({ page }) => {
   await page.goto("/", { waitUntil: "load" });
-  const burger = page.getByRole("button", { name: "Menu", exact: true });
-  if (await burger.isVisible()) await burger.click();
-  await page.locator('nav.menu a[href="/architectural"]').click();
-  await expect(page).toHaveURL(/\/architectural$/);
+  await expect(page.locator('nav.menu a[href="/architectural"]')).toHaveCount(0);
+  await expect(page.locator('footer a[href="/architectural"]')).toHaveCount(0);
   await page.goto("/products", { waitUntil: "load" });
-  await expect(page.locator("#architectural .pcard")).toHaveCount(4);
+  await expect(page.locator('.pills .pill[data-target="architectural"]')).toHaveText("Architectural Panels");
+  await expect(page.locator("#architectural .ar-card")).toHaveCount(4);
+  await page.goto("/industries", { waitUntil: "load" });
+  await expect(page.locator('.pills .pill[data-target="architectural"]')).toHaveText("Architectural & Interior Design");
+  await expect(page.locator("#architectural")).toContainText("not insulated");
+  await page.locator('#architectural a[href="/products#architectural"]').click();
+  await expect(page).toHaveURL(/\/products#architectural$/);
+  await expect(page.locator("#architectural .ar-card").first()).toBeVisible();
 });

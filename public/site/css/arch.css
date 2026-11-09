@@ -67,3 +67,7 @@
 .ar-call .btn,.ar-call .ar-btn2{justify-content:center;text-align:center}
 @media(max-width:900px){.ar-specs{grid-template-columns:1fr}.ar-speccard{padding:6px 20px}}
 @media(max-width:560px){.ar-speccard li{flex-direction:column;gap:2px}.ar-speccard span{text-align:left}}
+/* sub-sections inside the Products page's Architectural section */
+.cathead.ar-subhead{margin:clamp(56px,8vw,96px) 0 0}
+.cathead.ar-subhead h3{margin:0;font-size:clamp(28px,3.8vw,44px);letter-spacing:-.03em}
+.ar-designer,.ar-perf,.ar-specs,.ar-steps{scroll-margin-top:110px}

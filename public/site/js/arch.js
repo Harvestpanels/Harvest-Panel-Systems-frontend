@@ -26,6 +26,7 @@
   // height of a profile at x mm (repeats every module)
   function hAt(p,x){ x=((x%MOD)+MOD)%MOD; const a=p.pts; for(let i=1;i<a.length;i++){ if(x<=a[i][0]){ const [x0,h0]=a[i-1],[x1,h1]=a[i]; return x1===x0?h1:h0+(h1-h0)*(x-x0)/(x1-x0); } } return a[a.length-1][1]; }
   const PERFS={solid:{n:'Solid'},fine:{n:'Fine',p:6,r:1.3},medium:{n:'Medium',p:9,r:2.3},bold:{n:'Bold',p:15,r:4.4}};
+  const HP='#look/';   // the designer's state lives in the address as #look/p=wave&f=solid..., so it never clashes with page anchors
   const st={p:'wave',f:'solid',m:'steel',c:'grey-white',d:'v'};
 
   const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)), hex=a=>'#'+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
@@ -57,7 +58,7 @@
     for(let i=0;i<N;i++){
       const x=i+.5, h=hAt(p,x), s=(hAt(p,x+1.5)-hAt(p,x-1.5))/3;
       const lam=(.5*s+.85)/Math.sqrt(1+s*s)-.85;
-      let c=lam<0?mix(base,'#000000',Math.min(.5,-lam)):mix(base,'#ffffff',Math.min(.4,lam*2.2));
+      let c=lam<0?mix(base,'#000000',Math.min(.42,-lam)):mix(base,'#ffffff',Math.min(.4,lam*2.2));
       for(let d=3;d<=84;d+=3){ if(hAt(p,x-d)-1.7*d>h+.3){ c=mix(c,'#000000',.26); break; } }
       // each slice runs to the right edge of the tile and the next one paints over it, so there are no hairline seams
       out+=`<rect x="${(i*kx).toFixed(2)}" width="${(TW-i*kx).toFixed(2)}" height="${TH}" fill="${c}"/>`;
@@ -68,15 +69,25 @@
     const f=PERFS[key]; if(!f.p) return '';
     return `<pattern id="perf" width="${f.p}" height="${f.p}" patternUnits="userSpaceOnUse"><circle cx="${f.p/4}" cy="${f.p/4}" r="${f.r}" fill="#0d1218" opacity=".78"/><circle cx="${f.p*3/4}" cy="${f.p*3/4}" r="${f.r}" fill="#0d1218" opacity=".78"/></pattern>`;
   }
+  // A sample of the panel seen from slightly above, so the real profile shows along its cut edges (top and bottom, or left and right).
   function sample(base){
-    const perf=PERFS[st.f], R='width="880" height="464"';
-    return `<defs>${cladding(PROFILES[st.p],st.d,base)}${perfPattern(st.f)}
+    const p=PROFILES[st.p], perf=PERFS[st.f], v=st.d==='v', K=.8, W=880, H=464, step=4;   // K = drawing px per mm of profile
+    const disp=t=>p.vz*hAt(p,t/K), n=Math.round((v?W:H)/step);
+    let max=0; const a=[], b=[];
+    for(let i=0;i<=n;i++){ const t=i*step, d=disp(t); max=Math.max(max,d); if(v){ a.push([t,d]); b.push([t,H+d]); } else { a.push([d,t]); b.push([W+d,t]); } }
+    const pts=q=>q.map(([x,y])=>x.toFixed(1)+' '+y.toFixed(1)), line=q=>'M'+pts(q).join(' L');
+    const face=line(a)+' L'+pts(b.slice().reverse()).join(' L')+' Z', edge=mix(base,'#000000',.55);
+    const R=`width="${W+max+2}" height="${H+max+2}"`, ox=v?(1000-W)/2:(1000-W-max)/2, oy=v?(560-H-max)/2:(560-H)/2;
+    return `<defs>${cladding(p,st.d,base)}${perfPattern(st.f)}
       <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0f2"/><stop offset="1" stop-color="#cdd2d8"/></linearGradient>
       <linearGradient id="shade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
       <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".42" stop-color="#fff" stop-opacity="${st.m==='alu'?.30:.10}"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset=".78" stop-color="#fff" stop-opacity="${st.m==='alu'?.16:.05}"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <clipPath id="cp"><path d="${face}"/></clipPath>
       <filter id="drop" x="-10%" y="-10%" width="120%" height="135%"><feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#10233f" flood-opacity=".3"/></filter></defs>
       <rect width="1000" height="560" fill="url(#bg)"/>
-      <g transform="translate(60 48)"><rect ${R} rx="3" fill="#2b333b" filter="url(#drop)"/><rect ${R} fill="url(#clad)"/>${perf.p?`<rect ${R} fill="url(#perf)"/>`:''}<rect ${R} fill="url(#shade)"/><rect ${R} fill="url(#gloss)"/></g>`;
+      <g transform="translate(${ox} ${oy})"><path d="${face}" fill="#2b333b" filter="url(#drop)"/>
+        <g clip-path="url(#cp)"><rect ${R} fill="url(#clad)"/>${perf.p?`<rect ${R} fill="url(#perf)"/>`:''}<rect ${R} fill="url(#shade)"/><rect ${R} fill="url(#gloss)"/></g>
+        <path d="${line(a)}" fill="none" stroke="${edge}" stroke-width="3" stroke-linejoin="round"/><path d="${line(b)}" fill="none" stroke="${edge}" stroke-width="3" stroke-linejoin="round"/></g>`;
   }
   const stage=$('#ar-stage');
   function render(write){
@@ -93,17 +104,17 @@
     set('#ar-sP',prof.n); set('#ar-sF',perfTxt); set('#ar-sM',matTxt); set('#ar-sD',dirTxt); set('#ar-sC',col.n);
     $('#ar-profd').textContent=prof.d;
     $('#ar-look').value=lookText();
-    if(write) history.replaceState(null,'','#'+new URLSearchParams(st).toString());
+    if(write) history.replaceState(null,'',HP+new URLSearchParams(st).toString());
   }
   const lookText=()=>{ const col=COLORS.find(c=>c.slug===st.c), perf=PERFS[st.f]; return `${PROFILES[st.p].n} · ${perf.p?perf.n+' perforation':'Solid'} · ${st.m==='alu'?'Aluminum':'Steel'} · ${col.n} · ${st.d==='v'?'Vertical':'Horizontal'}`; };
 
   /* ---------- wire up ---------- */
   function validate(){ if(!PROFILES[st.p]) st.p='wave'; if(!PERFS[st.f]) st.f='solid'; if(!['steel','alu'].includes(st.m)) st.m='steel'; if(!COLORS.some(c=>c.slug===st.c)) st.c='grey-white'; if(!['v','h'].includes(st.d)) st.d='v'; }
-  function fromHash(){ const q=new URLSearchParams(location.hash.slice(1)); let any=false; for(const k of Object.keys(st)){ const v=q.get(k); if(v){ st[k]=v; any=true; } } validate(); return any; }
+  function fromHash(){ if(!location.hash.startsWith(HP)) return false; const q=new URLSearchParams(location.hash.slice(HP.length)); let any=false; for(const k of Object.keys(st)){ const v=q.get(k); if(v){ st[k]=v; any=true; } } validate(); return any; }
   // profile cards and the perforation row
   $$('[data-section]').forEach(el=>{ const k=el.dataset.section; el.innerHTML=section(k,mix('#A8ABAA','#ffffff',.1)); });
   $$('[data-perf]').forEach(el=>{ el.innerHTML=perfPreview(el.dataset.perf,'#A8ABAA'); });
-  $$('[data-use]').forEach(b=>b.addEventListener('click',()=>{ st.p=b.dataset.use; st.d=PROFILES[st.p].dir; render(true); $('#designer').scrollIntoView({behavior:'smooth',block:'start'}); }));
+  $$('[data-use]').forEach(b=>b.addEventListener('click',()=>{ st.p=b.dataset.use; st.d=PROFILES[st.p].dir; render(true); $('#ar-pick').scrollIntoView({behavior:'smooth',block:'start'}); }));
   // each profile card: show the solid or the perforated picture
   $$('.ar-card').forEach(card=>{ const img=$('.im img',card), name=$('h3',card).textContent; const show=m=>{ img.src=m==='perf'?img.dataset.srcPerf:img.dataset.srcSolid; img.alt=name+' architectural metal panel, '+(m==='perf'?'perforated':'solid'); $$('.ar-toggle button',card).forEach(x=>{ const on=x.dataset.mode===m; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); }); };
     show('solid'); $$('.ar-toggle button',card).forEach(b=>b.onclick=()=>show(b.dataset.mode)); });
@@ -111,8 +122,9 @@
   const sw=$('#ar-sw'); COLORS.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.className='sw2'; b.style.background=c.h; b.title=c.n; b.dataset.v=c.slug; b.setAttribute('aria-label',c.n); b.onclick=()=>{ st.c=c.slug; render(true); }; sw.appendChild(b); });
   $$('[data-g] .pill').forEach(ch=>ch.onclick=()=>{ const g=ch.closest('[data-g]').dataset.g; st[g]=ch.dataset.v; if(g==='p') st.d=PROFILES[st.p].dir; render(true); });
   fromHash(); render(false);
+  if(location.hash.startsWith(HP)) addEventListener('load',()=>setTimeout(()=>$('#ar-pick').scrollIntoView(),300));
   addEventListener('hashchange',()=>{ if(fromHash()) render(false); });
-  const link=()=>location.origin+location.pathname+'#'+new URLSearchParams(st).toString();
+  const link=()=>location.origin+location.pathname+HP+new URLSearchParams(st).toString();
   const flash=(b,t)=>{ const o=b.dataset.t||(b.dataset.t=b.textContent); b.textContent=t; setTimeout(()=>{ b.textContent=o; },1800); };
   $('#ar-copy').onclick=function(){ const b=this; const txt=`Architectural panels, my look: ${lookText()}. Please send pricing and lead time.\n${link()}`; (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>flash(b,'Copied, paste it in the form'),()=>flash(b,'Copy it from the box below')); };
   $('#ar-share').onclick=function(){ const b=this; (navigator.clipboard?navigator.clipboard.writeText(link()):Promise.reject()).then(()=>flash(b,'Link copied'),()=>flash(b,'Copy it from the address bar')); };

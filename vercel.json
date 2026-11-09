@@ -42,6 +42,7 @@
     }
   ],
   "redirects": [
+    { "source": "/architectural", "destination": "/products#architectural", "permanent": false },
     { "source": "/portal", "destination": "/portal-paused", "permanent": false },
     { "source": "/portal/:path*", "destination": "/portal-paused", "permanent": false },
     { "source": "/portal.html", "destination": "/portal-paused", "permanent": false }
