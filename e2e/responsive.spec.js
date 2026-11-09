@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { mockPortal } from "./portal-fixture.js";
 
 const sizes = [[320, 568], [390, 844], [667, 375], [768, 1024], [1024, 768], [1440, 900]];
-const STATIC_PAGES = ["/", "/products", "/industries", "/calculator", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/portal-paused"];
+const STATIC_PAGES = ["/", "/products", "/industries", "/calculator", "/specs", "/blog", "/gallery", "/showroom", "/product-100mm-pir", "/trim", "/architectural", "/portal-paused"];
 const PORTAL_PAGES = ["/portal", "/portal/profile", "/portal/settings", "/portal/admin"];
 
 const fitsWidth = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
@@ -215,7 +215,7 @@ test("home page order: the scroll-built room, industries, one call, ..., floorin
 });
 
 test("wording: no 'envelope', every Insulated Metal Panel mention carries (IMP), no bare 'insulated panels'", async ({ page }) => {
-  for (const path of ["/", "/products", "/industries", "/calculator", "/specs", "/trim", "/gallery", "/blog", "/showroom", "/product-100mm-pir"]) {
+  for (const path of ["/", "/products", "/industries", "/calculator", "/specs", "/trim", "/architectural", "/gallery", "/blog", "/showroom", "/product-100mm-pir"]) {
     await page.goto(path, { waitUntil: "load" });
     const text = await page.evaluate(() => document.body.innerText);
     expect(text, `${path} envelope`).not.toMatch(/envelope/i);
@@ -258,7 +258,7 @@ test("fasteners: 15 screws per panel (walls and roofs), 4 drive pins per wall pa
 });
 
 test("the calculator is reached only from the menu bar", async ({ page }) => {
-  for (const path of ["/", "/products", "/industries", "/specs", "/trim", "/gallery", "/blog", "/showroom", "/product-100mm-pir", "/calculator"]) {
+  for (const path of ["/", "/products", "/industries", "/specs", "/trim", "/architectural", "/gallery", "/blog", "/showroom", "/product-100mm-pir", "/calculator"]) {
     await page.goto(path, { waitUntil: "load" });
     expect(await page.locator('a[href*="calculator"]').count(), path).toBe(1);
     expect(await page.locator('nav.menu a[href="/calculator"]').count(), path + " menu link").toBe(1);
@@ -352,4 +352,39 @@ test("mobile menu fills the screen even after the page is scrolled (the blurred 
       await page.getByRole("button", { name: "Menu", exact: true }).click();
     }
   }
+});
+test("architectural page: four profiles, solid or perforated, steel or aluminum, and a shareable look", async ({ page }) => {
+  await page.goto("/architectural", { waitUntil: "load" });
+  await expect(page.locator("h1")).toContainText("Metal Panels");
+  await expect(page.locator(".ar-card")).toHaveCount(4);
+  const stage = () => page.evaluate("document.getElementById('ar-stage').innerHTML");
+  const seen = new Set();
+  for (const p of ["flush", "rib", "step", "reveal"]) { await page.locator(`[data-g="p"] [data-v="${p}"]`).click(); seen.add(await stage()); }
+  expect(seen.size).toBe(4);
+  expect(await stage()).not.toContain('id="perf"');
+  await page.locator('[data-g="f"] [data-v="medium"]').click();
+  expect(await stage()).toContain('id="perf"');
+  await page.locator('[data-g="m"] [data-v="steel"]').click(); const steel = await stage();
+  await page.locator('[data-g="m"] [data-v="alu"]').click(); expect(await stage()).not.toBe(steel);
+  await page.locator('[data-g="s"] [data-v="lobby"]').click();
+  await expect(page.locator('[data-g="l"] .pill').first()).toHaveText("Bright");
+  await page.locator('#ar-sw [data-v="flame-red"]').click();
+  await expect(page.locator("#ar-look")).toHaveValue(/Lobby · Wide Reveal · Medium perforation · Aluminum · Flame Red/);
+  expect(await page.evaluate("location.hash")).toContain("c=flame-red");
+  // a pasted link restores the look, and the copy button carries it
+  await page.evaluate("location.hash = 's=warehouse&p=rib&f=bold&m=steel&c=gentian-blue&d=v&l=dusk'");
+  await expect(page.locator("#ar-look")).toHaveValue("Warehouse · Single Rib · Bold perforation · Steel · Gentian Blue · Vertical");
+  await page.evaluate("navigator.clipboard.writeText = t => { window.__copied = t; return Promise.resolve(); }");
+  await page.locator("#ar-copy").click();
+  expect(await page.evaluate("window.__copied")).toContain("Warehouse · Single Rib · Bold perforation");
+});
+
+test("architectural panels are reachable from the menu and shown on the Products page", async ({ page }) => {
+  await page.goto("/", { waitUntil: "load" });
+  const burger = page.getByRole("button", { name: "Menu", exact: true });
+  if (await burger.isVisible()) await burger.click();
+  await page.locator('nav.menu a[href="/architectural"]').click();
+  await expect(page).toHaveURL(/\/architectural$/);
+  await page.goto("/products", { waitUntil: "load" });
+  await expect(page.locator("#architectural .pcard")).toHaveCount(4);
 });
