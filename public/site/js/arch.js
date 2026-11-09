@@ -103,6 +103,11 @@
     const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
     set('#ar-sP',prof.n); set('#ar-sF',perfTxt); set('#ar-sM',matTxt); set('#ar-sD',dirTxt); set('#ar-sC',col.n);
     $('#ar-profd').textContent=prof.d;
+    $$('.ar-card').forEach(card=>{ const on=card.id==='profile-'+st.p; card.hidden=!on; if(!on) return;
+      const img=$('.im img',card), m=st.f==='solid'?'solid':'perf', src=m==='perf'?img.dataset.srcPerf:img.dataset.srcSolid;
+      if(img.getAttribute('src')!==src) img.src=src;
+      img.alt=`${$('h3',card).textContent} architectural metal panel, ${m==='perf'?'perforated':'solid'}`;
+      $$('.ar-toggle button',card).forEach(x=>{ const o=x.dataset.mode===m; x.classList.toggle('on',o); x.setAttribute('aria-pressed',o); }); });
     $('#ar-look').value=lookText();
     if(write) history.replaceState(null,'',HP+new URLSearchParams(st).toString());
   }
@@ -111,19 +116,24 @@
   /* ---------- wire up ---------- */
   function validate(){ if(!PROFILES[st.p]) st.p='wave'; if(!PERFS[st.f]) st.f='solid'; if(!['steel','alu'].includes(st.m)) st.m='steel'; if(!COLORS.some(c=>c.slug===st.c)) st.c='grey-white'; if(!['v','h'].includes(st.d)) st.d='v'; }
   function fromHash(){ if(!location.hash.startsWith(HP)) return false; const q=new URLSearchParams(location.hash.slice(HP.length)); let any=false; for(const k of Object.keys(st)){ const v=q.get(k); if(v){ st[k]=v; any=true; } } validate(); return any; }
-  // profile cards and the perforation row
+  // small drawings on the cards and the perforation row
   $$('[data-section]').forEach(el=>{ const k=el.dataset.section; el.innerHTML=section(k,mix('#A8ABAA','#ffffff',.1)); });
   $$('[data-perf]').forEach(el=>{ el.innerHTML=perfPreview(el.dataset.perf,'#A8ABAA'); });
-  $$('[data-use]').forEach(b=>b.addEventListener('click',()=>{ st.p=b.dataset.use; st.d=PROFILES[st.p].dir; render(true); $('#ar-pick').scrollIntoView({behavior:'smooth',block:'start'}); }));
-  // each profile card: show the solid or the perforated picture
-  $$('.ar-card').forEach(card=>{ const img=$('.im img',card), name=$('h3',card).textContent; const show=m=>{ img.src=m==='perf'?img.dataset.srcPerf:img.dataset.srcSolid; img.alt=name+' architectural metal panel, '+(m==='perf'?'perforated':'solid'); $$('.ar-toggle button',card).forEach(x=>{ const on=x.dataset.mode===m; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); }); };
-    show('solid'); $$('.ar-toggle button',card).forEach(b=>b.onclick=()=>show(b.dataset.mode)); });
   if(!stage) return;
+  // the designer panel sits under the product cards: a card opens it for that profile, Close puts it away
+  const panel=$('#ar-panel');
+  const openPanel=()=>{ if(panel) panel.hidden=false; };
+  const goPanel=()=>{ if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'}); };
+  $$('[data-use]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); st.p=b.dataset.use; st.d=PROFILES[st.p].dir; openPanel(); render(true); goPanel(); }));
+  const closeBtn=$('.ar-close'); if(closeBtn) closeBtn.onclick=()=>{ panel.hidden=true; history.replaceState(null,'','#architectural'); $('#architectural').scrollIntoView({behavior:'smooth',block:'start'}); };
+  // the Solid / Perforated switch on the profile picture drives the designer's finish
+  $$('.ar-toggle button').forEach(b=>b.onclick=()=>{ st.f=b.dataset.mode==='solid'?'solid':(st.f==='solid'?'medium':st.f); render(true); });
   const sw=$('#ar-sw'); COLORS.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.className='sw2'; b.style.background=c.h; b.title=c.n; b.dataset.v=c.slug; b.setAttribute('aria-label',c.n); b.onclick=()=>{ st.c=c.slug; render(true); }; sw.appendChild(b); });
   $$('[data-g] .pill').forEach(ch=>ch.onclick=()=>{ const g=ch.closest('[data-g]').dataset.g; st[g]=ch.dataset.v; if(g==='p') st.d=PROFILES[st.p].dir; render(true); });
-  fromHash(); render(false);
-  if(location.hash.startsWith(HP)) addEventListener('load',()=>setTimeout(()=>$('#ar-pick').scrollIntoView(),300));
-  addEventListener('hashchange',()=>{ if(fromHash()) render(false); });
+  if(fromHash()) openPanel();
+  render(false);
+  if(location.hash.startsWith(HP)) addEventListener('load',()=>setTimeout(goPanel,300));
+  addEventListener('hashchange',()=>{ if(fromHash()){ openPanel(); render(false); } });
   const link=()=>location.origin+location.pathname+HP+new URLSearchParams(st).toString();
   const flash=(b,t)=>{ const o=b.dataset.t||(b.dataset.t=b.textContent); b.textContent=t; setTimeout(()=>{ b.textContent=o; },1800); };
   $('#ar-copy').onclick=function(){ const b=this; const txt=`Architectural panels, my look: ${lookText()}. Please send pricing and lead time.\n${link()}`; (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>flash(b,'Copied, paste it in the form'),()=>flash(b,'Copy it from the box below')); };

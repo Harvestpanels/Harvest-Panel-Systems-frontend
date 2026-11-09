@@ -71,3 +71,11 @@
 .cathead.ar-subhead{margin:clamp(56px,8vw,96px) 0 0}
 .cathead.ar-subhead h3{margin:0;font-size:clamp(28px,3.8vw,44px);letter-spacing:-.03em}
 .ar-designer,.ar-perf,.ar-specs,.ar-steps{scroll-margin-top:110px}
+/* the designer panel that opens under the Architectural cards on the Products page */
+.ar-panel[hidden],.ar-card[hidden]{display:none}
+.ar-panel{margin-top:44px;scroll-margin-top:96px}
+.ar-panelbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.ar-close{border:1.5px solid var(--navy);background:none;color:var(--navy);border-radius:980px;padding:8px 18px;font:600 14px Inter,sans-serif;letter-spacing:0;text-transform:none;cursor:pointer;transition:background .2s,color .2s}
+.ar-close:hover{background:var(--navy);color:#fff}
+.ar-one{grid-template-columns:1fr}
+@media(min-width:900px){.ar-one .ar-card{flex-direction:row}.ar-one .ar-card .im{flex:1.25;aspect-ratio:auto;min-height:400px}.ar-one .ar-card .im img{position:absolute;inset:0}.ar-one .ar-card .bd{flex:1;align-content:center}}

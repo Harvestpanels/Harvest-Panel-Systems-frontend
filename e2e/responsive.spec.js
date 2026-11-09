@@ -355,7 +355,13 @@ test("mobile menu fills the screen even after the page is scrolled (the blurred 
 });
 test("Products page, Architectural section: four profiles, solid or perforated, steel or aluminum, and a shareable look", async ({ page }) => {
   await page.goto("/products", { waitUntil: "load" });
-  await expect(page.locator("#architectural .ar-card")).toHaveCount(4);
+  // simple cards first, like Wall & Roof Panels; the designer opens when a card is clicked
+  await expect(page.locator("#architectural .pcard")).toHaveCount(4);
+  await expect(page.locator("#ar-panel")).toBeHidden();
+  await page.locator('#architectural .pcard[data-use="wave"]').click();
+  await expect(page.locator("#ar-panel")).toBeVisible();
+  await expect(page.locator("#profile-wave")).toBeVisible();
+  await expect(page.locator("#profile-saw")).toBeHidden();
   await expect(page.locator("#arch-specs .ar-speccard li")).toHaveCount(8);
   await expect(page.locator("#arch-specs .ar-speccard li span").first()).toHaveText("Call or reach out for more details");
   await expect(page.locator("#arch-specs a[href^='tel:']")).toBeVisible();
@@ -365,10 +371,16 @@ test("Products page, Architectural section: four profiles, solid or perforated, 
   await page.locator("#profile-wave").getByRole("button", { name: "Perforated", exact: true }).click();
   await expect(waveImg).toHaveAttribute("src", /wave-perf/);
   await expect(waveImg).toHaveAttribute("alt", /perforated/);
+  await expect(page.locator('[data-g="f"] [data-v="medium"]')).toHaveClass(/on/);   // the picture switch drives the designer finish
+  await page.locator("#profile-wave").getByRole("button", { name: "Solid", exact: true }).click();
+  await expect(waveImg).toHaveAttribute("src", /wave-solid/);
+  await expect(page.locator('[data-g="f"] [data-v="solid"]')).toHaveClass(/on/);
   const stage = () => page.evaluate("document.getElementById('ar-stage').innerHTML");
   const seen = new Set();
   for (const p of ["wave", "saw", "flute", "pin"]) { await page.locator(`[data-g="p"] [data-v="${p}"]`).click(); seen.add(await stage()); }
   expect(seen.size).toBe(4);
+  await expect(page.locator("#profile-pin")).toBeVisible();   // the profile picture follows the designer
+  await expect(page.locator("#profile-wave")).toBeHidden();
   expect(await stage()).not.toContain('id="perf"');
   await page.locator('[data-g="f"] [data-v="medium"]').click();
   expect(await stage()).toContain('id="perf"');
@@ -391,11 +403,21 @@ test("architectural panels have no page of their own: they live under Products a
   await expect(page.locator('footer a[href="/architectural"]')).toHaveCount(0);
   await page.goto("/products", { waitUntil: "load" });
   await expect(page.locator('.pills .pill[data-target="architectural"]')).toHaveText("Architectural Panels");
-  await expect(page.locator("#architectural .ar-card")).toHaveCount(4);
+  await expect(page.locator("#architectural .pcard")).toHaveCount(4);
   await page.goto("/industries", { waitUntil: "load" });
   await expect(page.locator('.pills .pill[data-target="architectural"]')).toHaveText("Architectural & Interior Design");
   await expect(page.locator("#architectural")).toContainText("not insulated");
   await page.locator('#architectural a[href="/products#architectural"]').click();
   await expect(page).toHaveURL(/\/products#architectural$/);
-  await expect(page.locator("#architectural .ar-card").first()).toBeVisible();
+  await expect(page.locator("#architectural .pcard").first()).toBeVisible();
+});
+
+test("architectural designer: a shared link opens it, Close puts it away", async ({ page }) => {
+  await page.goto("/products#look/p=flute&f=fine&m=alu&c=flame-red&d=v", { waitUntil: "load" });
+  await expect(page.locator("#ar-panel")).toBeVisible();
+  await expect(page.locator("#profile-flute")).toBeVisible();
+  await expect(page.locator("#ar-look")).toHaveValue("Flute · Fine perforation · Aluminum · Flame Red · Vertical");
+  await page.locator(".ar-close").click();
+  await expect(page.locator("#ar-panel")).toBeHidden();
+  await expect(page.locator("#architectural .pcard")).toHaveCount(4);
 });
