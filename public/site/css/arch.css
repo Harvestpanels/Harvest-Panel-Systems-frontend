@@ -1,7 +1,7 @@
 /* Architectural panels page: profile cards, the look designer, perforation row and ordering steps. Uses the site's colors and radii. */
 .ar-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
 .ar-card{background:#fff;border-radius:26px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(16,35,63,.06),0 18px 50px rgba(16,35,63,.08)}
-.ar-card .im{aspect-ratio:4/3;background:var(--cream-2);overflow:hidden}
+.ar-card .im{position:relative;aspect-ratio:4/3;background:var(--cream-2);overflow:hidden}
 .ar-card .im img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .9s var(--ease)}
 .ar-card:hover .im img{transform:scale(1.04)}
 .ar-card .bd{padding:24px 26px 28px;display:grid;gap:16px;flex:1;align-content:start}
@@ -17,7 +17,7 @@
 /* designer */
 .ar-designer{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:34px}
 .ar-stagecard{background:#fff;border-radius:26px;overflow:hidden;box-shadow:0 1px 0 rgba(16,35,63,.06),0 18px 50px rgba(16,35,63,.08)}
-.ar-stage{display:block;width:100%;height:auto;background:#cfe3f4}
+.ar-stage{display:block;width:100%;height:auto;background:#e1e4e8}
 .ar-ctrls{padding:22px 24px 26px;display:grid;gap:18px;border-top:1px solid var(--line)}
 .ar-grp>label{display:block;margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .ar-cname{font-size:15px;font-weight:600;margin:-2px 0 8px}
@@ -53,3 +53,17 @@
 .ar-step p{margin:0;color:var(--mute);line-height:1.5}
 @media(max-width:900px){.ar-steps{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.ar-card .im img{transition:none}}
+.ar-toggle{position:absolute;left:16px;bottom:16px;display:flex;gap:4px;padding:4px;border-radius:980px;background:rgba(255,255,255,.9);box-shadow:0 6px 20px rgba(16,35,63,.18)}
+.ar-toggle button{border:0;background:none;padding:8px 15px;border-radius:980px;font:600 13px Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .2s,color .2s}
+.ar-toggle button.on{background:var(--navy);color:#fff}
+/* specifications: no data yet, so every value says to call */
+.ar-specs{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:34px}
+.ar-speccard{background:#fff;border-radius:26px;padding:10px 28px;box-shadow:0 1px 0 rgba(16,35,63,.06),0 12px 34px rgba(16,35,63,.06)}
+.ar-speccard li{padding:15px 0;font-size:16px}
+.ar-speccard span{color:var(--mute)}
+.ar-call{background:#fff;border-radius:26px;padding:28px;display:grid;gap:14px;box-shadow:0 1px 0 rgba(16,35,63,.06),0 12px 34px rgba(16,35,63,.06)}
+.ar-call h3{margin:0;font-size:26px;letter-spacing:-.02em}
+.ar-call p{margin:0;color:var(--mute);line-height:1.5}
+.ar-call .btn,.ar-call .ar-btn2{justify-content:center;text-align:center}
+@media(max-width:900px){.ar-specs{grid-template-columns:1fr}.ar-speccard{padding:6px 20px}}
+@media(max-width:560px){.ar-speccard li{flex-direction:column;gap:2px}.ar-speccard span{text-align:left}}

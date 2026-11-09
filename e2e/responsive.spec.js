@@ -357,26 +357,33 @@ test("architectural page: four profiles, solid or perforated, steel or aluminum,
   await page.goto("/architectural", { waitUntil: "load" });
   await expect(page.locator("h1")).toContainText("Metal Panels");
   await expect(page.locator(".ar-card")).toHaveCount(4);
+  await expect(page.locator("#arch-specs .ar-speccard li")).toHaveCount(8);
+  await expect(page.locator("#arch-specs .ar-speccard li span").first()).toHaveText("Call or reach out for more details");
+  await expect(page.locator("#arch-specs a[href^='tel:']")).toBeVisible();
+  await expect(page.locator("#arch-specs a[href^='mailto:']")).toBeVisible();
+  const waveImg = page.locator("#profile-wave .im img");
+  await expect(waveImg).toHaveAttribute("src", /wave-solid/);
+  await page.locator("#profile-wave").getByRole("button", { name: "Perforated", exact: true }).click();
+  await expect(waveImg).toHaveAttribute("src", /wave-perf/);
+  await expect(waveImg).toHaveAttribute("alt", /perforated/);
   const stage = () => page.evaluate("document.getElementById('ar-stage').innerHTML");
   const seen = new Set();
-  for (const p of ["flush", "rib", "step", "reveal"]) { await page.locator(`[data-g="p"] [data-v="${p}"]`).click(); seen.add(await stage()); }
+  for (const p of ["wave", "saw", "flute", "pin"]) { await page.locator(`[data-g="p"] [data-v="${p}"]`).click(); seen.add(await stage()); }
   expect(seen.size).toBe(4);
   expect(await stage()).not.toContain('id="perf"');
   await page.locator('[data-g="f"] [data-v="medium"]').click();
   expect(await stage()).toContain('id="perf"');
   await page.locator('[data-g="m"] [data-v="steel"]').click(); const steel = await stage();
   await page.locator('[data-g="m"] [data-v="alu"]').click(); expect(await stage()).not.toBe(steel);
-  await page.locator('[data-g="s"] [data-v="lobby"]').click();
-  await expect(page.locator('[data-g="l"] .pill').first()).toHaveText("Bright");
   await page.locator('#ar-sw [data-v="flame-red"]').click();
-  await expect(page.locator("#ar-look")).toHaveValue(/Lobby · Wide Reveal · Medium perforation · Aluminum · Flame Red/);
+  await expect(page.locator("#ar-look")).toHaveValue(/Pinstripe · Medium perforation · Aluminum · Flame Red/);
   expect(await page.evaluate("location.hash")).toContain("c=flame-red");
   // a pasted link restores the look, and the copy button carries it
-  await page.evaluate("location.hash = 's=warehouse&p=rib&f=bold&m=steel&c=gentian-blue&d=v&l=dusk'");
-  await expect(page.locator("#ar-look")).toHaveValue("Warehouse · Single Rib · Bold perforation · Steel · Gentian Blue · Vertical");
+  await page.evaluate("location.hash = 'p=flute&f=bold&m=steel&c=gentian-blue&d=v'");
+  await expect(page.locator("#ar-look")).toHaveValue("Flute · Bold perforation · Steel · Gentian Blue · Vertical");
   await page.evaluate("navigator.clipboard.writeText = t => { window.__copied = t; return Promise.resolve(); }");
   await page.locator("#ar-copy").click();
-  expect(await page.evaluate("window.__copied")).toContain("Warehouse · Single Rib · Bold perforation");
+  expect(await page.evaluate("window.__copied")).toContain("Flute · Bold perforation");
 });
 
 test("architectural panels are reachable from the menu and shown on the Products page", async ({ page }) => {
