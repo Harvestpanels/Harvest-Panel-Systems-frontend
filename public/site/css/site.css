@@ -115,7 +115,10 @@ section{position:relative}
 
 /* ---------- viewer ---------- */
 .viewer{position:relative;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:#e9ecef;box-shadow:0 40px 100px rgba(0,0,0,.35)}
-.viewer iframe{display:block;width:100%;height:min(78vh,720px);min-height:480px;border:0}
+.viewer iframe{display:block;width:100%;height:calc(min(78vh,720px) + 125px);min-height:600px;border:0}
+/* the explorer's menu is a bar under the 3D view; it is taller where its controls wrap (narrower frames) */
+@media(max-width:1170px){.viewer iframe{height:calc(min(78vh,720px) + 215px);min-height:680px}}
+@media(max-width:670px){.viewer iframe{height:calc(min(62vh,560px) + 250px);min-height:700px}}
 
 /* ---------- product carousel ---------- */
 .rail-h{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 24px 40px;margin:0 -24px;scrollbar-width:none}

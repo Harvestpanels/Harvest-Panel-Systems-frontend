@@ -421,3 +421,19 @@ test("architectural designer: a shared link opens it, Close puts it away", async
   await expect(page.locator("#ar-panel")).toBeHidden();
   await expect(page.locator("#architectural .pcard")).toHaveCount(4);
 });
+
+test("panel viewer on the product page: the menu is a bar under the 3D view and never covers the panel", async ({ page }) => {
+  await page.goto("/product-100mm-pir", { waitUntil: "load" });
+  const iframe = page.locator(".viewer iframe");
+  await iframe.scrollIntoViewIfNeeded();
+  const frame = await (await iframe.elementHandle()).contentFrame();
+  await frame.waitForFunction("window.THREE && typeof parts !== 'undefined' && parts.A && parts.A.Steel_top", null, { timeout: 30000 });
+  const m = await frame.evaluate(() => {
+    const st = document.getElementById("stage").getBoundingClientRect(), ui = document.querySelector(".ui").getBoundingClientRect(), cv = document.querySelector("canvas").getBoundingClientRect();
+    return { stageBottom: st.bottom, uiTop: ui.top, uiBottom: ui.bottom, frameH: innerHeight, canvasBottom: cv.bottom, stageH: st.height };
+  });
+  expect(m.stageBottom).toBeLessThanOrEqual(m.uiTop + 1);        // the 3D view ends where the menu begins
+  expect(m.canvasBottom).toBeLessThanOrEqual(m.uiTop + 1);       // the panel is drawn only above the menu
+  expect(m.uiBottom).toBeLessThanOrEqual(m.frameH + 1);          // the whole menu is inside the frame
+  expect(m.stageH).toBeGreaterThan(380);                          // and the 3D view is still big
+});

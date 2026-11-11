@@ -5,45 +5,62 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Harvest Panels 3D Viewer</title>
 <style>
-  :root{--bg1:#ffffff;--bg2:#e8ebef;--ink:#1d2430;--mute:#5d6775;--card:rgba(255,255,255,.86);--line:#d3d8df;--accent:#155a96}
+  :root{--bg1:#ffffff;--bg2:#e8ebef;--ink:#1d2430;--mute:#5d6775;--card:#ffffff;--line:#d3d8df;--accent:#155a96}
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);
-    background:radial-gradient(ellipse at 50% 35%,var(--bg1),var(--bg2))}
-  canvas{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none}
-  .ui{z-index:10;position:fixed;left:16px;bottom:16px;width:min(380px,calc(100vw - 32px));background:var(--card);backdrop-filter:blur(10px);
-    border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 8px 30px rgba(20,30,50,.12)}
-  .ui h1{font-size:15px;margin:0 0 2px;letter-spacing:.2px}
-  .ui p{margin:0 0 10px;font-size:12px;color:var(--mute)}
-  .row{display:flex;align-items:center;gap:10px;margin:8px 0}
+  html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff}
+  body{display:flex;flex-direction:column}
+  /* the 3D view on top, the menu in its own bar underneath (nothing overlaps the panel) */
+  #stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,var(--bg1),var(--bg2))}
+  canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+  .ui{z-index:10;position:relative;flex:none;background:var(--card);border-top:1px solid var(--line);padding:12px 22px 14px;
+    display:grid;grid-template-columns:minmax(345px,1.4fr) minmax(220px,1fr) minmax(330px,1.4fr);gap:2px 30px;align-items:start}
+  .ui .intro{grid-column:1/-1;display:flex;align-items:baseline;gap:2px 16px;flex-wrap:wrap;margin-bottom:4px}
+  .ui h1{font-size:15px;margin:0;letter-spacing:.2px}
+  .ui p{margin:0;font-size:12px;color:var(--mute)}
+  .row{display:flex;align-items:center;gap:10px;margin:6px 0}
   .row label{font-size:12px;width:78px;color:var(--mute)}
   .row output{font-size:12px;width:38px;text-align:right;font-variant-numeric:tabular-nums}
   input[type=range]{flex:1;accent-color:var(--accent)}
-  .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .grp>.btns:first-child{margin-top:0}
   button{font:inherit;font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
   button:hover{border-color:var(--accent)}
   button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .tag{z-index:5;position:fixed;pointer-events:none;font-size:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);
+  .tag{z-index:5;position:absolute;pointer-events:none;font-size:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);
     border-radius:8px;padding:4px 8px;white-space:nowrap;transform:translate(10px,-50%);opacity:0;transition:opacity .25s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
   .tag::before{content:"";position:absolute;left:-10px;top:50%;width:10px;height:1px;background:var(--mute)}
-  .brand{z-index:5;pointer-events:none;position:fixed;right:16px;top:14px;font-size:12px;color:var(--mute);text-align:right}
+  .brand{z-index:5;pointer-events:none;position:absolute;right:16px;top:14px;font-size:12px;color:var(--mute);text-align:right}
   .brand b{color:var(--ink);font-family:Georgia,serif;letter-spacing:.08em}
-  #load{position:fixed;inset:0;display:grid;place-items:center;font-size:13px;color:var(--mute)}
+  #load{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:var(--mute)}
   .chips{display:flex;gap:6px}
   .sws{display:flex;flex-wrap:wrap;gap:6px;flex:1}
   .sws .sw{width:20px;height:20px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
   .sws .sw.on{box-shadow:0 0 0 2px var(--accent)}
-  </style>
+  @media(max-width:1100px){.ui{grid-template-columns:1fr 1fr;gap:2px 24px}}
+  @media(max-width:600px){.ui{grid-template-columns:1fr;padding:10px 14px 12px;gap:0}.ui p{display:none}.row label{width:72px}}
+</style>
 </head>
 <body>
+<div id="stage">
 <div class="brand"><b>HARVEST PANELS</b><br>PIR Insulated Metal Panel (IMP)</div>
 <div id="load">Loading panel model&hellip;</div>
+<div class="tag" id="t_steel">0.5&nbsp;mm steel facing, RAL&nbsp;9002 satin</div>
+<div class="tag" id="t_core">PIR core</div>
+<div class="tag" id="t_gasket">Dark foam gasket</div>
+<div class="tag" id="t_tape">Branded tongue tape</div>
+</div>
 <div class="ui">
-  <h1>Panel &amp; joint explorer</h1>
-  <p>Drag to orbit, scroll to zoom, right-drag to pan. Space pauses rotation.</p>
+  <div class="intro"><h1>Panel &amp; joint explorer</h1>
+  <p>Drag to orbit, scroll to zoom, right-drag to pan. Space pauses rotation.</p></div>
+  <div class="grp">
   <div class="row"><label>Thickness</label><div class="chips" id="thk"><button data-t="50">2&Prime;</button><button data-t="100" class="on">4&Prime;</button><button data-t="150">6&Prime;</button><button data-t="200">8&Prime;</button></div><output id="thv" style="width:auto;margin-left:auto">R-30</output></div>
   <div class="row"><label>Color</label><div class="sws" id="sws"></div></div>
+  </div>
+  <div class="grp">
   <div class="row"><label for="ex">Layers</label><input id="ex" type="range" min="0" max="100" value="0"><output id="exv">0%</output></div>
   <div class="row"><label for="jn">Joint</label><input id="jn" type="range" min="0" max="100" value="100"><output id="jnv">100%</output></div>
+  </div>
+  <div class="grp">
   <div class="btns">
     <button id="rot">&#9654; Play rotation</button>
     <button id="aex">Play layers</button>
@@ -55,11 +72,8 @@
     <button data-view="end">Top-end profile</button>
     <button id="lab" class="on">Labels</button>
   </div>
+  </div>
 </div>
-<div class="tag" id="t_steel">0.5&nbsp;mm steel facing, RAL&nbsp;9002 satin</div>
-<div class="tag" id="t_core">PIR core</div>
-<div class="tag" id="t_gasket">Dark foam gasket</div>
-<div class="tag" id="t_tape">Branded tongue tape</div>
 
 <script src="/vendor/three/three.min.js"></script>
 <script src="/vendor/three/OrbitControls.js"></script>
@@ -75,18 +89,19 @@ const TAPE_B64="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAC7gAAAKWCAYAAADZK9
 
 // ---------- renderer / scene ----------
 const lowGPU=(()=>{ try{ const c=document.createElement('canvas'), g=c.getContext('webgl')||c.getContext('experimental-webgl'); if(!g) return false; const d=g.getExtension('WEBGL_debug_renderer_info'), n=d?String(g.getParameter(d.UNMASKED_RENDERER_WEBGL)):''; const lose=g.getExtension('WEBGL_lose_context'); if(lose) lose.loseContext(); return /Intel|Mesa|llvmpipe|SwiftShader|Basic Render|Adreno \(?[0-4]|Mali-[T4]|PowerVR/i.test(n); }catch(e){ return false; } })();
+const stageEl=document.getElementById('stage'), stageW=()=>stageEl.clientWidth||innerWidth, stageH=()=>stageEl.clientHeight||innerHeight;   // the 3D view only: the menu bar sits below it
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
 const baseRatio=Math.min(devicePixelRatio,lowGPU?1.25:1.75), moveRatio=Math.min(baseRatio,1);   // sharp when still, at most 1 pixel per CSS pixel while moving
 renderer.setPixelRatio(baseRatio);
 let wakeUntil=performance.now()+4000, lastMove=0, lastBeat=0, onscreen=true;   // lastBeat: a slow idle refresh (about 2 per second) so late-loading textures still appear
 const wake=(ms=3000,motion=false)=>{ const t=performance.now(); wakeUntil=Math.max(wakeUntil,t+ms); if(motion) lastMove=t; };
-const setRes=r=>{ if(renderer.getPixelRatio()!==r){ renderer.setPixelRatio(r); renderer.setSize(innerWidth,innerHeight,false); } };
+const setRes=r=>{ if(renderer.getPixelRatio()!==r){ renderer.setPixelRatio(r); renderer.setSize(stageW(),stageH(),false); } };
 ['pointerdown','pointermove','wheel','keydown','click','input','change','touchstart'].forEach(ev=>addEventListener(ev,()=>wake(ev==='pointermove'?500:3000),{passive:true,capture:true}));
 new IntersectionObserver(es=>{ onscreen=es[0].isIntersecting; if(onscreen) wake(1500); }).observe(document.documentElement);
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
+stageEl.appendChild(renderer.domElement);
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(32,1,50,40000);
 const controls=new THREE.OrbitControls(camera,renderer.domElement);
@@ -239,16 +254,16 @@ const tags=[
  {el:'t_tape',  p:()=>new THREE.Vector3(L*0.2,0,COVER/2+TL), min:0}
 ].map(t=>({...t,node:document.getElementById(t.el)}));
 function updateTags(){
-  const w=innerWidth,h=innerHeight,v=new THREE.Vector3();
+  const w=stageW(),h=stageH(),v=new THREE.Vector3();
   tags.forEach(t=>{
     v.copy(A.localToWorld(t.p())).project(camera);
     const vis=labelsOn&&parts.A.Steel_top&&ex>=t.min&&v.z<1&&Math.abs(v.x)<1.1&&Math.abs(v.y)<1.1;
     t.node.style.opacity=vis?1:0; t.node.style.left=((v.x+1)/2*w)+'px'; t.node.style.top=((1-v.y)/2*h)+'px';
   });
 }
-function resize(){wake(1200);renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+function resize(){wake(1200);const W=stageW(),H=stageH();renderer.setSize(W,H,false);camera.aspect=W/H;
   camera.fov=camera.aspect>=1.6?32:Math.atan(Math.tan(16*Math.PI/180)*1.6/camera.aspect)*180/Math.PI;camera.updateProjectionMatrix();}
-addEventListener('resize',resize); resize();
+addEventListener('resize',resize); new ResizeObserver(resize).observe(stageEl); resize();
 camera.position.copy(fitPos(views.hero)); controls.target.set(...views.hero.tgt);
 (function loop(now){
   requestAnimationFrame(loop); stepAnim(now);
